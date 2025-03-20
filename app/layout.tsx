@@ -9,7 +9,7 @@ import { CurrencySelector } from "@/components/currency-selector"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Restaurant Ordering System",
+  title: "Zozo booking - Restaurant Ordering System",
   description: "Order food from your table with QR code",
 }
 

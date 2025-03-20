@@ -12,7 +12,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
   const restaurant = {
     id: params.id,
     name: "Pasta Paradise",
-    image: "/placeholder.svg?height=400&width=800",
+    image: "/restaurant_scene.png?height=400&width=800",
     cuisine: "Italian",
     rating: 4.8,
     address: "123 Main St, Anytown, USA",
@@ -31,7 +31,7 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
         </Button>
 
         <div className="relative mb-6 h-64 w-full overflow-hidden rounded-lg md:h-80">
-          <Image src={restaurant.image || "/placeholder.svg"} alt={restaurant.name} fill className="object-cover" />
+          <Image src={restaurant.image || "/restaurant_scene.png"} alt={restaurant.name} fill className="object-cover" />
         </div>
 
         <div className="flex flex-wrap items-start justify-between gap-4">
@@ -74,21 +74,21 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
                   name: "Bruschetta",
                   description: "Toasted bread topped with tomatoes, garlic, and basil",
                   price: 8.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
                 {
                   id: "2",
                   name: "Calamari",
                   description: "Fried squid served with marinara sauce",
                   price: 10.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
                 {
                   id: "3",
                   name: "Caprese Salad",
                   description: "Fresh mozzarella, tomatoes, and basil drizzled with balsamic glaze",
                   price: 9.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
               ]}
             />
@@ -100,21 +100,21 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
                   name: "Spaghetti Carbonara",
                   description: "Spaghetti with pancetta, eggs, Parmesan, and black pepper",
                   price: 15.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
                 {
                   id: "5",
                   name: "Fettuccine Alfredo",
                   description: "Fettuccine pasta in a rich, creamy Parmesan sauce",
                   price: 14.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
                 {
                   id: "6",
                   name: "Lasagna",
                   description: "Layers of pasta, meat sauce, and cheese baked to perfection",
                   price: 16.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
               ]}
             />
@@ -126,21 +126,21 @@ export default function RestaurantPage({ params }: { params: { id: string } }) {
                   name: "Chicken Parmesan",
                   description: "Breaded chicken topped with marinara and mozzarella, served with pasta",
                   price: 18.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
                 {
                   id: "8",
                   name: "Eggplant Parmesan",
                   description: "Breaded eggplant topped with marinara and mozzarella, served with pasta",
                   price: 16.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
                 {
                   id: "9",
                   name: "Grilled Salmon",
                   description: "Salmon fillet grilled with lemon and herbs, served with vegetables",
                   price: 22.99,
-                  image: "/placeholder.svg?height=100&width=100",
+                  image: "/restaurant_scene.png?height=100&width=100",
                 },
               ]}
             />
