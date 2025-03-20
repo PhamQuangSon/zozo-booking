@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  orders        Order[]
+  likes         Like[]
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+  CUSTOMER
+}
+
+model Restaurant {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  address       String?
+  phone         String?
+  email         String?
+  image         String?
+  cuisine       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  menus         Menu[]
+  tables        Table[]
+  orders        Order[]
+}
+
+model Table {
+  id            String    @id @default(cuid())
+  number        Int
+  capacity      Int
+  status        TableStatus @default(AVAILABLE)
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  orders        Order[]
+}
+
+enum TableStatus {
+  AVAILABLE
+  OCCUPIED
+  RESERVED
+  MAINTENANCE
+}
+
+model Menu {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  menuItems     MenuItem[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model MenuItem {
+  id            String    @id @default(cuid())
+  name          String
+  description   String?
+  price         Float
+  image         String?
+  menuId        String
+  menu          Menu      @relation(fields: [menuId], references: [id])
+  category      String?
+  options       MenuItemOption[]
+  orderItems    OrderItem[]
+  likes         Like[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model MenuItemOption {
+  id            String    @id @default(cuid())
+  name          String
+  price         Float
+  menuItemId    String
+  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id])
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  status        OrderStatus @default(NEW)
+  total         Float
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+  tableId       String?
+  table         Table?    @relation(fields: [tableId], references: [id])
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  orderItems    OrderItem[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum OrderStatus {
+  NEW
+  PREPARING
+  COMPLETED
+  CANCELLED
+}
+
+model OrderItem {
+  id            String    @id @default(cuid())
+  quantity      Int
+  price         Float
+  orderId       String
+  order         Order     @relation(fields: [orderId], references: [id])
+  menuItemId    String
+  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id])
+  options       MenuItemOption[]
+  specialInstructions String?
+}
+
+model Like {
+  id            String    @id @default(cuid())
+  rating        Int?
+  comment       String?
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  menuItemId    String
+  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([userId, menuItemId])
+}
+
