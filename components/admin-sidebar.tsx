@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, UtensilsCrossed, ShoppingBag, Users, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, UtensilsCrossed, ShoppingBag, Users, Settings, LogOut, QrCode } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
@@ -21,6 +21,11 @@ const navItems = [
     title: "Menu",
     href: "/admin/menu",
     icon: UtensilsCrossed,
+  },
+  {
+    title: "QR Table",
+    href: "/admin/qr",
+    icon: QrCode,
   },
   {
     title: "Customers",
