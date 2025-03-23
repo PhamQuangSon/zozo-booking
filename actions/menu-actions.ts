@@ -28,7 +28,21 @@ export async function getMenuItems(restaurantId: string) {
       },
     })
 
-    return { success: true, data: menuItems }
+    // Convert Decimal to number
+    const formattedMenuItems = menuItems.map((item) => ({
+      ...item,
+      price: Number(item.price), // Convert price to number
+      menu_item_options: item.menu_item_options.map((option) => ({
+        ...option,
+        price_adjustment: Number(option.price_adjustment), // Convert price_adjustment to number
+        option_choices: option.option_choices.map((choice) => ({
+          ...choice,
+          price_adjustment: Number(choice.price_adjustment), // Convert price_adjustment to number
+        })),
+      })),
+    }))
+
+    return { success: true, data: formattedMenuItems }
   } catch (error) {
     console.error("Failed to fetch menu items:", error)
     return { success: false, error: "Failed to load menu items" }
@@ -91,7 +105,21 @@ export async function createMenuItem(data: {
       },
     })
 
-    return { success: true, data: menuItem }
+    // Convert Decimal to number
+    const formattedMenuItem = {
+      ...menuItem,
+      price: Number(menuItem.price), // Convert price to number
+      menu_item_options: menuItem.menu_item_options.map((option) => ({
+        ...option,
+        price_adjustment: Number(option.price_adjustment), // Convert price_adjustment to number
+        option_choices: option.option_choices.map((choice) => ({
+          ...choice,
+          price_adjustment: Number(choice.price_adjustment), // Convert price_adjustment to number
+        })),
+      })),
+    }
+
+    return { success: true, data: formattedMenuItem }
   } catch (error) {
     console.error("Failed to create menu item:", error)
     return { success: false, error: "Failed to create menu item" }
@@ -116,7 +144,13 @@ export async function getmenu_categories(restaurantId: string) {
       },
     })
 
-    return { success: true, data: categories }
+    // Convert Decimal fields to numbers
+    const formattedCategories = categories.map((category) => ({
+      ...category,
+      display_order: Number(category.display_order), // Convert display_order to number
+    }))
+
+    return { success: true, data: formattedCategories }
   } catch (error) {
     console.error("Failed to fetch menu categories:", error)
     return { success: false, error: "Failed to load menu categories" }
@@ -140,7 +174,13 @@ export async function createMenuCategory(data: {
       },
     })
 
-    return { success: true, data: category }
+    // Convert Decimal fields to numbers
+    const formattedCategory = {
+      ...category,
+      display_order: Number(category.display_order), // Convert display_order to number
+    }
+
+    return { success: true, data: formattedCategory }
   } catch (error) {
     console.error("Failed to create menu category:", error)
     return { success: false, error: "Failed to create menu category" }
