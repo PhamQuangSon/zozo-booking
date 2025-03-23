@@ -13,11 +13,16 @@ export async function getTableDetails(tableId: string) {
       },
     })
 
-    if (!table) {
-      return { success: false, error: "Table not found" }
+    if (!table) { return { success: false, error: "Table not found" } }
+
+    // Convert Decimal fields to numbers
+    const formattedTable = {
+      ...table,
+      capacity: Number(table.capacity),
     }
 
-    return { success: true, data: table }
+    return { success: true, data: formattedTable }
+
   } catch (error) {
     console.error(`Failed to fetch table with ID ${tableId}:`, error)
     return { success: false, error: "Failed to load table details" }
@@ -36,7 +41,13 @@ export async function getRestaurantTables(restaurantId: string) {
       },
     })
 
-    return { success: true, data: tables }
+    // Convert Decimal fields to numbers
+    const formattedTables = tables.map((table) => ({
+      ...table,
+      capacity: Number(table.capacity),
+    }))
+
+    return { success: true, data: formattedTables }
   } catch (error) {
     console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
     return { success: false, error: "Failed to load tables" }
@@ -74,7 +85,13 @@ export async function createTable(data: {
       },
     })
 
-    return { success: true, data: table }
+    // Convert Decimal fields to numbers
+    const formattedTable = {
+      ...table,
+      capacity: Number(table.capacity),
+    }
+
+    return { success: true, data: formattedTable }
   } catch (error) {
     console.error("Failed to create table:", error)
     return { success: false, error: "Failed to create table" }
@@ -116,7 +133,13 @@ export async function updateTable(
       },
     })
 
-    return { success: true, data: table }
+    // Convert Decimal fields to numbers
+    const formattedTable = {
+      ...table,
+      capacity: Number(table.capacity),
+    }
+
+    return { success: true, data: formattedTable }
   } catch (error) {
     console.error(`Failed to update table with ID ${id}:`, error)
     return { success: false, error: "Failed to update table" }
@@ -182,6 +205,20 @@ export async function getMenuForTable(restaurantId: string, tableId: string) {
       return { success: false, error: "No active menu found for this restaurant" }
     }
 
+    // Convert Decimal fields to numbers
+    const formattedMenu = {
+      ...menu,
+      menu_categories: menu.menu_categories.map((category) => ({
+        ...category,
+        display_order: Number(category.display_order),
+        menu_items: category.menu_items.map((item) => ({
+          ...item,
+          price: Number(item.price),
+          display_order: Number(item.display_order),
+        })),
+      })),
+    }
+
     return { success: true, data: { table, menu } }
   } catch (error) {
     console.error(`Failed to fetch menu for table ${tableId} at restaurant ${restaurantId}:`, error)
@@ -200,6 +237,7 @@ export async function formatTableMenuItems(menuCategories: any[], currency: Curr
       menu_item_options: item.menu_item_options.map((option: any) => ({
         ...option,
         option_choices: option.option_choices.map((choice: any) => ({
+          
           ...choice,
           formattedPriceAdjustment: formatCurrency(choice.price_adjustment, currency),
           price_adjustment: Number(choice.price_adjustment),
@@ -325,10 +363,15 @@ export async function createTableOrder(data: {
       data: { status: "OCCUPIED" },
     })
 
-    return { success: true, data: order }
+    // Convert Decimal fields to numbers
+    const formattedOrder = {
+      ...order,
+      total_amount: Number(order.total_amount),
+    }
+
+    return { success: true, data: formattedOrder }
   } catch (error) {
     console.error("Failed to create table order:", error)
     return { success: false, error: "Failed to create order" }
   }
 }
-

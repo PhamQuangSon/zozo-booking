@@ -61,7 +61,15 @@ export async function getRestaurantById(id: string) {
       return { success: false, error: "Restaurant not found" }
     }
 
-    return { success: true, data: restaurant }
+    // Convert Decimal fields to numbers
+    const formattedRestaurant = {
+      ...restaurant,
+      menus: restaurant.menus.map((menu) => ({
+        ...menu,
+        menu_categories: menu.menu_categories.map((category) => ({ ...category, display_order: Number(category.display_order), menu_items: category.menu_items.map((item) => ({ ...item, price: Number(item.price) })) })),
+      })),
+    }
+    return { success: true, data: formattedRestaurant }
   } catch (error) {
     console.error(`Failed to fetch restaurant with ID ${id}:`, error)
     return {
@@ -166,4 +174,3 @@ export async function formatMenuItems(menuItems: any[], currency: Currency) {
     price: Number(item.price), // Ensure price is a number for calculations
   }))
 }
-
