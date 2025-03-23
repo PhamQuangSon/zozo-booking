@@ -3,71 +3,101 @@
 import type React from "react"
 
 import { useState } from "react"
-import { X, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ImageUpload } from "@/components/image-upload"
 import { DialogFooter } from "@/components/ui/dialog"
-
-// Add imports for currency support
+import { useToast } from "@/hooks/use-toast"
 import { useCurrencyStore } from "@/lib/currency-store"
 import { convertCurrency } from "@/lib/i18n"
 
 interface MenuItemFormProps {
-  onSubmit: () => void
+  restaurantId: string
+  menus: Array<{ id: number; name: string; menu_categories: any[] }>
   initialData?: any
+  onSuccess: () => void
 }
 
-export function MenuItemForm({ onSubmit, initialData }: MenuItemFormProps) {
+export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: MenuItemFormProps) {
+  const { toast } = useToast()
   const { currency } = useCurrencyStore()
-  const [name, setName] = useState(initialData?.name || "")
-  const [description, setDescription] = useState(initialData?.description || "")
-  const [price, setPrice] = useState(initialData?.price?.toString() || "")
-  const [category, setCategory] = useState(initialData?.category || "")
-  const [options, setOptions] = useState<{ name: string; price: string }[]>(
-    initialData?.options || [{ name: "", price: "" }],
-  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const addOption = () => {
-    setOptions([...options, { name: "", price: "" }])
+  const [formData, setFormData] = useState({
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    price: initialData?.price?.toString() || "",
+    image_url: initialData?.image_url || "",
+    menuId: initialData?.menuId?.toString() || "",
+    categoryId: initialData?.categoryId?.toString() || "",
+    is_available: initialData?.is_available ?? true,
+  })
+
+  const [selectedCategories, setSelectedCategories] = useState<any[]>([])
+
+  // Update available categories when menu changes
+  const handleMenuChange = (menuId: string) => {
+    const menu = menus.find((m) => m.id.toString() === menuId)
+    setSelectedCategories(menu?.menu_categories || [])
+    setFormData((prev) => ({
+      ...prev,
+      menuId,
+      categoryId: "", // Reset category when menu changes
+    }))
   }
 
-  const removeOption = (index: number) => {
-    const newOptions = [...options]
-    newOptions.splice(index, 1)
-    setOptions(newOptions)
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const updateOption = (index: number, field: "name" | "price", value: string) => {
-    const newOptions = [...options]
-    newOptions[index][field] = value
-    setOptions(newOptions)
+  const handleImageChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, image_url: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Make sure to convert prices to USD for storage if not already in USD
-    const priceInUSD =
-      currency === "USD" ? Number.parseFloat(price) : convertCurrency(Number.parseFloat(price), currency, "USD")
+    setIsSubmitting(true)
 
-    console.log({
-      name,
-      description,
-      price: priceInUSD,
-      category,
-      options: options
-        .filter((opt) => opt.name && opt.price)
-        .map((opt) => ({
-          name: opt.name,
-          price:
-            currency === "USD"
-              ? Number.parseFloat(opt.price)
-              : convertCurrency(Number.parseFloat(opt.price), currency, "USD"),
-        })),
-    })
-    onSubmit()
+    try {
+      // Convert price to USD for storage if not already in USD
+      const priceInUSD =
+        currency === "USD"
+          ? Number.parseFloat(formData.price)
+          : convertCurrency(Number.parseFloat(formData.price), currency, "USD")
+
+      // In a real app, you would call your API here
+      console.log({
+        name: formData.name,
+        description: formData.description,
+        price: priceInUSD,
+        image_url: formData.image_url,
+        category_id: Number.parseInt(formData.categoryId),
+        is_available: formData.is_available,
+      })
+
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      toast({
+        title: "Success",
+        description: initialData ? "Menu item updated successfully" : "Menu item created successfully",
+      })
+
+      onSuccess()
+    } catch (error) {
+      console.error("Error saving menu item:", error)
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -75,80 +105,74 @@ export function MenuItemForm({ onSubmit, initialData }: MenuItemFormProps) {
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <Label htmlFor="menuId">Menu *</Label>
+            <Select value={formData.menuId} onValueChange={handleMenuChange} required>
+              <SelectTrigger id="menuId">
+                <SelectValue placeholder="Select menu" />
+              </SelectTrigger>
+              <SelectContent>
+                {menus.map((menu) => (
+                  <SelectItem key={menu.id} value={menu.id.toString()}>
+                    {menu.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+
           <div className="space-y-2">
-            <Label htmlFor="price">Price ({currency})</Label>
-            <Input
-              id="price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
+            <Label htmlFor="categoryId">Category *</Label>
+            <Select
+              value={formData.categoryId}
+              onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryId: value }))}
+              disabled={!formData.menuId || selectedCategories.length === 0}
               required
-            />
+            >
+              <SelectTrigger id="categoryId">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                {selectedCategories.map((category) => (
+                  <SelectItem key={category.id} value={category.id.toString()}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
-          <Select value={category} onValueChange={setCategory} required>
-            <SelectTrigger id="category">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Appetizers">Appetizers</SelectItem>
-              <SelectItem value="Pasta">Pasta</SelectItem>
-              <SelectItem value="Main Courses">Main Courses</SelectItem>
-              <SelectItem value="Desserts">Desserts</SelectItem>
-              <SelectItem value="Beverages">Beverages</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
-        </div>
-        <div className="space-y-2">
-          <Label>Image Upload</Label>
-          <Input type="file" accept="image/*" />
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Options (Size, Extras, etc.)</Label>
-            <Button type="button" variant="outline" size="sm" onClick={addOption}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Option
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {options.map((option, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input
-                  placeholder="Option name"
-                  value={option.name}
-                  onChange={(e) => updateOption(index, "name", e.target.value)}
-                />
-                <Input
-                  placeholder="Price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={option.price}
-                  onChange={(e) => updateOption(index, "price", e.target.value)}
-                />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeOption(index)}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))}
-          </div>
+          <Label htmlFor="name">Item Name *</Label>
+          <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+        </div>
+
+        <ImageUpload value={formData.image_url} onChange={handleImageChange} label="Item Image" />
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <Textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="price">Price ({currency}) *</Label>
+          <Input
+            id="price"
+            name="price"
+            type="number"
+            step="0.01"
+            min="0"
+            value={formData.price}
+            onChange={handleChange}
+            required
+          />
         </div>
       </div>
+
       <DialogFooter>
-        <Button type="submit">Save Menu Item</Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : initialData ? "Update Item" : "Create Item"}
+        </Button>
       </DialogFooter>
     </form>
   )

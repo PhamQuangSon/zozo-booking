@@ -49,6 +49,7 @@ export async function createTable(data: {
   number: number
   capacity: number
   status?: string
+  image_url?: string
 }) {
   try {
     // Check if table number already exists for this restaurant
@@ -69,6 +70,7 @@ export async function createTable(data: {
         number: data.number,
         capacity: data.capacity,
         status: (data.status as any) || "AVAILABLE",
+        image_url: data.image_url,
       },
     })
 
@@ -87,6 +89,7 @@ export async function updateTable(
     capacity: number
     status?: string
     restaurant_id: number
+    image_url?: string
   },
 ) {
   try {
@@ -109,6 +112,7 @@ export async function updateTable(
         number: data.number,
         capacity: data.capacity,
         status: (data.status as any) || "AVAILABLE",
+        image_url: data.image_url,
       },
     })
 

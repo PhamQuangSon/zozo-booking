@@ -2,72 +2,204 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, UtensilsCrossed, ShoppingBag, Users, Settings, LogOut, QrCode } from "lucide-react"
+import {
+  LayoutDashboard,
+  Store,
+  LogOut,
+  ChevronDown,
+  Users,
+  ShoppingBag,
+  QrCode,
+  Table,
+  BookOpen,
+  ListOrdered,
+  Coffee,
+  Utensils,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-
-const navItems = [
-  {
-    title: "Dashboard",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Orders",
-    href: "/admin/orders",
-    icon: ShoppingBag,
-  },
-  {
-    title: "Menu",
-    href: "/admin/menu",
-    icon: UtensilsCrossed,
-  },
-  {
-    title: "QR Table",
-    href: "/admin/qr",
-    icon: QrCode,
-  },
-  {
-    title: "Customers",
-    href: "/admin/customers",
-    icon: Users,
-  },
-  {
-    title: "Settings",
-    href: "/admin/settings",
-    icon: Settings,
-  },
-]
+import { CurrencySelector } from "@/components/currency-selector"
+import { useState, useEffect } from "react"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { RestaurantSelector, RESTAURANT_CHANGE_EVENT } from "@/components/restaurant-selector"
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const [defaultRestaurant, setDefaultRestaurant] = useState<{ id: string; name: string } | null>(null)
+  const [isRestaurantOpen, setIsRestaurantOpen] = useState(true)
+
+  // Update the useEffect to use prisma/seed.ts data and listen for restaurant changes
+  useEffect(() => {
+    // Fetch the default restaurant
+    const fetchDefaultRestaurant = async () => {
+      try {
+        // In a real app, this would be an API call to fetch restaurants
+        // For now, we'll use the data from seed.ts
+        const savedRestaurant = localStorage.getItem("defaultRestaurant")
+
+        if (savedRestaurant) {
+          try {
+            setDefaultRestaurant(JSON.parse(savedRestaurant))
+          } catch (e) {
+            console.error("Failed to parse saved restaurant:", e)
+            // Fallback to a default from seed data
+            setDefaultRestaurant({ id: "1", name: "Pasta Paradise" })
+          }
+        } else {
+          // Set a default from seed data if none is saved
+          setDefaultRestaurant({ id: "1", name: "Pasta Paradise" })
+        }
+      } catch (error) {
+        console.error("Error fetching restaurants:", error)
+      }
+    }
+
+    fetchDefaultRestaurant()
+
+    // Listen for restaurant change events
+    const handleRestaurantChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ id: string; name: string }>
+      setDefaultRestaurant(customEvent.detail)
+    }
+
+    window.addEventListener(RESTAURANT_CHANGE_EVENT, handleRestaurantChange)
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener(RESTAURANT_CHANGE_EVENT, handleRestaurantChange)
+    }
+  }, [])
+
+  const navItems = [
+    {
+      title: "Dashboard",
+      href: "/admin/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "QR Table",
+      href: "/admin/qr",
+      icon: QrCode,
+    },
+    {
+      title: "Restaurants",
+      href: "/admin/restaurants",
+      icon: Store,
+    },
+  ]
+
+  // Update the restaurantNavItems array to include view order and Item Options
+  const restaurantNavItems = defaultRestaurant
+    ? [
+        {
+          title: "Overview",
+          href: `/admin/restaurants/${defaultRestaurant.id}`,
+          icon: Store,
+        },
+        {
+          title: "Orders",
+          href: `/admin/restaurants/${defaultRestaurant.id}/orders`,
+          icon: ShoppingBag,
+        },
+        {
+          title: "List Tables",
+          href: `/admin/restaurants/${defaultRestaurant.id}/tables`,
+          icon: Table,
+        },
+        // {
+        //   title: "Customers",
+        //   href: `/admin/restaurants/${defaultRestaurant.id}/customers`,
+        //   icon: Users,
+        // },
+        {
+          title: "Menus",
+          href: `/admin/restaurants/${defaultRestaurant.id}/menu`,
+          icon: BookOpen,
+        },
+        {
+          title: "Categories",
+          href: `/admin/restaurants/${defaultRestaurant.id}/menu/categories`,
+          icon: ListOrdered,
+        },
+        {
+          title: "Menu Items",
+          href: `/admin/restaurants/${defaultRestaurant.id}/menu/items`,
+          icon: Coffee,
+        },
+        {
+          title: "Item Options",
+          href: `/admin/restaurants/${defaultRestaurant.id}/menu/options`,
+          icon: Utensils,
+        },
+      ]
+    : []
 
   return (
     <div className="flex h-screen w-64 flex-col border-r bg-muted/40">
       <div className="flex h-14 items-center border-b px-4">
         <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
-          <UtensilsCrossed className="h-5 w-5" />
+          <Store className="h-5 w-5" />
           <span>FoodOrder Admin</span>
         </Link>
       </div>
-      <div className="flex-1 overflow-auto py-4">
-        <nav className="grid gap-1 px-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                pathname === item.href ? "bg-accent text-accent-foreground" : "transparent",
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.title}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="border-t p-4">
+
+      <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-auto py-4">
+          <nav className="grid gap-1 px-2">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                  pathname === item.href ? "bg-accent text-accent-foreground" : "transparent",
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {item.title}
+              </Link>
+            ))}
+          </nav>
+
+          {defaultRestaurant && (
+            <div className="mt-6">
+              <Collapsible open={isRestaurantOpen} onOpenChange={setIsRestaurantOpen} className="px-2">
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
+                  <div className="flex items-center gap-3">
+                    <Store className="h-4 w-4" />
+                    <span>{defaultRestaurant.name}</span>
+                  </div>
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", isRestaurantOpen && "rotate-180")} />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="mt-1 space-y-1 pl-7">
+                    {restaurantNavItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                          pathname === item.href ? "bg-accent text-accent-foreground" : "transparent",
+                        )}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        {item.title}
+                      </Link>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+          )}
+        </div>
+      </ScrollArea>
+
+      <div className="border-t p-4 space-y-4">
+        <div className="flex flex-col gap-3">
+          <RestaurantSelector />
+          <CurrencySelector />
+        </div>
         <Button variant="outline" className="w-full justify-start" asChild>
           <Link href="/">
             <LogOut className="mr-2 h-4 w-4" />

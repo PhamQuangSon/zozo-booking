@@ -10,6 +10,7 @@ import { DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { createTable, updateTable } from "@/actions/table-actions"
 import { useToast } from "@/hooks/use-toast"
+import { ImageUpload } from "@/components/image-upload"
 
 interface TableFormProps {
   restaurantId: number
@@ -23,6 +24,7 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
     number: initialData?.number || "",
     capacity: initialData?.capacity || "4",
     status: initialData?.status || "AVAILABLE",
+    image_url: initialData?.image_url || "",
   })
   const { toast } = useToast()
 
@@ -35,6 +37,10 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleImageChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, image_url: value }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -45,6 +51,7 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
         capacity: Number.parseInt(formData.capacity),
         status: formData.status,
         restaurant_id: restaurantId,
+        image_url: formData.image_url,
       }
 
       const result = initialData ? await updateTable(initialData.id, tableData) : await createTable(tableData)
@@ -89,6 +96,9 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
             required
           />
         </div>
+
+        <ImageUpload value={formData.image_url} onChange={handleImageChange} label="Table Image" />
+
         <div className="space-y-2">
           <Label htmlFor="capacity">Capacity *</Label>
           <Input

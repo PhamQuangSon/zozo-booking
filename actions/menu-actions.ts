@@ -1,11 +1,11 @@
 "use server"
 
-import prisma from "@/lib/db"
+import prisma from "@/lib/prisma"
 
 // Get all menu items for a restaurant
 export async function getMenuItems(restaurantId: string) {
   try {
-    const menuItems = await prisma.menu_items.findMany({
+    const menuItems = await prisma.menuItem.findMany({
       where: {
         menu_categories: {
           menu: {
@@ -55,7 +55,7 @@ export async function createMenuItem(data: {
   }>
 }) {
   try {
-    const menuItem = await prisma.menu_items.create({
+    const menuItem = await prisma.menuItem.create({
       data: {
         category_id: data.categoryId,
         name: data.name,
@@ -69,7 +69,7 @@ export async function createMenuItem(data: {
               create: data.options.map((option) => ({
                 name: option.name,
                 price_adjustment: option.priceAdjustment,
-                is_required: option.isRequired ?? false,
+                isRequired: option.isRequired ?? false,
                 option_choices: option.choices
                   ? {
                       create: option.choices.map((choice) => ({
@@ -99,9 +99,9 @@ export async function createMenuItem(data: {
 }
 
 // Get all categories for a restaurant
-export async function getMenuCategories(restaurantId: string) {
+export async function getmenu_categories(restaurantId: string) {
   try {
-    const categories = await prisma.menu_categories.findMany({
+    const categories = await prisma.menuCategory.findMany({
       where: {
         menu: {
           restaurant_id: Number.parseInt(restaurantId),
@@ -131,7 +131,7 @@ export async function createMenuCategory(data: {
   displayOrder?: number
 }) {
   try {
-    const category = await prisma.menu_categories.create({
+    const category = await prisma.menuCategory.create({
       data: {
         menu_id: data.menuId,
         name: data.name,

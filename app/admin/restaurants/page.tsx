@@ -208,9 +208,9 @@ export default function RestaurantsPage() {
                             Manage Tables
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => (window.location.href = `/admin/restaurants/${restaurant.id}/menus`)}
+                            onClick={() => (window.location.href = `/admin/restaurants/${restaurant.id}/menu`)}
                           >
-                            Manage Menus
+                            Manage Menu
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

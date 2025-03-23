@@ -21,6 +21,9 @@ Cách chạy tại chế độ production:
 5. Chạy dự án: npm run preview
 
 Install database example: node --loader ts-node/esm prisma/seed.ts 
+Not use: npx prisma db drop --force
+1. Run Migrations: npx prisma migrate dev --name init
+2. Run Seed: node --loader ts-node/esm prisma/seed.ts
 
 📂 restaurant-ordering
  ┣ 📂 app

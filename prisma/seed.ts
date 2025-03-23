@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client"
+import { OrderStatus, PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
@@ -177,7 +177,7 @@ async function main() {
   })
 
   const sushi2 = await prisma.menuCategory.create({
-    data: {                 
+    data: {
       name: "Sushi",
       menu_id: menu2.id,
       display_order: 2,
@@ -236,6 +236,112 @@ async function main() {
 
   console.log("Created menus and menu items")
 
+  const menuOptions = await Promise.all([
+    prisma.menuItemOption.create({
+      data: {
+        name: "Size",
+        is_required: true,
+        price_adjustment: 0,
+        menu_item: {
+          connect: { id: menuItems1[0].id }, // Connect to an existing menu item
+        },
+        option_choices: {
+          create: [
+            { name: "Small", price_adjustment: 0 },
+            { name: "Medium", price_adjustment: 2.0 },
+            { name: "Large", price_adjustment: 4.0 },
+          ],
+        },
+      },
+    }),
+    prisma.menuItemOption.create({
+      data: {
+        name: "Toppings",
+        is_required: false,
+        price_adjustment: 0,
+        menu_item: {
+          connect: { id: menuItems1[1].id }, // Connect to an existing menu item
+        },
+        option_choices: {
+          create: [
+            { name: "Cheese", price_adjustment: 1.0 },
+            { name: "Pepperoni", price_adjustment: 1.5 },
+            { name: "Mushrooms", price_adjustment: 1.0 },
+            { name: "Olives", price_adjustment: 0.75 },
+          ],
+        },
+      },
+    }),
+    prisma.menuItemOption.create({
+      data: {
+        name: "Dressing",
+        is_required: true,
+        price_adjustment: 0,
+        menu_item: {
+          connect: { id: menuItems1[2].id }, // Connect to an existing menu item
+        },
+        option_choices: {
+          create: [
+            { name: "Ranch", price_adjustment: 0 },
+            { name: "Italian", price_adjustment: 0 },
+            { name: "Balsamic", price_adjustment: 0 },
+          ],
+        },
+      },
+    }),
+  ]);
+
+  // Create Orders
+
+  await Promise.all([
+    prisma.order.create({
+      data: {
+        id: 1,
+        table_id: tables1[2].id,
+        restaurant_id: restaurant1.id,
+        status: "NEW" as OrderStatus,
+        total_amount: 45.99,
+        createdAt: new Date().toISOString(),
+      },
+    }),
+    prisma.order.create({
+      data: {
+        id: 2,
+        table_id: tables1[0].id,
+        restaurant_id: restaurant1.id,
+        status: "COMPLETED" as OrderStatus,
+        total_amount: 23.5,
+        createdAt: new Date(Date.now() - 3600000).toISOString(),
+      },
+    }),
+    prisma.order.create({
+      data: {
+        id: 3,
+        table_id: tables1[4].id,
+        restaurant_id: restaurant1.id,
+        status: "PREPARING" as OrderStatus,
+        order_items: {
+          create: [
+            {
+              menu_item_id: menuItems1[0].id,
+              quantity: 2,
+              unit_price: menuItems1[0].price,
+              notes: "No garlic",
+            },
+            {
+              menu_item_id: menuItems1[1].id,
+              quantity: 1,
+              unit_price: menuItems1[1].price,
+              notes: "Extra crispy",
+            },
+          ],
+        },
+        total_amount: 78.25,
+        createdAt: new Date(Date.now() - 7200000).toISOString(),
+      },
+    }),
+  ]);
+
   console.log("Database seeded successfully!")
 }
 
@@ -247,4 +353,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
-

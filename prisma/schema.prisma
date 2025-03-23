@@ -47,6 +47,7 @@ model Table {
   capacity      Int
   status        TableStatus @default(AVAILABLE)
   restaurant_id Int
+  image_url     String?
   restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
   orders        Order[]
 }

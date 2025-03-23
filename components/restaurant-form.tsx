@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { DialogFooter } from "@/components/ui/dialog"
 import { createRestaurant, updateRestaurant } from "@/actions/restaurant-actions"
 import { useToast } from "@/hooks/use-toast"
+import { ImageUpload } from "@/components/image-upload"
 
 interface RestaurantFormProps {
   initialData?: any
@@ -32,6 +33,10 @@ export function RestaurantForm({ initialData, onSuccess }: RestaurantFormProps) 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleImageChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, image_url: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,10 +78,19 @@ export function RestaurantForm({ initialData, onSuccess }: RestaurantFormProps) 
           <Label htmlFor="name">Name *</Label>
           <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
         </div>
+
+        <ImageUpload value={formData.image_url} onChange={handleImageChange} label="Restaurant Image" />
+
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
           <Textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} />
         </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="cuisine">Cuisine</Label>
+          <Input id="cuisine" name="cuisine" value={formData.cuisine} onChange={handleChange} />
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
@@ -87,19 +101,10 @@ export function RestaurantForm({ initialData, onSuccess }: RestaurantFormProps) 
             <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cuisine">Cuisine</Label>
-            <Input id="cuisine" name="cuisine" value={formData.cuisine} onChange={handleChange} />
-          </div>
-        </div>
+
         <div className="space-y-2">
-          <Label htmlFor="image_url">Image URL</Label>
-          <Input id="image_url" name="image_url" value={formData.image_url} onChange={handleChange} />
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} />
         </div>
       </div>
       <DialogFooter>

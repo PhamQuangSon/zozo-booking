@@ -4,7 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCurrencyStore } from "@/lib/currency-store"
 import { formatCurrency } from "@/lib/i18n"
 
-export function DashboardCards() {
+interface DashboardCardsProps {
+  revenue: number
+  orders: number
+  activeTables: number
+  popularItem: string
+}
+
+export function DashboardCards({ revenue, orders, activeTables, popularItem }: DashboardCardsProps) {
   const { currency } = useCurrencyStore()
 
   return (
@@ -14,7 +21,7 @@ export function DashboardCards() {
           <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(15231.89, currency)}</div>
+          <div className="text-2xl font-bold">{formatCurrency(revenue, currency)}</div>
           <p className="text-xs text-muted-foreground">+20.1% from last month</p>
         </CardContent>
       </Card>
@@ -23,7 +30,7 @@ export function DashboardCards() {
           <CardTitle className="text-sm font-medium">Orders</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">+573</div>
+          <div className="text-2xl font-bold">+{orders}</div>
           <p className="text-xs text-muted-foreground">+12.2% from last month</p>
         </CardContent>
       </Card>
@@ -32,7 +39,7 @@ export function DashboardCards() {
           <CardTitle className="text-sm font-medium">Active Tables</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">12</div>
+          <div className="text-2xl font-bold">{activeTables}</div>
           <p className="text-xs text-muted-foreground">+2 from last hour</p>
         </CardContent>
       </Card>
@@ -41,10 +48,11 @@ export function DashboardCards() {
           <CardTitle className="text-sm font-medium">Popular Items</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">Pasta</div>
+          <div className="text-2xl font-bold">{popularItem}</div>
           <p className="text-xs text-muted-foreground">+19% from last week</p>
         </CardContent>
       </Card>
     </div>
   )
 }
+
