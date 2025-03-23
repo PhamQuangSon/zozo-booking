@@ -26,13 +26,13 @@ enum UserRole {
 }
 
 model Restaurant {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   name          String
   description   String?
   address       String?
   phone         String?
   email         String?
-  image         String?
+  image_url     String?
   cuisine       String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -42,12 +42,12 @@ model Restaurant {
 }
 
 model Table {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   number        Int
   capacity      Int
   status        TableStatus @default(AVAILABLE)
-  restaurantId  String
-  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  restaurant_id Int
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
   orders        Order[]
 }
 
@@ -59,52 +59,76 @@ enum TableStatus {
 }
 
 model Menu {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   name          String
   description   String?
-  restaurantId  String
-  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
-  menuItems     MenuItem[]
+  restaurant_id Int
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+  is_active     Boolean   @default(true)
+  menu_categories MenuCategory[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
-model MenuItem {
-  id            String    @id @default(cuid())
+model MenuCategory {
+  id            Int       @id @default(autoincrement())
   name          String
   description   String?
-  price         Float
-  image         String?
-  menuId        String
-  menu          Menu      @relation(fields: [menuId], references: [id])
-  category      String?
-  options       MenuItemOption[]
-  orderItems    OrderItem[]
+  menu_id       Int
+  menu          Menu      @relation(fields: [menu_id], references: [id])
+  display_order Int       @default(0)
+  menu_items    MenuItem[]
+}
+
+model MenuItem {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Decimal   @db.Decimal(10, 2)
+  image_url     String?
+  category_id   Int
+  menu_categories MenuCategory @relation(fields: [category_id], references: [id])
+  is_available  Boolean   @default(true)
+  display_order Int       @default(0)
+  menu_item_options MenuItemOption[]
+  order_items   OrderItem[]
   likes         Like[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
 model MenuItemOption {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   name          String
-  price         Float
-  menuItemId    String
-  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id])
-  orderItems    OrderItem[]
+  price_adjustment Decimal @db.Decimal(10, 2)
+  is_required   Boolean   @default(false)
+  menu_item_id  Int
+  menu_item     MenuItem  @relation(fields: [menu_item_id], references: [id])
+  option_choices OptionChoice[]
+  order_item_choices OrderItemChoice[]
+}
+
+model OptionChoice {
+  id            Int       @id @default(autoincrement())
+  name          String
+  price_adjustment Decimal @db.Decimal(10, 2)
+  option_id     Int
+  menu_item_option MenuItemOption @relation(fields: [option_id], references: [id])
+  order_item_choices OrderItemChoice[]
 }
 
 model Order {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   status        OrderStatus @default(NEW)
-  total         Float
-  userId        String?
-  user          User?     @relation(fields: [userId], references: [id])
-  tableId       String?
-  table         Table?    @relation(fields: [tableId], references: [id])
-  restaurantId  String
-  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
-  orderItems    OrderItem[]
+  total_amount  Decimal   @db.Decimal(10, 2)
+  user_id       String?
+  user          User?     @relation(fields: [user_id], references: [id])
+  table_id      Int?
+  table         Table?    @relation(fields: [table_id], references: [id])
+  restaurant_id Int
+  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
+  notes         String?
+  order_items   OrderItem[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -117,28 +141,38 @@ enum OrderStatus {
 }
 
 model OrderItem {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   quantity      Int
-  price         Float
-  orderId       String
-  order         Order     @relation(fields: [orderId], references: [id])
-  menuItemId    String
-  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id])
-  options       MenuItemOption[]
-  specialInstructions String?
+  unit_price    Decimal   @db.Decimal(10, 2)
+  order_id      Int
+  order         Order     @relation(fields: [order_id], references: [id])
+  menu_item_id  Int
+  menu_item     MenuItem  @relation(fields: [menu_item_id], references: [id])
+  notes         String?
+  order_item_choices OrderItemChoice[]
+}
+
+model OrderItemChoice {
+  id            Int       @id @default(autoincrement())
+  order_item_id Int
+  order_item    OrderItem @relation(fields: [order_item_id], references: [id])
+  option_id     Int
+  menu_item_option MenuItemOption @relation(fields: [option_id], references: [id])
+  choice_id     Int
+  option_choice OptionChoice @relation(fields: [choice_id], references: [id])
 }
 
 model Like {
-  id            String    @id @default(cuid())
+  id            Int       @id @default(autoincrement())
   rating        Int?
   comment       String?
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-  menuItemId    String
-  menuItem      MenuItem  @relation(fields: [menuItemId], references: [id])
+  user_id       String
+  user          User      @relation(fields: [user_id], references: [id])
+  menu_item_id  Int
+  menu_item     MenuItem  @relation(fields: [menu_item_id], references: [id])
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  @@unique([userId, menuItemId])
+  @@unique([user_id, menu_item_id])
 }
 
