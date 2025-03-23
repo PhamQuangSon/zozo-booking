@@ -66,7 +66,16 @@ export async function getRestaurantById(id: string) {
       ...restaurant,
       menus: restaurant.menus.map((menu) => ({
         ...menu,
-        menu_categories: menu.menu_categories.map((category) => ({ ...category, display_order: Number(category.display_order), menu_items: category.menu_items.map((item) => ({ ...item, price: Number(item.price) })) })),
+        menu_categories: menu.menu_categories.map((category) => ({
+          ...category,
+          display_order: Number(category.display_order),
+          menu_items: category.menu_items.map((item) => ({
+            ...item,
+            price: Number(item.price),
+            display_order: Number(item.display_order),
+          })),
+        })),
+        
       })),
     }
     return { success: true, data: formattedRestaurant }
