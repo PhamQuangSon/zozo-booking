@@ -10,70 +10,85 @@ import { Store } from "lucide-react"
 
 // Function to get dashboard data
 async function getDashboardData() {
-  // Get total revenue
-  const totalRevenue = await prisma.order.aggregate({
-    _sum: {
-      total_amount: true
-    },
-    where: {
-      status: {
-        in: ["COMPLETED"],
+  try {
+    // Get total revenue
+    const totalRevenue = await prisma.order.aggregate({
+      _sum: {
+        total_amount: true,
       },
-    },
-  })
-
-  // Get total orders
-  const totalOrders = await prisma.order.count()
-
-  // Get active tables
-  const activeTables = await prisma.table.count({
-    where: {
-      status: "OCCUPIED",
-    },
-  })
-
-  // Get popular items
-  const popularItems = await prisma.orderItem.groupBy({
-    by: ["menu_item_id"],
-    _count: {
-      id: true,
-    },
-    orderBy: {
-      _count: {
-        id: "desc",
+      where: {
+        status: {
+          in: ["COMPLETED"],
+        },
       },
-    },
-    take: 1,
-  })
-
-  let popularItemName = "None"
-  if (popularItems.length > 0) {
-    const item = await prisma.menuItem.findUnique({
-      where: { id: popularItems[0].menu_item_id },
     })
-    if (item) {
-      popularItemName = item.name
-    }
-  }
 
-  return {
-    revenue: totalRevenue._sum.total_amount?.toNumber() ?? 0,
-    orders: totalOrders,
-    activeTables,
-    popularItem: popularItemName,
+    // Get total orders
+    const totalOrders = await prisma.order.count()
+
+    // Get active tables
+    const activeTables = await prisma.table.count({
+      where: {
+        status: "OCCUPIED",
+      },
+    })
+
+    // Get popular items
+    const popularItems = await prisma.orderItem.groupBy({
+      by: ["menu_item_id"],
+      _count: {
+        id: true,
+      },
+      orderBy: {
+        _count: {
+          id: "desc",
+        },
+      },
+      take: 1,
+    })
+
+    let popularItemName = "None"
+    if (popularItems.length > 0) {
+      const item = await prisma.menuItem.findUnique({
+        where: { id: popularItems[0].menu_item_id },
+      })
+      if (item) {
+        popularItemName = item.name
+      }
+    }
+
+    return {
+      revenue: totalRevenue._sum.total_amount?.toNumber() ?? 0,
+      orders: totalOrders,
+      activeTables,
+      popularItem: popularItemName,
+    }
+  } catch (error) {
+    console.error("Error fetching dashboard data:", error)
+    return {
+      revenue: 0,
+      orders: 0,
+      activeTables: 0,
+      popularItem: "Error loading data",
+    }
   }
 }
 
 // Get recent restaurants
 async function getRecentRestaurants() {
-  const restaurants = await prisma.restaurant.findMany({
-    take: 3,
-    orderBy: {
-      createdAt: "desc",
-    },
-  })
+  try {
+    const restaurants = await prisma.restaurant.findMany({
+      take: 3,
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
 
-  return restaurants
+    return restaurants
+  } catch (error) {
+    console.error("Error fetching recent restaurants:", error)
+    return []
+  }
 }
 
 export default async function DashboardPage() {
