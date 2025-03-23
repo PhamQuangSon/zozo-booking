@@ -1,6 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { serializePrismaData } from "@/lib/prisma-helpers"
 import { formatCurrency, type Currency } from "@/lib/i18n"
 
 // Get table details
@@ -15,13 +16,9 @@ export async function getTableDetails(tableId: string) {
 
     if (!table) { return { success: false, error: "Table not found" } }
 
-    // Convert Decimal fields to numbers
-    const formattedTable = {
-      ...table,
-      capacity: Number(table.capacity),
-    }
+    const serializedTable = serializePrismaData(table)
 
-    return { success: true, data: formattedTable }
+    return { success: true, data: serializedTable }
 
   } catch (error) {
     console.error(`Failed to fetch table with ID ${tableId}:`, error)
@@ -41,13 +38,9 @@ export async function getRestaurantTables(restaurantId: string) {
       },
     })
 
-    // Convert Decimal fields to numbers
-    const formattedTables = tables.map((table) => ({
-      ...table,
-      capacity: Number(table.capacity),
-    }))
+    const serializedTables = serializePrismaData(tables)
 
-    return { success: true, data: formattedTables }
+    return { success: true, data: serializedTables }
   } catch (error) {
     console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
     return { success: false, error: "Failed to load tables" }
@@ -85,13 +78,9 @@ export async function createTable(data: {
       },
     })
 
-    // Convert Decimal fields to numbers
-    const formattedTable = {
-      ...table,
-      capacity: Number(table.capacity),
-    }
+    const serializedTable = serializePrismaData(table)
 
-    return { success: true, data: formattedTable }
+    return { success: true, data: serializedTable }
   } catch (error) {
     console.error("Failed to create table:", error)
     return { success: false, error: "Failed to create table" }
@@ -133,13 +122,9 @@ export async function updateTable(
       },
     })
 
-    // Convert Decimal fields to numbers
-    const formattedTable = {
-      ...table,
-      capacity: Number(table.capacity),
-    }
+    const serializedTable = serializePrismaData(table)
 
-    return { success: true, data: formattedTable }
+    return { success: true, data: serializedTable }
   } catch (error) {
     console.error(`Failed to update table with ID ${id}:`, error)
     return { success: false, error: "Failed to update table" }
@@ -205,21 +190,9 @@ export async function getMenuForTable(restaurantId: string, tableId: string) {
       return { success: false, error: "No active menu found for this restaurant" }
     }
 
-    // Convert Decimal fields to numbers
-    const formattedMenu = {
-      ...menu,
-      menu_categories: menu.menu_categories.map((category) => ({
-        ...category,
-        display_order: Number(category.display_order),
-        menu_items: category.menu_items.map((item) => ({
-          ...item,
-          price: Number(item.price),
-          display_order: Number(item.display_order),
-        })),
-      })),
-    }
+    const serializedMenu = serializePrismaData(menu)
 
-    return { success: true, data: { table, menu } }
+    return { success: true, data: { table, menu: serializedMenu } }
   } catch (error) {
     console.error(`Failed to fetch menu for table ${tableId} at restaurant ${restaurantId}:`, error)
     return { success: false, error: "Failed to load menu" }
@@ -363,13 +336,9 @@ export async function createTableOrder(data: {
       data: { status: "OCCUPIED" },
     })
 
-    // Convert Decimal fields to numbers
-    const formattedOrder = {
-      ...order,
-      total_amount: Number(order.total_amount),
-    }
+    const serializedOrder = serializePrismaData(order)
 
-    return { success: true, data: formattedOrder }
+    return { success: true, data: serializedOrder }
   } catch (error) {
     console.error("Failed to create table order:", error)
     return { success: false, error: "Failed to create order" }

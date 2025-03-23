@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { formatCurrency, type Currency } from "@/lib/i18n"
+import { serializePrismaData } from "@/lib/prisma-helpers"
 
 // Get all restaurants
 export async function getRestaurants() {
@@ -19,7 +20,7 @@ export async function getRestaurants() {
       },
     })
 
-    return { success: true, data: restaurants }
+    return { success: true, data: serializePrismaData(restaurants) }
   } catch (error) {
     console.error("Failed to fetch restaurants:", error)
     return {
@@ -61,24 +62,10 @@ export async function getRestaurantById(id: string) {
       return { success: false, error: "Restaurant not found" }
     }
 
-    // Convert Decimal fields to numbers
-    const formattedRestaurant = {
-      ...restaurant,
-      menus: restaurant.menus.map((menu) => ({
-        ...menu,
-        menu_categories: menu.menu_categories.map((category) => ({
-          ...category,
-          display_order: Number(category.display_order),
-          menu_items: category.menu_items.map((item) => ({
-            ...item,
-            price: Number(item.price),
-            display_order: Number(item.display_order),
-          })),
-        })),
-        
-      })),
-    }
-    return { success: true, data: formattedRestaurant }
+    // Serialize all Decimal values to numbers
+    const serializedRestaurant = serializePrismaData(restaurant)
+
+    return { success: true, data: serializedRestaurant }
   } catch (error) {
     console.error(`Failed to fetch restaurant with ID ${id}:`, error)
     return {
@@ -111,7 +98,7 @@ export async function createRestaurant(data: {
       },
     })
 
-    return { success: true, data: restaurant }
+    return { success: true, data: serializePrismaData(restaurant) }
   } catch (error) {
     console.error("Failed to create restaurant:", error)
     return {
@@ -148,7 +135,7 @@ export async function updateRestaurant(
       },
     })
 
-    return { success: true, data: restaurant }
+    return { success: true, data: serializePrismaData(restaurant) }
   } catch (error) {
     console.error(`Failed to update restaurant with ID ${id}:`, error)
     return {
@@ -177,9 +164,13 @@ export async function deleteRestaurant(id: number) {
 
 // Format menu items with proper currency
 export async function formatMenuItems(menuItems: any[], currency: Currency) {
-  return menuItems.map((item) => ({
+  // First serialize any Decimal values
+  const serializedItems = serializePrismaData(menuItems)
+
+  // Then format the prices
+  return serializedItems.map((item: { price: number }) => ({
     ...item,
     formattedPrice: formatCurrency(item.price, currency),
-    price: Number(item.price), // Ensure price is a number for calculations
   }))
 }
+
