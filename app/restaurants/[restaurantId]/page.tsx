@@ -12,7 +12,6 @@ import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
 import { useCurrencyStore } from "@/lib/currency-store"
 import { formatCurrency } from "@/lib/i18n"
-import { MenuCategory } from "@/components/menu-category"
 
 export default function RestaurantPage() {
   const params = useParams()
@@ -23,13 +22,7 @@ export default function RestaurantPage() {
 
   const [restaurant, setRestaurant] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [specialItem, setSpecialItem] = useState<any>({
-    id: "example-id",
-    name: "Example Special Dish",
-    price: 12.99,
-    image_url: "./restaurant_scene.png",
-    categoryName: "Specials",
-    discountPercentage: 45,})
+  const [specialItem, setSpecialItem] = useState<any>()
   const [visibleItems, setVisibleItems] = useState<number>(8)
   const [hasMore, setHasMore] = useState(true)
   const [allMenuItems, setAllMenuItems] = useState<any[]>([])
@@ -206,15 +199,28 @@ export default function RestaurantPage() {
     <div className="flex flex-col min-h-screen">
       {/* Hero Section with Today's Special */}
       {specialItem && (
-        <div className="relative w-full h-[300px] bg-black">
+        <div className="relative w-full h-[300px] bg-black overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10"></div>
           <Image
-            src={specialItem.image_url ||  "/restaurant_scene.png"}            
-            alt="Special food"
+            src={"/special-bg.jpg?height=400&width=600"}
+            alt="Special food background"
             fill
-            className="object-cover opacity-80"
+            className="object-cover opacity-50"
           />
-          <div className="relative z-20 container mx-auto h-full flex flex-col justify-center text-white">
+
+          {/* Special Item Image with Animation */}
+          <div className="absolute right-[30%] top-[10%] z-20 animate-float">
+            <div className="relative h-[200px] w-[200px]">
+              <Image
+                src={specialItem.image_url || "/placeholder.svg?height=200&width=200"}
+                alt={specialItem.name}
+                fill
+                className="object-contain drop-shadow-2xl"
+              />
+            </div>
+          </div>
+
+          <div className="relative z-20 container mx-auto h-full flex flex-col justify-center text-white pl-8">
             <p className="text-red-500 font-medium mb-2">WELCOME {restaurant.name.toUpperCase()}</p>
             <h1 className="text-4xl font-bold mb-2">TODAY SPECIAL FOOD</h1>
             <p className="text-amber-500 mb-4">Limited Time Offer</p>
@@ -222,8 +228,12 @@ export default function RestaurantPage() {
               ORDER NOW
             </Button>
           </div>
-          <div className="absolute top-10 right-10 z-20 bg-amber-500 text-white rounded-full p-3 rotate-12">
-            <p className="font-bold text-lg">{specialItem.discountPercentage}% OFF</p>
+
+          {/* Discount Badge with Animation */}
+          <div className="absolute top-10 right-[30%] z-20 animate-pulse bg-amber-500 text-white rounded-full p-3 rotate-12">
+            <div className="text-red-600 rounded-full flex items-center justify-center font-bold">
+              {specialItem.discountPercentage} OFF
+            </div>
           </div>
         </div>
       )}
@@ -268,15 +278,7 @@ export default function RestaurantPage() {
                 onClick={() => handleCategoryChange("all")}
                 className="rounded-full"
               >
-                
-                <div className="relative h-4 w-4 flex-shrink-0">
-                      <Image
-                      src={"/menuIcon1_4.png"}
-                      alt="ALl menu"
-                      fill
-                      className="object-cover "
-                    />
-                    </div>
+                <span className="mr-2">🍽️</span>
                 All Items
               </Button>
               {restaurant.menus &&
@@ -293,7 +295,7 @@ export default function RestaurantPage() {
                       src={category.description || "/zozo-booking.png?height=100&width=100"}
                       alt={category.name}
                       fill
-                      className="object-cover "
+                      className="object-cover mr-2"
                     />
                     </div>
                     {category.name}
@@ -309,9 +311,9 @@ export default function RestaurantPage() {
                 key={item.id}
                 className="flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow p-4 gap-4"
               >
-                <div className="relative h-24 w-24 flex-shrink-0 round-circle">
+                <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md">
                   <Image
-                    src={item.image_url || "/zozo-booking.png?height=100&width=100"}
+                    src={item.image_url || "/placeholder.svg?height=100&width=100"}
                     alt={item.name}
                     fill
                     className="object-cover"
