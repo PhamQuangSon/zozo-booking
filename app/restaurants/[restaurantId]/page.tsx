@@ -4,29 +4,41 @@ import Image from "next/image"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Star, MapPin, ChevronLeft, ShoppingCart } from "lucide-react"
+import { Star, MapPin, ChevronLeft, ShoppingCart, Table } from 'lucide-react'
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { getRestaurantById } from "@/actions/restaurant-actions"
+import { getRestaurantTables } from "@/actions/table-actions"
 import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
 import { useCurrencyStore } from "@/lib/currency-store"
 import { formatCurrency } from "@/lib/i18n"
+import { ScrollingBanner } from "@/components/scrolling-banner"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function RestaurantPage() {
   const params = useParams()
   const router = useRouter()
   const restaurantId = params.restaurantId as string
-  const tableId = params.tableId as string
   const { currency } = useCurrencyStore()
 
   const [restaurant, setRestaurant] = useState<any>(null)
+  const [tables, setTables] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [tableLoading, setTableLoading] = useState(false)
   const [specialItem, setSpecialItem] = useState<any>()
   const [visibleItems, setVisibleItems] = useState<number>(8)
   const [hasMore, setHasMore] = useState(true)
   const [allMenuItems, setAllMenuItems] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState<string>("all")
+  const [showTableDialog, setShowTableDialog] = useState(true)
 
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
@@ -83,6 +95,32 @@ export default function RestaurantPage() {
     }
   }, [restaurantId])
 
+  const fetchTables = useCallback(async () => {
+    try {
+      setTableLoading(true)
+      const { success, data, error } = await getRestaurantTables(restaurantId)
+
+      if (success && data) {
+        setTables(data)
+      } else {
+        toast({
+          title: "Error",
+          description: error || "Failed to fetch tables",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Error fetching tables:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load tables",
+        variant: "destructive",
+      })
+    } finally {
+      setTableLoading(false)
+    }
+  }, [restaurantId])
+
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
     if (loadMoreRef.current && !observerRef.current) {
@@ -117,7 +155,8 @@ export default function RestaurantPage() {
 
   useEffect(() => {
     fetchRestaurant()
-  }, [restaurantId, fetchRestaurant])
+    fetchTables()
+  }, [restaurantId, fetchRestaurant, fetchTables])
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category)
@@ -130,47 +169,12 @@ export default function RestaurantPage() {
       ? allMenuItems
       : allMenuItems.filter((item) => item.categoryName.toLowerCase() === activeCategory.toLowerCase())
 
-  const handleAddToCart = (item: any) => {
-    // Get existing cart from localStorage
-    const cartKey = `cart-${restaurantId}-${tableId}`
-    let cart = []
-
-    try {
-      const existingCart = localStorage.getItem(cartKey)
-      if (existingCart) {
-        cart = JSON.parse(existingCart)
-      }
-    } catch (e) {
-      console.error("Failed to parse cart:", e)
-    }
-
-    // Create new cart item
-    const cartItem = {
-      id: item.id,
-      name: item.name,
-      price: Number(item.price),
-      quantity: 1,
-      selectedOptions: {},
-      specialInstructions: "",
-    }
-
-    // Add to cart
-    cart.push(cartItem)
-
-    // Save back to localStorage
-    localStorage.setItem(cartKey, JSON.stringify(cart))
-
-    // Show toast
-    toast({
-      title: "Added to cart",
-      description: `${item.name} has been added to your order.`,
-    })
+  const handleTableSelect = (tableId: number) => {
+    router.push(`/restaurants/${restaurantId}/${tableId}`)
   }
 
-  const handleOrderSpecial = () => {
-    if (specialItem) {
-      handleAddToCart(specialItem)
-    }
+  const handleViewMenu = () => {
+    setShowTableDialog(true)
   }
 
   if (loading) {
@@ -197,6 +201,45 @@ export default function RestaurantPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Table Selection Dialog */}
+      <Dialog open={showTableDialog} onOpenChange={setShowTableDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select a Table</DialogTitle>
+            <DialogDescription>
+              Choose a table to view the menu and place your order.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
+            {tableLoading ? (
+              <div className="col-span-full flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : tables.length === 0 ? (
+              <div className="col-span-full text-center py-4">
+                <p className="text-muted-foreground">No tables available</p>
+              </div>
+            ) : (
+              tables.map((table) => (
+                <Button
+                  key={table.id}
+                  variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
+                  disabled={table.status !== "AVAILABLE"}
+                  onClick={() => handleTableSelect(table.id)}
+                  className="h-auto py-4 flex flex-col items-center gap-2"
+                >
+                  <Table className="h-6 w-6" />
+                  <span>Table {table.number}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {table.status === "AVAILABLE" ? "Available" : "Occupied"}
+                  </span>
+                </Button>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Hero Section with Today's Special */}
       {specialItem && (
         <div className="relative w-full h-[300px] bg-black overflow-hidden">
@@ -209,7 +252,7 @@ export default function RestaurantPage() {
           />
 
           {/* Special Item Image with Animation */}
-          <div className="absolute right-[30%] top-[10%] z-20 animate-float">
+          <div className="absolute right-[20%] top-[10%] z-20 animate-float">
             <div className="relative h-[300px] w-[300px]">
               <Image
                 src={"/ctaThumb1_1.png"}
@@ -221,11 +264,11 @@ export default function RestaurantPage() {
           </div>
 
           <div className="relative z-20 container mx-auto h-full flex flex-col justify-center text-white pl-8">
-            <p className="text-red-500 font-medium mb-2">WELCOME {restaurant.name.toUpperCase()}</p>
+            <p className="text-red-500 font-medium mb-2">WELCOME TO {restaurant.name.toUpperCase()}</p>
             <h1 className="text-4xl font-bold mb-2">TODAY SPECIAL FOOD</h1>
             <p className="text-amber-500 mb-4">Limited Time Offer</p>
-            <Button onClick={handleOrderSpecial} className="bg-red-600 hover:bg-red-700 text-white w-fit">
-              ORDER NOW
+            <Button onClick={handleViewMenu} className="bg-red-600 hover:bg-red-700 text-white w-fit">
+              VIEW MENU
             </Button>
           </div>
 
@@ -260,104 +303,111 @@ export default function RestaurantPage() {
             <span>{restaurant.address}</span>
           </div>
         </div>
+
+        {/* Table Selection Card */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Dining at {restaurant.name}</CardTitle>
+            <CardDescription>Select a table to view the menu and place your order</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+              {tableLoading ? (
+                <div className="col-span-full flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : tables.length === 0 ? (
+                <div className="col-span-full text-center py-4">
+                  <p className="text-muted-foreground">No tables available</p>
+                </div>
+              ) : (
+                tables.slice(0, 6).map((table) => (
+                  <Button
+                    key={table.id}
+                    variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
+                    disabled={table.status !== "AVAILABLE"}
+                    onClick={() => handleTableSelect(table.id)}
+                    className="h-auto py-4 flex flex-col items-center gap-2"
+                  >
+                    <Table className="h-6 w-6" />
+                    <span>Table {table.number}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {table.status === "AVAILABLE" ? "Available" : "Occupied"}
+                    </span>
+                  </Button>
+                ))
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <Button onClick={() => setShowTableDialog(true)}>
+              View All Tables
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
 
-      {/* Food Menu Section */}
+      {/* Restaurant Information Section */}
       <div className="bg-gray-50 flex-grow py-8">
         <div className="container mx-auto bg-white p-8 rounded-t-3xl shadow-lg">
           <div className="text-center mb-8 border-b pb-4">
             <div className="flex justify-center items-center gap-2 mb-2">
-              <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
+              <span className="text-amber-500">🍔 ABOUT US 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6">{restaurant.name} Menu</h2>
-
-            {/* Category Tabs */}
-            <div className="flex justify-center gap-4 flex-wrap mb-8">
-              <Button
-                variant={activeCategory === "all" ? "default" : "outline"}
-                onClick={() => handleCategoryChange("all")}
-                className="rounded-full"
-              >
-                <span className="mr-2">🍽️</span>
-                All Items
-              </Button>
-              {restaurant.menus &&
-                restaurant.menus.length > 0 &&
-                restaurant.menus[0].menu_categories?.map((category: any) => (
-                  <Button
-                    key={category.id}
-                    variant={activeCategory === category.name.toLowerCase() ? "default" : "outline"}
-                    onClick={() => handleCategoryChange(category.name.toLowerCase())}
-                    className="rounded-full"
-                  >
-                    <div className="relative h-4 w-4 flex-shrink-0">
-                      <Image
-                      src={category.description || "/zozo-booking.png?height=100&width=100"}
-                      alt={category.name}
-                      fill
-                      className="object-cover mr-2"
-                    />
-                    </div>
-                    {category.name}
-                  </Button>
-                ))}
-            </div>
+            <h2 className="text-3xl font-bold mb-6">Welcome to {restaurant.name}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              {restaurant.description || `Experience the finest ${restaurant.cuisine} cuisine in town. Our chefs prepare each dish with fresh ingredients and authentic recipes.`}
+            </p>
           </div>
 
-          {/* Menu Items Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
-            {filteredItems.slice(0, visibleItems).map((item: any) => (
-              <div
-                key={item.id}
-                className="flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow p-4 gap-4"
-              >
-                <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md">
-                  <Image
-                    src={item.image_url || "/placeholder.svg?height=100&width=100"}
-                    alt={item.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex-1 p-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-medium">{item.name}</h3>
-                    <p className="font-bold text-2xl text-amber-500">{formatCurrency(Number(item.price), currency)}</p>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1 mb-2">
-                    It's a testament to our {item.categoryName.toLowerCase()}
-                  </p>
-                  <Button size="sm" onClick={() => handleAddToCart(item)} className="mt-auto">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Add to Order
-                  </Button>
-                </div>
-              </div>
-            ))}
+          {/* Restaurant Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span className="mr-2">🍽️</span> Cuisine
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{restaurant.cuisine}</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span className="mr-2">⏰</span> Hours
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Mon-Fri: 11am - 10pm</p>
+                <p>Sat-Sun: 10am - 11pm</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span className="mr-2">📍</span> Location
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>{restaurant.address}</p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Load More Trigger */}
-          {hasMore && (
-            <div ref={loadMoreRef} className="h-10 flex items-center justify-center mt-8">
-              <p className="text-sm text-gray-500">Loading more items...</p>
-            </div>
-          )}
+          {/* Call to Action */}
+          <div className="text-center py-8">
+            <h3 className="text-2xl font-bold mb-4">Ready to Order?</h3>
+            <p className="text-muted-foreground mb-6">Select a table to view our menu and place your order</p>
+            <Button size="lg" onClick={() => setShowTableDialog(true)}>
+              Select a Table
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Scrolling Text Banner */}
-      <div className="bg-gray-100 py-4 overflow-hidden whitespace-nowrap">
-        <div className="animate-marquee inline-block">
-          {Array(10)
-            .fill(0)
-            .map((_, i) => (
-              <span key={i} className="text-3xl text-gray-300 font-bold mx-4">
-                CHICKEN PIZZA &nbsp; GRILLED CHICKEN &nbsp; BURGER &nbsp; CHICKEN PASTA &nbsp;
-              </span>
-            ))}
-        </div>
-      </div>
+      <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
     </div>
   )
 }
-
