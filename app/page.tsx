@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { RestaurantCard } from "@/components/restaurant-card"
 import { getRestaurants } from "@/actions/restaurant-actions"
@@ -23,8 +24,14 @@ export default async function Home() {
   return (
     <main className="container mx-auto px-4 py-8">
       <section className="mb-12 text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to FoodOrder</h1>
+        <div className="relative h-48 w-full">
+          <Image src={"/placeholder-logo.png?height=200&width=300"} alt="zozo" fill className="w-48 object-cover" />
+        </div>
+        <h1 className="mb-4 text-4xl font-bold">Welcome to zozo booking</h1>
         <p className="mb-6 text-lg text-muted-foreground">Order delicious food from your favorite restaurants</p>
+        <p className="mb-6 text-lg text-muted-foreground">
+          Scan the QR code to place an order from your table.
+        </p>
         <div className="flex justify-center gap-4">
           <Button asChild size="lg">
             <Link href="/restaurants">Browse Restaurants</Link>
