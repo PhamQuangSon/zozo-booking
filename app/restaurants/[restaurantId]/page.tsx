@@ -210,9 +210,9 @@ export default function RestaurantPage() {
 
           {/* Special Item Image with Animation */}
           <div className="absolute right-[30%] top-[10%] z-20 animate-float">
-            <div className="relative h-[200px] w-[200px]">
+            <div className="relative h-[300px] w-[300px]">
               <Image
-                src={specialItem.image_url || "/placeholder.svg?height=200&width=200"}
+                src={"/ctaThumb1_1.png"}
                 alt={specialItem.name}
                 fill
                 className="object-contain drop-shadow-2xl"
@@ -230,11 +230,11 @@ export default function RestaurantPage() {
           </div>
 
           {/* Discount Badge with Animation */}
-          <div className="absolute top-10 right-[30%] z-20 animate-pulse bg-amber-500 text-white rounded-full p-3 rotate-12">
+          {/* <div className="absolute top-10 right-[30%] z-20 animate-pulse bg-amber-500 text-white rounded-full p-3 rotate-12">
             <div className="text-red-600 rounded-full flex items-center justify-center font-bold">
               {specialItem.discountPercentage} OFF
             </div>
-          </div>
+          </div> */}
         </div>
       )}
 
