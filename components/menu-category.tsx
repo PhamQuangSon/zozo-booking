@@ -13,7 +13,7 @@ interface MenuItem {
   name: string
   description: string
   price: number
-  image: string
+  image_url: string
 }
 
 interface MenuCategoryProps {
@@ -26,14 +26,14 @@ export function MenuCategory({ name, items }: MenuCategoryProps) {
 
   return (
     <div>
-      <h2 className="mb-4 text-2xl font-semibold">{name}</h2>
+      {/* <h2 className="mb-4 text-2xl font-semibold">{name}</h2> */}
       <div className="grid gap-4 md:grid-cols-2">
         {items.map((item) => (
-          <Card key={item.id} className="overflow-hidden">
-            <CardContent className="p-0">
+          <Card key={item.id} className="overflow-hidden border-none shadow-none">
+            <CardContent className="p-2">
               <div className="flex">
                 <div className="relative h-24 w-24 flex-shrink-0">
-                  <Image src={item.image || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                  <Image src={item.image_url || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
                 </div>
                 <div className="flex flex-1 flex-col justify-between p-4">
                   <div>
