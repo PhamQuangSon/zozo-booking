@@ -42,12 +42,12 @@ export const useCartStore = create<CartState>()(
             const updatedCart = [...state.cart]
             updatedCart[existingItemIndex] = {
               ...updatedCart[existingItemIndex],
-              quantity: updatedCart[existingItemIndex].quantity + 1,
+              quantity: updatedCart[existingItemIndex].quantity + item.quantity,
             }
             return { cart: updatedCart }
           } else {
             // Add new item
-            return { cart: [...state.cart, { ...item, quantity: 1, submitted: false }] }
+            return { cart: [...state.cart, { ...item, submitted: false }] }
           }
         }),
 
