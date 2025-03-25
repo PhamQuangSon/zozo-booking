@@ -1,6 +1,7 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { serializePrismaData } from "@/lib/prisma-helpers"
 import { OrderStatus } from "@prisma/client"
 
 // Get orders for a restaurant
@@ -33,7 +34,10 @@ export async function getRestaurantOrders(restaurantId: string) {
       orderBy: { createdAt: "desc" },
     })
 
-    return { success: true, data: orders }
+    // Serialize all Decimal values to numbers
+    const serializedOrders = serializePrismaData(orders)
+
+    return { success: true, data: serializedOrders }
   } catch (error) {
     console.error("Failed to fetch orders:", error)
     return { success: false, error: "Failed to load orders" }

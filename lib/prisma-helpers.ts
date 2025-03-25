@@ -19,7 +19,12 @@ export function serializePrismaData<T>(data: T): T {
 
   if (typeof data === "object" && data !== null) {
     return Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, serializePrismaData(value)]),
+      Object.entries(data).map(([key, value]) => {
+        if (value instanceof Date) {
+          return [key, value.toISOString()]; // Serialize Date fields
+        }
+        return [key, serializePrismaData(value)];
+      }),
     ) as unknown as T
   }
 

@@ -1,15 +1,22 @@
-"use client"
-
 import { create } from "zustand"
-import type { Currency } from "@/lib/i18n"
+import { persist } from "zustand/middleware"
+
+type Currency = "USD" | "VND"
 
 interface CurrencyState {
   currency: Currency
   setCurrency: (currency: Currency) => void
 }
 
-export const useCurrencyStore = create<CurrencyState>((set) => ({
-  currency: "USD",
-  setCurrency: (currency) => set({ currency }),
-}))
+export const useCurrencyStore = create<CurrencyState>()(
+  persist(
+    (set) => ({
+      currency: "USD",
+      setCurrency: (currency) => set({ currency }),
+    }),
+    {
+      name: "currency-store",
+    },
+  ),
+)
 
