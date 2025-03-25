@@ -8,48 +8,159 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  password      String
-  role          UserRole  @default(CUSTOMER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  likes     Like[]
+  orders    Order[]
+}
+
+model Restaurant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  address     String?
+  phone       String?
+  email       String?
+  image_url   String?
+  cuisine     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  menus       Menu[]
+  orders      Order[]
+  tables      Table[]
+}
+
+model Table {
+  id            Int         @id @default(autoincrement())
+  number        Int
+  capacity      Int
+  status        TableStatus @default(AVAILABLE)
+  restaurant_id Int
+  image_url     String?
   orders        Order[]
-  likes         Like[]
+  restaurant    Restaurant  @relation(fields: [restaurant_id], references: [id])
+}
+
+model Menu {
+  id              Int            @id @default(autoincrement())
+  name            String
+  description     String?
+  restaurant_id   Int
+  is_active       Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  restaurant      Restaurant     @relation(fields: [restaurant_id], references: [id])
+  menu_categories MenuCategory[]
+}
+
+model MenuCategory {
+  id            Int        @id @default(autoincrement())
+  name          String
+  description   String?
+  menu_id       Int
+  display_order Int        @default(0)
+  menu          Menu       @relation(fields: [menu_id], references: [id])
+  menu_items    MenuItem[]
+}
+
+model MenuItem {
+  id                Int              @id @default(autoincrement())
+  name              String
+  description       String?
+  price             Decimal          @db.Decimal(10, 2)
+  image_url         String?
+  category_id       Int
+  is_available      Boolean          @default(true)
+  display_order     Int              @default(0)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  likes             Like[]
+  menu_categories   MenuCategory     @relation(fields: [category_id], references: [id])
+  menu_item_options MenuItemOption[]
+  order_items       OrderItem[]
+}
+
+model MenuItemOption {
+  id                 Int               @id @default(autoincrement())
+  name               String
+  price_adjustment   Decimal           @db.Decimal(10, 2)
+  is_required        Boolean           @default(false)
+  menu_item_id       Int
+  menu_item          MenuItem          @relation(fields: [menu_item_id], references: [id])
+  option_choices     OptionChoice[]
+  order_item_choices OrderItemChoice[]
+}
+
+model OptionChoice {
+  id                 Int               @id @default(autoincrement())
+  name               String
+  price_adjustment   Decimal           @db.Decimal(10, 2)
+  option_id          Int
+  menu_item_option   MenuItemOption    @relation(fields: [option_id], references: [id])
+  order_item_choices OrderItemChoice[]
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  status        OrderStatus @default(NEW)
+  total_amount  Decimal     @db.Decimal(10, 2)
+  user_id       String?
+  table_id      Int?
+  restaurant_id Int
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  restaurant    Restaurant  @relation(fields: [restaurant_id], references: [id])
+  table         Table?      @relation(fields: [table_id], references: [id])
+  user          User?       @relation(fields: [user_id], references: [id])
+  order_items   OrderItem[]
+}
+
+model OrderItem {
+  id                 Int               @id @default(autoincrement())
+  quantity           Int
+  unit_price         Decimal           @db.Decimal(10, 2)
+  order_id           Int
+  menu_item_id       Int
+  notes              String?
+  menu_item          MenuItem          @relation(fields: [menu_item_id], references: [id])
+  order              Order             @relation(fields: [order_id], references: [id])
+  order_item_choices OrderItemChoice[]
+}
+
+model OrderItemChoice {
+  id               Int            @id @default(autoincrement())
+  order_item_id    Int
+  option_id        Int
+  choice_id        Int
+  option_choice    OptionChoice   @relation(fields: [choice_id], references: [id])
+  menu_item_option MenuItemOption @relation(fields: [option_id], references: [id])
+  order_item       OrderItem      @relation(fields: [order_item_id], references: [id])
+}
+
+model Like {
+  id           Int      @id @default(autoincrement())
+  rating       Int?
+  comment      String?
+  user_id      String
+  menu_item_id Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  menu_item    MenuItem @relation(fields: [menu_item_id], references: [id])
+  user         User     @relation(fields: [user_id], references: [id])
+
+  @@unique([user_id, menu_item_id])
 }
 
 enum UserRole {
   ADMIN
   STAFF
   CUSTOMER
-}
-
-model Restaurant {
-  id            Int       @id @default(autoincrement())
-  name          String
-  description   String?
-  address       String?
-  phone         String?
-  email         String?
-  image_url     String?
-  cuisine       String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  menus         Menu[]
-  tables        Table[]
-  orders        Order[]
-}
-
-model Table {
-  id            Int       @id @default(autoincrement())
-  number        Int
-  capacity      Int
-  status        TableStatus @default(AVAILABLE)
-  restaurant_id Int
-  image_url     String?
-  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  orders        Order[]
 }
 
 enum TableStatus {
@@ -59,121 +170,9 @@ enum TableStatus {
   MAINTENANCE
 }
 
-model Menu {
-  id            Int       @id @default(autoincrement())
-  name          String
-  description   String?
-  restaurant_id Int
-  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  is_active     Boolean   @default(true)
-  menu_categories MenuCategory[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model MenuCategory {
-  id            Int       @id @default(autoincrement())
-  name          String
-  description   String?
-  menu_id       Int
-  menu          Menu      @relation(fields: [menu_id], references: [id])
-  display_order Int       @default(0)
-  menu_items    MenuItem[]
-}
-
-model MenuItem {
-  id            Int       @id @default(autoincrement())
-  name          String
-  description   String?
-  price         Decimal   @db.Decimal(10, 2)
-  image_url     String?
-  category_id   Int
-  menu_categories MenuCategory @relation(fields: [category_id], references: [id])
-  is_available  Boolean   @default(true)
-  display_order Int       @default(0)
-  menu_item_options MenuItemOption[]
-  order_items   OrderItem[]
-  likes         Like[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
-model MenuItemOption {
-  id            Int       @id @default(autoincrement())
-  name          String
-  price_adjustment Decimal @db.Decimal(10, 2)
-  is_required   Boolean   @default(false)
-  menu_item_id  Int
-  menu_item     MenuItem  @relation(fields: [menu_item_id], references: [id])
-  option_choices OptionChoice[]
-  order_item_choices OrderItemChoice[]
-}
-
-model OptionChoice {
-  id            Int       @id @default(autoincrement())
-  name          String
-  price_adjustment Decimal @db.Decimal(10, 2)
-  option_id     Int
-  menu_item_option MenuItemOption @relation(fields: [option_id], references: [id])
-  order_item_choices OrderItemChoice[]
-}
-
-model Order {
-  id            Int       @id @default(autoincrement())
-  status        OrderStatus @default(NEW)
-  total_amount  Decimal   @db.Decimal(10, 2)
-  user_id       String?
-  user          User?     @relation(fields: [user_id], references: [id])
-  table_id      Int?
-  table         Table?    @relation(fields: [table_id], references: [id])
-  restaurant_id Int
-  restaurant    Restaurant @relation(fields: [restaurant_id], references: [id])
-  notes         String?
-  order_items   OrderItem[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-}
-
 enum OrderStatus {
   NEW
   PREPARING
   COMPLETED
   CANCELLED
 }
-
-model OrderItem {
-  id            Int       @id @default(autoincrement())
-  quantity      Int
-  unit_price    Decimal   @db.Decimal(10, 2)
-  order_id      Int
-  order         Order     @relation(fields: [order_id], references: [id])
-  menu_item_id  Int
-  menu_item     MenuItem  @relation(fields: [menu_item_id], references: [id])
-  notes         String?
-  order_item_choices OrderItemChoice[]
-}
-
-model OrderItemChoice {
-  id            Int       @id @default(autoincrement())
-  order_item_id Int
-  order_item    OrderItem @relation(fields: [order_item_id], references: [id])
-  option_id     Int
-  menu_item_option MenuItemOption @relation(fields: [option_id], references: [id])
-  choice_id     Int
-  option_choice OptionChoice @relation(fields: [choice_id], references: [id])
-}
-
-model Like {
-  id            Int       @id @default(autoincrement())
-  rating        Int?
-  comment       String?
-  user_id       String
-  user          User      @relation(fields: [user_id], references: [id])
-  menu_item_id  Int
-  menu_item     MenuItem  @relation(fields: [menu_item_id], references: [id])
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  @@unique([user_id, menu_item_id])
-}
-

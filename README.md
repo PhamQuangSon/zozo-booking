@@ -31,7 +31,7 @@ Not use: npx prisma db drop --force
 │   └── 📂 api
 │       ├── 📂 auth (Xử lý đăng nhập admin)
 │       ├── 📂 orders (CRUD đơn hàng)
-│       ├── 📂 restaurants (Danh sách nhà hàng, menu)
+│       ├── 📂 resta    urants (Danh sách nhà hàng, menu)
 │       └── 📂 likes (Thích và đánh giá món ăn)
 ├── 📂 components (Re-usable UI với ShadCN & Tailwind)
 ├── 📂 lib (Chứa Prisma client, helpers)
@@ -55,4 +55,10 @@ Not use: npx prisma db drop --force
 </div>
 <div align="center">
     <img src="./public/ui-screenshot-3.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/ui-screenshot-4.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/ui-screenshot-5.png" alt="UI Screenshot">
 </div>
