@@ -25,23 +25,34 @@ Not use: npx prisma db drop --force
 1. Run Migrations: npx prisma migrate dev --name init
 2. Run Seed: node --loader ts-node/esm prisma/seed.ts
 
+```
 📂 restaurant-ordering
- ┣ 📂 app
- ┃ ┣ 📂 api
- ┃ ┃ ┣ 📂 auth (Xử lý đăng nhập admin)
- ┃ ┃ ┣ 📂 orders (CRUD đơn hàng)
- ┃ ┃ ┣ 📂 restaurants (Danh sách nhà hàng, menu)
- ┃ ┃ ┗ 📂 likes (Thích và đánh giá món ăn)
- ┣ 📂 components (Re-usable UI với ShadCN & Tailwind)
- ┣ 📂 lib (Chứa Prisma client, helpers)
- ┣ 📂 prisma (Schema database & migrations)
- ┣ 📂 public (Chứa ảnh menu, icon, assets)
- ┣ 📂 styles (Global styles)
- ┣ 📂 utils (Các hàm utility)
- ┣ 📜 .env (Biến môi trường)
- ┣ 📜 next.config.js
- ┣ 📜 package.json
- ┣ 📜 prisma/schema.prisma (Schema DB)
- ┗ 📜 tailwind.config.js
+├── 📂 app
+│   └── 📂 api
+│       ├── 📂 auth (Xử lý đăng nhập admin)
+│       ├── 📂 orders (CRUD đơn hàng)
+│       ├── 📂 restaurants (Danh sách nhà hàng, menu)
+│       └── 📂 likes (Thích và đánh giá món ăn)
+├── 📂 components (Re-usable UI với ShadCN & Tailwind)
+├── 📂 lib (Chứa Prisma client, helpers)
+├── 📂 prisma (Schema database & migrations)
+├── 📂 public (Chứa ảnh menu, icon, assets)
+├── 📂 styles (Global styles)
+├── 📂 utils (Các hàm utility)
+├── 📜 .env (Biến môi trường)
+├── 📜 next.config.js
+├── 📜 package.json
+├── 📜 prisma/schema.prisma (Schema DB)
+└── 📜 tailwind.config.js
+```
 
 ===
+<div align="center">
+    <img src="./public/ui-screenshot-1.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/ui-screenshot-2.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/ui-screenshot-3.png" alt="UI Screenshot">
+</div>
