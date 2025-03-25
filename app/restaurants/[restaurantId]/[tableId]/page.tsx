@@ -8,11 +8,12 @@ import { ChevronLeft, ShoppingCart } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollingBanner } from "@/components/scrolling-banner"
 import { OrderCart } from "@/components/order-cart"
-import { useCurrencyStore } from "@/lib/currency-store"
+import { useCurrencyStore } from "@/store/currencyStore"
 import { formatCurrency } from "@/lib/i18n"
 import { getRestaurantById } from "@/actions/restaurant-actions"
+import { getMenuForTable, getTableDetails } from "@/actions/table-actions"
 import { CartItem, useCartStore } from "@/store/cartStore"; // Import the Zustand store
-import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export default function TableOrderPage({ params }: { params: { restaurantId: string; tableId: string } }) {
   const [restaurant, setRestaurant] = useState<any>({ name: "", description: "", image_url: "", menus: [] })
@@ -25,7 +26,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
   const [error, setError] = useState<string | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const { currency } = useCurrencyStore()
-
+	const { toast } = useToast()
   const hasMore = filteredItems.length > visibleItems
   const { addToCart } = useCartStore(); // Access the Zustand store's addToCart function
 
@@ -41,9 +42,17 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
           throw new Error(restaurantResult.error || "Failed to load restaurant")
         }
 
+      // Get table data using server action
+      const tableResult = await getTableDetails(params.tableId)
+      if (!tableResult.success || !tableResult.data) {
+        throw new Error(tableResult.error || "Failed to load table")
+      }
+
+
         const restaurantData = restaurantResult.data
+        const tableData = tableResult.data
         setRestaurant(restaurantData)
-        // setTable(tableData)
+        setTable(tableData)
         // Flatten all menu items for infinite scroll
         const items: any[] = []
         if (restaurantData.menus && restaurantData.menus.length > 0) {

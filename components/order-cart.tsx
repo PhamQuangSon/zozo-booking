@@ -4,7 +4,7 @@ import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { useCurrencyStore } from "@/lib/currency-store";
+import { useCurrencyStore } from "@/store/currencyStore";
 import { formatCurrency } from "@/lib/i18n";
 import { createTableOrder } from "@/actions/table-actions";
 import { CartItem, useCartStore } from "@/store/cartStore";

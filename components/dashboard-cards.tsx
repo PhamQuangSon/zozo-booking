@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useCurrencyStore } from "@/lib/currency-store"
+import { useCurrencyStore } from "@/store/currencyStore"
 import { formatCurrency } from "@/lib/i18n"
 
 interface DashboardCardsProps {

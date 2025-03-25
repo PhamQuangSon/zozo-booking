@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { MenuItemDetail } from "@/components/menu-item-detail"
-import { useCurrencyStore } from "@/lib/currency-store"
+import { useCurrencyStore } from "@/store/currencyStore"
 import { formatCurrency } from "@/lib/i18n"
 
 interface MenuItem {

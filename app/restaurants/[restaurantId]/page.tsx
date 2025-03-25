@@ -9,9 +9,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { getRestaurantById } from "@/actions/restaurant-actions"
 import { getRestaurantTables } from "@/actions/table-actions"
-import { toast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-import { useCurrencyStore } from "@/lib/currency-store"
+import { useCurrencyStore } from "@/store/currencyStore"
 import { formatCurrency } from "@/lib/i18n"
 import { ScrollingBanner } from "@/components/scrolling-banner"
 import {
@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+
 
 export default function RestaurantPage() {
   const params = useParams()
@@ -39,7 +40,7 @@ export default function RestaurantPage() {
   const [allMenuItems, setAllMenuItems] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const [showTableDialog, setShowTableDialog] = useState(true)
-
+  const { toast } = useToast()
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
