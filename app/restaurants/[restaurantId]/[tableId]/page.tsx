@@ -148,6 +148,9 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
       {/* Food Menu Section */}
       <div className="bg-gray-50 flex-grow py-8">
         <div className="container mx-auto bg-white p-8 rounded-t-3xl shadow-lg">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
+          </div>
           <h2 className="text-3xl font-bold mb-6 text-center">{restaurant.name} Menu</h2>
 
           <MenuCategory

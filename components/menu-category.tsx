@@ -114,10 +114,6 @@ export function MenuCategory({ items, activeCategory, onCategoryChange, categori
     <div>
       {/* Category Tabs */}
       <div className="text-center mb-8 border-b pb-4">
-        <div className="flex justify-center items-center gap-2 mb-2">
-          <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
-        </div>
-
         <div className="flex justify-center gap-4 flex-wrap mb-8">
           <Button
             variant={activeCategory === "all" ? "default" : "outline"}

@@ -26,11 +26,11 @@ export default function QRCodeGenerator() {
     // For now, we'll just create a placeholder URL
     if (qrType === "table" && restaurantId && tableNumber) {
       setQrCodeUrl(
-        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://127.0.2.2:3000/booking?restaurant=${restaurantId}&table=${tableNumber}`,
+        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://v0-next-js-zozo-booking.vercel.app/restaurant/${restaurantId}/${tableNumber}`,
       )
     } else if (qrType === "restaurant" && restaurantId) {
       setQrCodeUrl(
-        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://127.0.2.2:3000/booking?restaurant=${restaurantId}`,
+        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://v0-next-js-zozo-booking.vercel.app/restaurant/${restaurantId}`,
       )
     }
   }
