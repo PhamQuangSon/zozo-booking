@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Store } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { getRestaurants } from "@/actions/restaurant-actions"
 
 interface Restaurant {
   id: string
@@ -15,16 +17,28 @@ export const RESTAURANT_CHANGE_EVENT = "restaurant-change"
 export function RestaurantSelector() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [selectedRestaurant, setSelectedRestaurant] = useState<string>("")
-
+  const { toast } = useToast()
   useEffect(() => {
     // Fetch restaurants - in a real app, this would be an API call
     const fetchRestaurants = async () => {
+      try {
       // Mock data based on seed.ts
       const mockRestaurants = [
         { id: "1", name: "Pasta Paradise" },
         { id: "2", name: "Sushi Sensation" },
       ]
       setRestaurants(mockRestaurants)
+
+      const result = await getRestaurants()
+      if (result.success && result.data) {
+        setRestaurants(result.data.map((r) => ({ id: r.id.toString(), name: r.name })))
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to load restaurants",
+          variant: "destructive"
+        })
+      }
 
       // Check if we have a saved default restaurant
       const savedRestaurant = localStorage.getItem("defaultRestaurant")
@@ -43,6 +57,9 @@ export function RestaurantSelector() {
         // Set first restaurant as default if none is saved
         setSelectedRestaurant(mockRestaurants[0].id)
       }
+    } catch (error) {
+      console.error("Error fetching restaurants:", error);
+    }
     }
 
     fetchRestaurants()
