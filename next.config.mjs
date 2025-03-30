@@ -20,6 +20,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
+    allowedDevOrigins: ["http://127.0.2.2:3000", "http://localhost:3000"], // Add your local development origins
   },
 }
 

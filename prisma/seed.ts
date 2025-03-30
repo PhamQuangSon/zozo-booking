@@ -1,15 +1,66 @@
 import { OrderStatus, PrismaClient } from "@prisma/client"
-
+import bcrypt from "bcrypt"
 const prisma = new PrismaClient()
 
 async function main() {
   console.log("Starting to seed database...")
 
+  // Create admin user
+  const adminPassword = await bcrypt.hash("admin123", 10)
+
+  // Upsert to avoid duplicates
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: {
+      name: "Admin User",
+      email: "admin@example.com",
+      password: adminPassword,
+      role: "ADMIN",
+      emailVerified: new Date(),
+    },
+  })
+
+  console.log({ admin })
+
+  // Create a regular user
+  const userPassword = await bcrypt.hash("user123", 10)
+
+  const user = await prisma.user.upsert({
+    where: { email: "user@example.com" },
+    update: {},
+    create: {
+      name: "Regular User",
+      email: "user@example.com",
+      password: userPassword,
+      role: "CUSTOMER",
+      emailVerified: new Date(),
+    },
+  })
+
+  console.log({ user })
+
+  // Add a restaurant for testing
+  const restaurant = await prisma.restaurant.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      name: "Pasta Paradise",
+      description: "Authentic Italian cuisine",
+      address: "123 Main St, Anytown, USA",
+      phone: "555-123-4567",
+      email: "info@pastaparadise.com",
+      cuisine: "Italian",
+    },
+  })
+
+  console.log({ restaurant })
+
   // Create restaurants
   const restaurant1 = await prisma.restaurant.create({
     data: {
-      name: "Pasta Paradise",
-      description: "Authentic Italian cuisine with a modern twist",
+      name: "Burger Bistro",
+      description: "Gourmet burgers and sides",
       address: "123 Main St, Anytown, USA",
       phone: "555-123-4567",
       email: "info@pastaparadise.com",

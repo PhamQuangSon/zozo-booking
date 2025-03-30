@@ -3,156 +3,271 @@
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 
-// Get all menu items for a restaurant
-export async function getMenuItems(restaurantId: string) {
+// Menu Actions
+export async function createMenu(data: {
+  name: string
+  description?: string
+  restaurant_id: number
+  is_active?: boolean
+}) {
   try {
-    const menuItems = await prisma.menuItem.findMany({
-      where: {
-        menu_categories: {
-          menu: {
-            restaurant_id: Number.parseInt(restaurantId),
-            is_active: true,
-          },
-        },
-      },
-      include: {
-        menu_categories: {
-          include: {
-            menu: true,
-          },
-        },
-        menu_item_options: {
-          include: {
-            option_choices: true,
-          },
-        },
-      },
+    const menu = await prisma.menu.create({
+      data: {
+        ...data,
+        is_active: data.is_active ?? true
+      }
     })
 
-    // Serialize all Decimal values to numbers
-    const serializedMenuItems = serializePrismaData(menuItems)
-    
-    return { success: true, data: serializedMenuItems }
+    const serializedMenu = serializePrismaData(menu)
+    return { success: true, data: serializedMenu }
   } catch (error) {
-    console.error("Failed to fetch menu items:", error)
-    return { success: false, error: "Failed to load menu items" }
+    console.error("Failed to create menu:", error)
+    return { success: false, error: "Failed to create menu" }
   }
 }
 
-// Create a new menu item
+export async function updateMenu(id: number, data: {
+  name: string
+  description?: string
+  is_active?: boolean
+}) {
+  try {
+    const menu = await prisma.menu.update({
+      where: { id },
+      data
+    })
+
+    const serializedMenu = serializePrismaData(menu)
+    return { success: true, data: serializedMenu }
+  } catch (error) {
+    console.error(`Failed to update menu with ID ${id}:`, error)
+    return { success: false, error: "Failed to update menu" }
+  }
+}
+
+export async function deleteMenu(id: number) {
+  try {
+    await prisma.menu.delete({
+      where: { id }
+    })
+    return { success: true }
+  } catch (error) {
+    console.error(`Failed to delete menu with ID ${id}:`, error)
+    return { success: false, error: "Failed to delete menu" }
+  }
+}
+
+// Category Actions
+export async function createCategory(data: {
+  name: string
+  description?: string
+  menu_id: number
+  display_order?: number
+}) {
+  try {
+    const category = await prisma.menuCategory.create({
+      data: {
+        ...data,
+        display_order: data.display_order ?? 0
+      }
+    })
+
+    const serializedCategory = serializePrismaData(category)
+    return { success: true, data: serializedCategory }
+  } catch (error) {
+    console.error("Failed to create category:", error)
+    return { success: false, error: "Failed to create category" }
+  }
+}
+
+export async function updateCategory(id: number, data: {
+  name: string
+  description?: string
+  display_order?: number
+}) {
+  try {
+    const category = await prisma.menuCategory.update({
+      where: { id },
+      data
+    })
+
+    const serializedCategory = serializePrismaData(category)
+    return { success: true, data: serializedCategory }
+  } catch (error) {
+    console.error(`Failed to update category with ID ${id}:`, error)
+    return { success: false, error: "Failed to update category" }
+  }
+}
+
+export async function deleteCategory(id: number) {
+  try {
+    await prisma.menuCategory.delete({
+      where: { id }
+    })
+    return { success: true }
+  } catch (error) {
+    console.error(`Failed to delete category with ID ${id}:`, error)
+    return { success: false, error: "Failed to delete category" }
+  }
+}
+
+// Item Actions
 export async function createMenuItem(data: {
-  categoryId: number
   name: string
   description?: string
   price: number
-  imageUrl?: string
-  isAvailable?: boolean
-  displayOrder?: number
-  options?: Array<{
-    name: string
-    priceAdjustment: number
-    isRequired?: boolean
-    choices?: Array<{
-      name: string
-      priceAdjustment: number
-    }>
-  }>
+  category_id: number
+  image_url?: string
+  is_available?: boolean
+  display_order?: number
 }) {
   try {
-    const menuItem = await prisma.menuItem.create({
+    const item = await prisma.menuItem.create({
       data: {
-        category_id: data.categoryId,
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        image_url: data.imageUrl,
-        is_available: data.isAvailable ?? true,
-        display_order: data.displayOrder ?? 0,
-        menu_item_options: data.options
-          ? {
-              create: data.options.map((option) => ({
-                name: option.name,
-                price_adjustment: option.priceAdjustment,
-                isRequired: option.isRequired ?? false,
-                option_choices: option.choices
-                  ? {
-                      create: option.choices.map((choice) => ({
-                        name: choice.name,
-                        price_adjustment: choice.priceAdjustment,
-                      })),
-                    }
-                  : undefined,
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        menu_item_options: {
-          include: {
-            option_choices: true,
-          },
-        },
-      },
+        ...data,
+        is_available: data.is_available ?? true,
+        display_order: data.display_order ?? 0
+      }
     })
 
-    const serializedMenuItem = serializePrismaData(menuItem)
-
-    return { success: true, data: serializedMenuItem }
+    const serializedItem = serializePrismaData(item)
+    return { success: true, data: serializedItem }
   } catch (error) {
     console.error("Failed to create menu item:", error)
     return { success: false, error: "Failed to create menu item" }
   }
 }
 
-// Get all categories for a restaurant
-export async function getmenu_categories(restaurantId: string) {
+export async function updateMenuItem(id: number, data: {
+  name: string
+  description?: string
+  price: number
+  image_url?: string
+  is_available?: boolean
+  display_order?: number
+}) {
   try {
-    const categories = await prisma.menuCategory.findMany({
-      where: {
-        menu: {
-          restaurant_id: Number.parseInt(restaurantId),
-          is_active: true,
-        },
-      },
-      include: {
-        menu: true,
-      },
-      orderBy: {
-        display_order: "asc",
-      },
+    const item = await prisma.menuItem.update({
+      where: { id },
+      data
     })
 
-    const serializedCategories = serializePrismaData(categories)
-
-    return { success: true, data: serializedCategories }
+    const serializedItem = serializePrismaData(item)
+    return { success: true, data: serializedItem }
   } catch (error) {
-    console.error("Failed to fetch menu categories:", error)
-    return { success: false, error: "Failed to load menu categories" }
+    console.error(`Failed to update menu item with ID ${id}:`, error)
+    return { success: false, error: "Failed to update menu item" }
   }
 }
 
-// Create a new category
-export async function createMenuCategory(data: {
-  menuId: number
+export async function deleteMenuItem(id: number) {
+  try {
+    await prisma.menuItem.delete({
+      where: { id }
+    })
+    return { success: true }
+  } catch (error) {
+    console.error(`Failed to delete menu item with ID ${id}:`, error)
+    return { success: false, error: "Failed to delete menu item" }
+  }
+}
+
+// Option Actions
+export async function createMenuItemOption(data: {
   name: string
-  description?: string
-  displayOrder?: number
+  price_adjustment: number
+  is_required: boolean
+  menu_item_id: number
 }) {
   try {
-    const category = await prisma.menuCategory.create({
-      data: {
-        menu_id: data.menuId,
-        name: data.name,
-        description: data.description,
-        display_order: data.displayOrder ?? 0,
-      },
+    const option = await prisma.menuItemOption.create({
+      data
     })
 
-    const serializedCategory = serializePrismaData(category)
-
-    return { success: true, data: serializedCategory }
+    const serializedOption = serializePrismaData(option)
+    return { success: true, data: serializedOption }
   } catch (error) {
-    console.error("Failed to create menu category:", error)
-    return { success: false, error: "Failed to create menu category" }
+    console.error("Failed to create menu item option:", error)
+    return { success: false, error: "Failed to create menu item option" }
+  }
+}
+
+export async function updateMenuItemOption(id: number, data: {
+  name: string
+  price_adjustment: number
+  is_required: boolean
+}) {
+  try {
+    const option = await prisma.menuItemOption.update({
+      where: { id },
+      data
+    })
+
+    const serializedOption = serializePrismaData(option)
+    return { success: true, data: serializedOption }
+  } catch (error) {
+    console.error(`Failed to update menu item option with ID ${id}:`, error)
+    return { success: false, error: "Failed to update menu item option" }
+  }
+}
+
+export async function deleteMenuItemOption(id: number) {
+  try {
+    await prisma.menuItemOption.delete({
+      where: { id }
+    })
+    return { success: true }
+  } catch (error) {
+    console.error(`Failed to delete menu item option with ID ${id}:`, error)
+    return { success: false, error: "Failed to delete menu item option" }
+  }
+}
+
+// Option Choice Actions
+export async function createOptionChoice(data: {
+  name: string
+  price_adjustment: number
+  option_id: number
+}) {
+  try {
+    const choice = await prisma.optionChoice.create({
+      data
+    })
+
+    const serializedChoice = serializePrismaData(choice)
+    return { success: true, data: serializedChoice }
+  } catch (error) {
+    console.error("Failed to create option choice:", error)
+    return { success: false, error: "Failed to create option choice" }
+  }
+}
+
+export async function updateOptionChoice(id: number, data: {
+  name: string
+  price_adjustment: number
+}) {
+  try {
+    const choice = await prisma.optionChoice.update({
+      where: { id },
+      data
+    })
+
+    const serializedChoice = serializePrismaData(choice)
+    return { success: true, data: serializedChoice }
+  } catch (error) {
+    console.error(`Failed to update option choice with ID ${id}:`, error)
+    return { success: false, error: "Failed to update option choice" }
+  }
+}
+
+export async function deleteOptionChoice(id: number) {
+  try {
+    await prisma.optionChoice.delete({
+      where: { id }
+    })
+    return { success: true }
+  } catch (error) {
+    console.error(`Failed to delete option choice with ID ${id}:`, error)
+    return { success: false, error: "Failed to delete option choice" }
   }
 }

@@ -131,6 +131,39 @@ export async function updateTable(
   }
 }
 
+// Get table orders
+export async function getTableOrders(restaurantId: string, tableId: string) {
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        restaurant_id: Number.parseInt(restaurantId),
+        table_id: Number.parseInt(tableId),
+        status: { notIn: ['COMPLETED', 'CANCELLED'] }
+      },
+      include: {
+        order_items: {
+          include: {
+            menu_item: true,
+            order_item_choices: {
+              include: {
+                option_choice: true,
+                menu_item_option: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const serializedOrders = serializePrismaData(orders)
+    return { success: true, data: serializedOrders }
+  } catch (error) {
+    console.error(`Failed to fetch orders for table ${tableId}:`, error)
+    return { success: false, error: "Failed to load orders" }
+  }
+}
+
 // Delete a table
 export async function deleteTable(id: number) {
   try {

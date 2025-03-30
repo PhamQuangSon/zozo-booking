@@ -6,6 +6,8 @@ import { Plus, Search, Edit, Trash2, MoreHorizontal, ArrowLeft } from "lucide-re
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { tableStatusColors } from "@/types/status-colors"
+import { Table as TableType } from "@prisma/client"
 import {
   Dialog,
   DialogContent,
@@ -34,11 +36,11 @@ export default function TablesPage() {
   const router = useRouter()
   const restaurantId = params.restaurantId as string
   const [restaurant, setRestaurant] = useState<any>(null)
-  const [tables, setTables] = useState<any[]>([])
+  const [tables, setTables] = useState<TableType[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [editingTable, setEditingTable] = useState<any>(null)
+  const [editingTable, setEditingTable] = useState<TableType | null>(null)
   const { toast } = useToast()
 
   // Load restaurant details
@@ -69,15 +71,16 @@ export default function TablesPage() {
     setIsLoading(true)
     try {
       const result = await getRestaurantTables(restaurantId)
-      if (result.success) {
-        setTables(result.data)
-      } else {
+      if (!result.success) {
         toast({
           title: "Error",
           description: result.error || "Failed to load tables",
           variant: "destructive",
         })
+        return
       }
+      
+      setTables(result.data || [])
     } catch (error) {
       console.error("Error loading tables:", error)
       toast({
@@ -128,25 +131,9 @@ export default function TablesPage() {
   }
 
   // Handle edit table
-  const handleEditTable = (table: any) => {
+  const handleEditTable = (table: TableType) => {
     setEditingTable(table)
     setIsAddDialogOpen(true)
-  }
-
-  // Get status badge variant
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "AVAILABLE":
-        return "success"
-      case "OCCUPIED":
-        return "destructive"
-      case "RESERVED":
-        return "warning"
-      case "MAINTENANCE":
-        return "secondary"
-      default:
-        return "default"
-    }
   }
 
   return (
@@ -232,7 +219,9 @@ export default function TablesPage() {
                     <TableCell className="font-medium">Table {table.number}</TableCell>
                     <TableCell>{table.capacity} people</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(table.status)}>{table.status}</Badge>
+                      <Badge className={tableStatusColors[table.status]}>
+                        {table.status}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

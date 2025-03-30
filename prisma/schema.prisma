@@ -8,15 +8,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  password  String
-  role      UserRole @default(CUSTOMER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  likes     Like[]
-  orders    Order[]
+  id                String    @id @default(cuid())
+  name              String?
+  email             String    @unique
+  password          String
+  role              UserRole  @default(CUSTOMER)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  emailVerified     DateTime?
+  resetToken        String?   @unique
+  resetTokenExpiry  DateTime?
+  verificationToken String?   @unique
+  likes             Like[]
+  orders            Order[]
 }
 
 model Restaurant {
@@ -128,6 +132,7 @@ model OrderItem {
   order_id           Int
   menu_item_id       Int
   notes              String?
+  status             OrderItemStatus    @default(NEW)
   menu_item          MenuItem          @relation(fields: [menu_item_id], references: [id])
   order              Order             @relation(fields: [order_id], references: [id])
   order_item_choices OrderItemChoice[]
@@ -176,3 +181,13 @@ enum OrderStatus {
   COMPLETED
   CANCELLED
 }
+
+enum OrderItemStatus {
+  NEW
+  PREPARING
+  READY
+  DELIVERED
+  COMPLETED
+  CANCELLED
+}
+

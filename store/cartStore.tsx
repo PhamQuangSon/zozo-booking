@@ -13,6 +13,8 @@ export interface CartItem {
   specialInstructions?: string
   selectedOptions?: Record<string, any>
   submitted?: boolean // Flag to track if the item has been submitted
+  orderId?: number // Reference to server order if item was synced
+  orderItemId?: number // Reference to server order item if item was synced
 }
 
 interface CartState {
@@ -20,9 +22,10 @@ interface CartState {
   addToCart: (item: CartItem) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
-  markItemsAsSubmitted: (restaurantId: string, tableId: string) => void
+  markItemsAsSubmitted: (restaurantId: string, tableId: string, orderId: number) => void
   getSubmittedItems: (restaurantId: string, tableId: string) => CartItem[]
   getPendingItems: (restaurantId: string, tableId: string) => CartItem[]
+  syncServerOrders: (restaurantId: string, tableId: string, orders: any[]) => void
 }
 
 export const useCartStore = create<CartState>()(
@@ -61,12 +64,70 @@ export const useCartStore = create<CartState>()(
           cart: state.cart.map((item) => (item.id === id ? { ...item, quantity } : item)),
         })),
 
-      markItemsAsSubmitted: (restaurantId, tableId) =>
+      markItemsAsSubmitted: (restaurantId, tableId, orderId) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.restaurantId === restaurantId && item.tableId === tableId ? { ...item, submitted: true } : item,
+            item.restaurantId === restaurantId && item.tableId === tableId
+              ? { ...item, submitted: true, orderId }
+              : item,
           ),
         })),
+
+      syncServerOrders: (restaurantId, tableId, orders) =>
+        set((state) => {
+          // Convert server orders to cart items
+          const serverItems = orders.flatMap((order) =>
+            order.order_items.map((item: {
+              id: number;
+              menu_item: {
+                id: number;
+                name: string;
+                image_url?: string;
+              };
+              quantity: number;
+              unit_price: number;
+              notes?: string;
+              order_item_choices?: Array<{
+                option_id: number;
+                choice_id: number;
+                option_choice: {
+                  id: number;
+                  name: string;
+                  price_adjustment: number;
+                }
+              }>;
+            }) => ({
+              id: String(item.menu_item.id),
+              name: item.menu_item.name,
+              price: Number(item.unit_price),
+              quantity: item.quantity,
+              image_url: item.menu_item.image_url,
+              restaurantId,
+              tableId,
+              submitted: true,
+              orderId: order.id,
+              orderItemId: item.id,
+              specialInstructions: item.notes,
+              selectedOptions: item.order_item_choices?.reduce((acc, choice) => ({
+                ...acc,
+                [choice.option_id]: {
+                  id: String(choice.choice_id),
+                  name: choice.option_choice.name,
+                  priceAdjustment: Number(choice.option_choice.price_adjustment)
+                }
+              }), {})
+            }))
+          );
+
+          // Merge with existing cart items, preserving non-submitted items
+          const existingPendingItems = state.cart.filter(
+            item => !(item.restaurantId === restaurantId && item.tableId === tableId && item.submitted)
+          );
+
+          return {
+            cart: [...existingPendingItems, ...serverItems]
+          };
+        }),
 
       getSubmittedItems: (restaurantId, tableId) => {
         return get().cart.filter(

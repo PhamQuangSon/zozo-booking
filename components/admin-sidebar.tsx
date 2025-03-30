@@ -7,7 +7,6 @@ import {
   Store,
   LogOut,
   ChevronDown,
-  Users,
   ShoppingBag,
   QrCode,
   Table,
@@ -15,6 +14,7 @@ import {
   ListOrdered,
   Coffee,
   Utensils,
+  User,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -23,11 +23,22 @@ import { useState, useEffect } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RestaurantSelector, RESTAURANT_CHANGE_EVENT } from "@/components/restaurant-selector"
+import { useSession, signOut } from "next-auth/react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function AdminSidebar() {
   const pathname = usePathname()
   const [defaultRestaurant, setDefaultRestaurant] = useState<{ id: string; name: string } | null>(null)
   const [isRestaurantOpen, setIsRestaurantOpen] = useState(true)
+  const { data: session } = useSession()
 
   // Update the useEffect to use prisma/seed.ts data and listen for restaurant changes
   useEffect(() => {
@@ -107,11 +118,6 @@ export function AdminSidebar() {
           href: `/admin/restaurants/${defaultRestaurant.id}/tables`,
           icon: Table,
         },
-        // {
-        //   title: "Customers",
-        //   href: `/admin/restaurants/${defaultRestaurant.id}/customers`,
-        //   icon: Users,
-        // },
         {
           title: "Menus",
           href: `/admin/restaurants/${defaultRestaurant.id}/menu`,
@@ -135,12 +141,16 @@ export function AdminSidebar() {
       ]
     : []
 
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/login" })
+  }
+
   return (
     <div className="flex h-screen w-64 flex-col border-r bg-muted/40">
       <div className="flex h-14 items-center border-b px-4">
         <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
           <Store className="h-5 w-5" />
-          <span>FoodOrder Admin</span>
+          <span>Zozo Booking Admin</span>
         </Link>
       </div>
 
@@ -200,12 +210,46 @@ export function AdminSidebar() {
           <RestaurantSelector />
           <CurrencySelector />
         </div>
-        <Button variant="outline" className="w-full justify-start" asChild>
-          <Link href="/">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Link>
-        </Button>
+
+        {session?.user ? (
+          <div className="flex items-center justify-between">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={`https://ui-avatars.com/api/?name=${session.user.name}`} />
+                    <AvatarFallback>{session.user.name?.charAt(0) || session.user.email?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col items-start text-sm">
+                    <span className="font-medium">{session.user.name}</span>
+                    <span className="text-xs text-muted-foreground">{session.user.email}</span>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/admin/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : (
+          <Button variant="outline" className="w-full justify-start" asChild>
+            <Link href="/login">
+              <LogOut className="mr-2 h-4 w-4" />
+              Login
+            </Link>
+          </Button>
+        )}
       </div>
     </div>
   )

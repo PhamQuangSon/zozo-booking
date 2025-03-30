@@ -47,6 +47,10 @@ Not use: npx prisma db drop --force
 ```
 
 ===
+1. An admin user (email: [admin@example.com](mailto:admin@example.com), password: admin123)
+2. A regular user (email: [user@example.com](mailto:user@example.com), password: user123)
+3. A sample restaurant
+
 <div align="center">
     <img src="./public/ui-screenshot-1.png" alt="UI Screenshot">
 </div>

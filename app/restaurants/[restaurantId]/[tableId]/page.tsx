@@ -10,8 +10,9 @@ import { ScrollingBanner } from "@/components/scrolling-banner"
 import { OrderCart } from "@/components/order-cart"
 import { MenuCategory } from "@/components/menu-category"
 import { useCurrencyStore } from "@/store/currencyStore"
+import { useCartStore } from "@/store/cartStore"
 import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getTableDetails } from "@/actions/table-actions"
+import { getTableDetails, getTableOrders } from "@/actions/table-actions"
 
 export default function TableOrderPage({ params }: { params: { restaurantId: string; tableId: string } }) {
   const [restaurant, setRestaurant] = useState<any>({ name: "", description: "", image_url: "", menus: [] })
@@ -21,8 +22,9 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { currency } = useCurrencyStore()
+  const { syncServerOrders } = useCartStore()
 
-  // Fetch restaurant and menu data using server actions
+  // Fetch restaurant, menu data, and orders using server actions
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -40,8 +42,19 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
           throw new Error(tableResult.error || "Failed to load table")
         }
 
+        // Fetch active orders for this table
+        const ordersResult = await getTableOrders(params.restaurantId, params.tableId)
+        if (!ordersResult.success) {
+          throw new Error(ordersResult.error || "Failed to load orders")
+        }
+
         const restaurantData = restaurantResult.data
         const tableData = tableResult.data
+
+        // Sync server orders with cart state
+        if (ordersResult.data) {
+          syncServerOrders(params.restaurantId, params.tableId, ordersResult.data)
+        }
         setRestaurant(restaurantData)
         setTable(tableData)
 

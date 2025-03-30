@@ -2,7 +2,33 @@
 
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
-import { OrderStatus } from "@prisma/client"
+import { OrderStatus, OrderItemStatus, Prisma, OrderItem } from "@prisma/client"
+
+// Extended type for OrderItem with status
+type OrderItemWithStatus = OrderItem & {
+  status: OrderItemStatus
+}
+
+type OrderItemWithRelations = Prisma.OrderItemGetPayload<{
+  include: {
+    order: {
+      include: {
+        order_items: true
+        table: true
+      }
+    }
+  }
+}>
+
+// Map order item status to order status
+const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
+  [OrderItemStatus.NEW]: OrderStatus.NEW,
+  [OrderItemStatus.PREPARING]: OrderStatus.PREPARING,
+  [OrderItemStatus.READY]: OrderStatus.PREPARING,
+  [OrderItemStatus.DELIVERED]: OrderStatus.PREPARING,
+  [OrderItemStatus.COMPLETED]: OrderStatus.COMPLETED,
+  [OrderItemStatus.CANCELLED]: OrderStatus.CANCELLED,
+}
 
 // Get orders for a restaurant
 export async function getRestaurantOrders(restaurantId: string) {
@@ -100,64 +126,98 @@ export async function createOrder(data: {
       totalAmount += itemPrice * orderItem.quantity
     }
 
-    // Create the order
-    const order = await prisma.order.create({
-      data: {
-      restaurant_id: data.restaurantId,
-        table_id: data.tableId,
-        user_id: data.userId !== undefined ? data.userId.toString() : undefined,
-        status: "NEW",
-        total_amount: totalAmount,
-        notes: data.notes,
-        order_items: {
-          create: data.items.map((item) => {
-            const menuItem = menuItems.find((mi) => mi.id === item.menuItemId)
-            return {
-              menu_item: { connect: { id: item.menuItemId } },
-              quantity: item.quantity,
-              unit_price: menuItem?.price || 0,
-              notes: item.notes,
-              order_item_choices: item.choices
-                ? {
-                    create: item.choices.map((choice) => ({
-                      menu_item_option: { connect: { id: choice.optionId } },
-                      option_choice: { connect: { id: choice.choiceId } },
-                    })),
-                  }
-                : undefined,
-            }
-          }),
+    // Create the order and update table status in a transaction
+    const result = await prisma.$transaction(async (prisma) => {
+      // Update table status to OCCUPIED if table is specified
+      if (data.tableId) {
+        await prisma.table.update({
+          where: { id: data.tableId },
+          data: { status: 'OCCUPIED' }
+        });
+      }
+
+      // Create the order
+      return await prisma.order.create({
+        data: {
+          restaurant_id: data.restaurantId,
+          table_id: data.tableId,
+          user_id: data.userId !== undefined ? data.userId.toString() : undefined,
+          status: "NEW",
+          total_amount: totalAmount,
+          notes: data.notes,
+          order_items: {
+            create: data.items.map((item) => {
+              const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
+              return {
+                menu_item: { connect: { id: item.menuItemId } },
+                quantity: item.quantity,
+                unit_price: menuItem?.price || 0,
+                notes: item.notes,
+                order_item_choices: item.choices
+                  ? {
+                      create: item.choices.map((choice) => ({
+                        menu_item_option: { connect: { id: choice.optionId } },
+                        option_choice: { connect: { id: choice.choiceId } },
+                      })),
+                    }
+                  : undefined,
+              };
+            }),
+          },
         },
-      },
-      include: {
-        order_items: {
-          include: {
-            menu_item: true,
-            order_item_choices: {
-              include: {
-                option_choice: true,
-                menu_item_option: true,
+        include: {
+          order_items: {
+            include: {
+              menu_item: true,
+              order_item_choices: {
+                include: {
+                  option_choice: true,
+                  menu_item_option: true,
+                },
               },
             },
           },
         },
-      },
-    })
+      });
+    });
 
-    return { success: true, data: order }
+    return { success: true, data: result }
   } catch (error) {
     console.error("Failed to create order:", error)
     return { success: false, error: "Failed to create order" }
   }
 }
 
-// Update order status
+// Update order and item status
 export async function updateOrderStatus(orderId: number, status: string) {
   try {
     const order = await prisma.order.update({
       where: { id: orderId },
       data: { status: status as OrderStatus },
+      include: {
+        table: true,
+        order_items: true,
+      },
     })
+
+    // If order is completed or cancelled and table exists, check if there are other active orders
+    if ((status === 'COMPLETED' || status === 'CANCELLED') && order.table_id) {
+      const activeOrders = await prisma.order.findMany({
+        where: {
+          table_id: order.table_id,
+          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          id: { not: orderId }, // Exclude current order
+        },
+      })
+
+      // If no other active orders, update table status to AVAILABLE
+      if (activeOrders.length === 0) {
+        await prisma.table.update({
+          where: { id: order.table_id },
+          data: { status: 'AVAILABLE' },
+        })
+      }
+    }
 
     return { success: true, data: order }
   } catch (error) {
@@ -166,3 +226,76 @@ export async function updateOrderStatus(orderId: number, status: string) {
   }
 }
 
+// Update order item status
+export async function updateOrderItemStatus(
+  orderItemId: number,
+  newStatus: OrderItemStatus
+) {
+  try {
+    const updatedItem = await prisma.$transaction(async (tx) => {
+      // Update the order item status
+      const orderItem = await tx.orderItem.update({
+        where: { id: orderItemId },
+        data: { status: newStatus },
+        include: {
+          order: {
+            include: {
+              order_items: true,
+              table: true
+            }
+          }
+        }
+      }) as OrderItemWithRelations;
+
+      // Check if all items in the order have the same status
+      const allItemsSameStatus = orderItem.order.order_items.every(
+        (item: OrderItem) => item.status === newStatus
+      );
+
+      // If all items have the same status, update order status
+      if (allItemsSameStatus) {
+        // Map item status to order status
+        const orderStatus = orderItemStatusToOrderStatus[newStatus];
+        await tx.order.update({
+          where: { id: orderItem.order.id },
+          data: { status: orderStatus },
+        });
+
+        // If order is completed/cancelled & has a table, check if table can be freed
+        if (
+          (newStatus === "COMPLETED" || newStatus === "CANCELLED") &&
+          orderItem.order.table
+        ) {
+          const activeOrders = await tx.order.count({
+            where: {
+              table_id: orderItem.order.table.id,
+              status: { notIn: ["COMPLETED", "CANCELLED"] },
+              id: { not: orderItem.order.id }
+            }
+          });
+
+          // If no other active orders, update table status
+          if (activeOrders === 0) {
+            await tx.table.update({
+              where: { id: orderItem.order.table.id },
+              data: { status: "AVAILABLE" }
+            });
+          }
+        }
+      }
+
+      return orderItem;
+    });
+
+    return {
+      success: true,
+      data: serializePrismaData(updatedItem)
+    };
+  } catch (error) {
+    console.error("Failed to update order item status:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update order item status"
+    };
+  }
+}

@@ -4,10 +4,36 @@ import { formatCurrency } from "@/lib/i18n"
 import { formatDate } from "@/lib/utils"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { AlertCircle, Clock, User } from "lucide-react"
+import { OrderActions } from "./order-actions"
+import { OrderItemActions } from "./order-item-actions"
+import { type Order, type OrderItem, type OrderItemChoice, type OrderStatus } from "@prisma/client"
+import { orderStatusColors } from "@/types/status-colors"
+
+interface OrderWithRelations extends Order {
+  order_items: (OrderItem & {
+    menu_item: {
+      name: string
+    } | null
+    order_item_choices: (OrderItemChoice & {
+      menu_item_option: {
+        name: string
+      } | null
+      option_choice: {
+        name: string
+      } | null
+    })[]
+  })[]
+  table?: {
+    number: number
+  } | null
+  user?: {
+    name: string
+    email: string
+  } | null
+}
 
 export default async function RestaurantOrdersPage({
   params,
@@ -46,17 +72,17 @@ export default async function RestaurantOrdersPage({
   }
 
   const restaurant = restaurantResult.data
-  const orders: any = ordersResult.data
+  const orders = ordersResult.data as OrderWithRelations[]
 
   // Status badge color mapping
-  const statusColors: Record<string, string> = {
-    NEW: "bg-blue-500",
-    PREPARING: "bg-yellow-500",
-    READY: "bg-green-500",
-    DELIVERED: "bg-purple-500",
-    COMPLETED: "bg-gray-500",
-    CANCELLED: "bg-red-500",
-  }
+  // const statusColors: Record<string, string> = {
+  //   NEW: "bg-blue-500",
+  //   PREPARING: "bg-yellow-500",
+  //   READY: "bg-green-500",
+  //   DELIVERED: "bg-purple-500",
+  //   COMPLETED: "bg-gray-500",
+  //   CANCELLED: "bg-red-500",
+  // }
 
   return (
     <div className="flex">
@@ -71,14 +97,14 @@ export default async function RestaurantOrdersPage({
           </Card>
         ) : (
           <div className="grid gap-6">
-            {orders.map((order:any) => (
+            {orders.map((order: Order) => (
               <Card key={order.id} className="overflow-hidden">
                 <CardHeader className="bg-muted/50">
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         Order #{order.id}
-                        <Badge className={statusColors[order.status] || "bg-gray-500"}>{order.status}</Badge>
+                        <Badge className={orderStatusColors[order.status as OrderStatus] || "bg-gray-500"}>{order.status}</Badge>
                       </CardTitle>
                       <CardDescription className="flex items-center mt-1">
                         <Clock className="mr-1 h-3 w-3" />
@@ -110,17 +136,35 @@ export default async function RestaurantOrdersPage({
                     <div className="space-y-3">
                       <h3 className="font-medium">Order Items</h3>
                       <div className="space-y-2">
-                        {order.order_items.map((item) => (
+                        {order.order_items.map((item: OrderWithRelations['order_items'][0]) => (
                           <div key={item.id} className="flex justify-between text-sm">
                             <div>
-                              <div className="font-medium">
-                                {item.quantity}x {item.menu_item?.name || "Unknown Item"}
+                              <div className="flex items-center justify-between gap-4 group relative">
+                                <div className="flex-1">
+                                  <div className="font-medium flex items-center gap-2">
+                                    <span>{item.quantity}x {item.menu_item?.name || "Unknown Item"}</span>
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <OrderItemActions
+                                        item={{
+                                          id: item.id,
+                                          status: item.status || 'NEW'
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="mt-1 text-sm text-muted-foreground">
+                                    Status: {(item.status || 'NEW').charAt(0) + (item.status || 'NEW').slice(1).toLowerCase()}
+                                  </div>
+                                </div>
+                                <div className="font-medium">
+                                  {formatCurrency(Number(item.unit_price) * item.quantity)}
+                                </div>
                               </div>
 
                               {/* Item choices */}
                               {item.order_item_choices && item.order_item_choices.length > 0 && (
                                 <div className="ml-4 text-muted-foreground">
-                                  {item.order_item_choices.map((choice) => (
+                                  {item.order_item_choices.map((choice: NonNullable<typeof item.order_item_choices>[0]) => (
                                     <div key={choice.id}>
                                       {choice.menu_item_option?.name}: {choice.option_choice?.name}
                                     </div>
@@ -169,12 +213,7 @@ export default async function RestaurantOrdersPage({
                     )}
 
                     {/* Action buttons */}
-                    <div className="flex justify-end gap-2 pt-2">
-                      <Button variant="outline" size="sm">
-                        Print Receipt
-                      </Button>
-                      <Button size="sm">Update Status</Button>
-                    </div>
+                    <OrderActions order={order} />
                   </div>
                 </CardContent>
               </Card>
@@ -185,4 +224,3 @@ export default async function RestaurantOrdersPage({
     </div>
   )
 }
-

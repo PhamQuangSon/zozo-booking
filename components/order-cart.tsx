@@ -91,8 +91,10 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
           description: "Your order has been sent to the kitchen!",
         })
 
-        // Mark items as submitted instead of removing them
-        markItemsAsSubmitted(restaurantId, tableId)
+        // Mark items as submitted with the order ID if available
+        if (result.data && result.data.id) {
+          markItemsAsSubmitted(restaurantId, tableId, result.data.id)
+        }
       } else {
         toast({
           title: "Error",

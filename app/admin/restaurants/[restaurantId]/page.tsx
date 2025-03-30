@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getRestaurantById } from "@/actions/restaurant-actions"
 import { getRestaurantTables } from "@/actions/table-actions"
 import Image from "next/image"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Edit, Plus } from "lucide-react"
+import { tableStatusColors } from "@/types/status-colors"
 
 export default async function RestaurantDetailPage({ params }: { params: { restaurantId: string } }) {
   // Fetch restaurant details
@@ -99,19 +101,10 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
                     <div key={table.id} className="rounded-md border p-3">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">Table {table.number}</span>
-                        <span
-                          className={`text-xs ${
-                            table.status === "AVAILABLE"
-                              ? "text-green-500"
-                              : table.status === "OCCUPIED"
-                                ? "text-red-500"
-                                : table.status === "RESERVED"
-                                  ? "text-amber-500"
-                                  : "text-gray-500"
-                          }`}
-                        >
-                          {table.status}
-                        </span>
+                        <Badge className={tableStatusColors[table.status] || "bg-gray-500"}>
+                          {table.status.charAt(0) + table.status.slice(1).toLowerCase()}
+
+                        </Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">Capacity: {table.capacity}</p>
                     </div>
@@ -189,4 +182,3 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
     </div>
   )
 }
-
