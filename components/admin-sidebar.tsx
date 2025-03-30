@@ -98,6 +98,26 @@ export function AdminSidebar() {
       href: "/admin/restaurants",
       icon: Store,
     },
+    {
+      title: "Menu management",
+      href: "/admin/menu",
+      icon: Store,
+    },
+    {
+      title: "Categories management",
+      href: "/admin/categories",
+      icon: ListOrdered,
+    },
+    {
+      title: "Menu Items management",
+      href: "/admin/menu-items",
+      icon: Coffee,
+    },
+    {
+      title: "Item Options management",
+      href: "/admin/item-options",
+      icon: Utensils,
+    },
   ]
 
   // Update the restaurantNavItems array to include view order and Item Options
@@ -122,21 +142,6 @@ export function AdminSidebar() {
           title: "Menu Builder",
           href: `/admin/restaurants/${defaultRestaurant.id}/menu`,
           icon: BookOpen,
-        },
-        {
-          title: "Categories",
-          href: `/admin/restaurants/${defaultRestaurant.id}/menu/categories`,
-          icon: ListOrdered,
-        },
-        {
-          title: "Menu Items",
-          href: `/admin/restaurants/${defaultRestaurant.id}/menu/items`,
-          icon: Coffee,
-        },
-        {
-          title: "Item Options",
-          href: `/admin/restaurants/${defaultRestaurant.id}/menu/options`,
-          icon: Utensils,
         },
       ]
     : []
