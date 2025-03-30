@@ -2,9 +2,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search } from "lucide-react"
-import { MenuItemsTable } from "@/components/admin/menu-items-table"
+import { DataTable, type ColumnDef } from "@/components/data-table"
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
+import { formatCurrency } from "@/lib/i18n"
+import { deleteMenuItem } from "@/actions/admin-actions"
+
+interface MenuItem {
+  id: number
+  name: string
+  description: string | null
+  price: number
+  is_available: boolean
+  menu_categories: {
+    name: string
+    menu: {
+      name: string
+      restaurant: {
+        id: number
+        name: string
+      }
+    }
+  }
+  display_order: number
+}
 
 export default async function MenuItemsPage() {
   // Fetch all menu items with their associated category, menu, and restaurant
@@ -34,6 +55,50 @@ export default async function MenuItemsPage() {
   // Serialize the data to handle Decimal values
   const serializedMenuItems = serializePrismaData(menuItems)
 
+  // Define columns for the DataTable
+  const columns: ColumnDef<MenuItem>[] = [
+    {
+      id: "name",
+      header: "Name",
+      accessorKey: "name",
+      sortable: true,
+    },
+    {
+      id: "restaurant",
+      header: "Restaurant",
+      accessorKey: "menu_categories.menu.restaurant.name",
+      sortable: true,
+    },
+    {
+      id: "category",
+      header: "Category",
+      accessorKey: "menu_categories.name",
+      sortable: true,
+    },
+    {
+      id: "price",
+      header: "Price",
+      accessorKey: "price",
+      cell: (value) => formatCurrency(value, "USD"),
+      sortable: true,
+    },
+    {
+      id: "available",
+      header: "Available",
+      accessorKey: "is_available",
+      cell: (value) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs ${
+            value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+          }`}
+        >
+          {value ? "Yes" : "No"}
+        </span>
+      ),
+      sortable: true,
+    },
+  ]
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -55,7 +120,12 @@ export default async function MenuItemsPage() {
           <CardDescription>Manage menu items across all restaurants</CardDescription>
         </CardHeader>
         <CardContent>
-          <MenuItemsTable menuItems={serializedMenuItems} />
+          <DataTable
+            data={serializedMenuItems}
+            columns={columns}
+            deleteAction={deleteMenuItem}
+            editPath="/admin/menu-items/edit/"
+          />
         </CardContent>
       </Card>
     </div>

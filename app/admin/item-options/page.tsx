@@ -2,9 +2,38 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search } from "lucide-react"
-import { ItemOptionsTable } from "@/components/admin/item-options-table"
+import { DataTable, type ColumnDef } from "@/components/data-table"
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
+import { deleteItemOption } from "@/actions/admin-actions"
+
+interface OptionChoice {
+  id: number
+  name: string
+  price_adjustment: number
+}
+
+interface ItemOption {
+  id: number
+  name: string
+  price_adjustment: number
+  is_required: boolean
+  menu_item: {
+    id: number
+    name: string
+    menu_categories: {
+      name: string
+      menu: {
+        name: string
+        restaurant: {
+          id: number
+          name: string
+        }
+      }
+    }
+  }
+  option_choices: OptionChoice[]
+}
 
 export default async function ItemOptionsPage() {
   // Fetch all menu item options with their associated menu item
@@ -35,6 +64,49 @@ export default async function ItemOptionsPage() {
   // Serialize the data to handle Decimal values
   const serializedItemOptions = serializePrismaData(itemOptions)
 
+  // Define columns for the DataTable
+  const columns: ColumnDef<ItemOption>[] = [
+    {
+      id: "name",
+      header: "Option Name",
+      accessorKey: "name",
+      sortable: true,
+    },
+    {
+      id: "menuItem",
+      header: "Menu Item",
+      accessorKey: "menu_item.name",
+      sortable: true,
+    },
+    {
+      id: "restaurant",
+      header: "Restaurant",
+      accessorKey: "menu_item.menu_categories.menu.restaurant.name",
+      sortable: true,
+    },
+    {
+      id: "required",
+      header: "Required",
+      accessorKey: "is_required",
+      cell: (value) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs ${
+            value ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
+          }`}
+        >
+          {value ? "Required" : "Optional"}
+        </span>
+      ),
+      sortable: true,
+    },
+    {
+      id: "choices",
+      header: "Choices",
+      accessorKey: (row) => row.option_choices.length,
+      sortable: true,
+    },
+  ]
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between">
@@ -56,7 +128,12 @@ export default async function ItemOptionsPage() {
           <CardDescription>Manage menu item options across all restaurants</CardDescription>
         </CardHeader>
         <CardContent>
-          <ItemOptionsTable itemOptions={serializedItemOptions} />
+          <DataTable
+            data={serializedItemOptions}
+            columns={columns}
+            deleteAction={deleteItemOption}
+            editPath="/admin/item-options/edit/"
+          />
         </CardContent>
       </Card>
     </div>
