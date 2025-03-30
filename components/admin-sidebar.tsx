@@ -119,7 +119,7 @@ export function AdminSidebar() {
           icon: Table,
         },
         {
-          title: "Menus",
+          title: "Menu Builder",
           href: `/admin/restaurants/${defaultRestaurant.id}/menu`,
           icon: BookOpen,
         },

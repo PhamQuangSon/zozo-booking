@@ -50,6 +50,13 @@ export async function getRestaurantById(id: string) {
                 menu_items: {
                   where: { is_available: true },
                   orderBy: { display_order: "asc" },
+                  include: {
+                    menu_item_options: {
+                      include: {
+                        option_choices: true
+                      }
+                    }
+                  }
                 },
               },
             },

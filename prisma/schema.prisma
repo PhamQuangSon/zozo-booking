@@ -56,6 +56,7 @@ model Menu {
   description     String?
   restaurant_id   Int
   is_active       Boolean        @default(true)
+  display_order   Int            @default(0)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   restaurant      Restaurant     @relation(fields: [restaurant_id], references: [id])
