@@ -35,9 +35,19 @@ export async function createCategory(data: {
   description: string | null
   restaurantId: number
   displayOrder: number
+  imageUrl?: string | null
 }) {
   try {
-    const category = await prisma.category.create({ data })
+    const category = await prisma.category.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        restaurantId: data.restaurantId,
+        displayOrder: data.displayOrder,
+        imageUrl: data.imageUrl || null,
+      },
+    })
+    revalidatePath("/admin/categories")
     return { success: true, data: category }
   } catch (error) {
     console.error("Failed to create category:", error)
@@ -51,7 +61,8 @@ export async function updateCategory(
     name: string
     description: string | null
     restaurantId: number
-    display_order: number
+    displayOrder?: number
+    imageUrl?: string | null
   },
 ) {
   try {
@@ -61,7 +72,8 @@ export async function updateCategory(
         name: data.name,
         description: data.description,
         restaurantId: data.restaurantId,
-        displayOrder: data.display_order,
+        displayOrder: data.displayOrder || 0,
+        imageUrl: data.imageUrl,
       },
     })
     revalidatePath("/admin/categories")

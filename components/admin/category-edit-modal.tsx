@@ -1,18 +1,20 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
-import { updateCategory } from "@/actions/category-actions"
+import { createCategory, updateCategory } from "@/actions/category-actions"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Category, Restaurant } from "@prisma/client"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { categorySchema, type CategoryFormValues } from "@/schemas/category-schema"
+import { ImageUpload } from "@/components/ui/image-upload"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 
 // Extended Category type with restaurant relation
 type CategoryWithRestaurant = Category & {
@@ -23,67 +25,95 @@ type CategoryWithRestaurant = Category & {
 }
 
 interface CategoryEditModalProps {
-  category: CategoryWithRestaurant
+  category?: CategoryWithRestaurant | null
   restaurants: Restaurant[]
   open: boolean
   onOpenChange: (refresh: boolean) => void
+  mode: "create" | "edit"
 }
 
-export function CategoryEditModal({ category, restaurants, open, onOpenChange }: CategoryEditModalProps) {
+export function CategoryEditModal({
+  category,
+  restaurants,
+  open,
+  onOpenChange,
+  mode = "edit",
+}: CategoryEditModalProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    restaurantId: 0,
-    displayOrder: 0,
+
+  const isCreating = mode === "create"
+  const title = isCreating ? "Add Category" : "Edit Category"
+  const buttonText = isCreating ? "Create" : "Save changes"
+
+  const form = useForm<CategoryFormValues>({
+    resolver: zodResolver(categorySchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      restaurantId: 0,
+      displayOrder: 0,
+      imageUrl: null,
+    },
   })
 
   // Update form data when category changes
   useEffect(() => {
-    if (category) {
-      setFormData({
+    if (category && mode === "edit") {
+      form.reset({
         name: category.name,
-        description: category.description || "",
+        description: category.description,
         restaurantId: category.restaurantId,
         displayOrder: category.displayOrder,
+        imageUrl: category.imageUrl,
+      })
+    } else if (mode === "create") {
+      form.reset({
+        name: "",
+        description: "",
+        restaurantId: restaurants[0]?.id || 0,
+        displayOrder: 0,
+        imageUrl: null,
       })
     }
-  }, [category])
+  }, [category, mode, form, restaurants])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSelectChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, restaurantId: Number.parseInt(value) }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!category) return
-
+  const onSubmit = async (data: CategoryFormValues) => {
     setIsLoading(true)
     try {
-      const result = await updateCategory(category.id, {
-        name: formData.name,
-        description: formData.description || null,
-        restaurantId: formData.restaurantId,
-        display_order: formData.displayOrder,
-      })
+      let result
 
-      if (result.success) {
+      if (isCreating) {
+        result = await createCategory({
+          name: data.name,
+          description: data.description,
+          restaurantId: data.restaurantId,
+          displayOrder: data.displayOrder,
+          imageUrl: data.imageUrl,
+        })
+      } else if (category) {
+        result = await updateCategory(category.id, {
+          name: data.name,
+          description: data.description,
+          restaurantId: data.restaurantId,
+          displayOrder: data.displayOrder,
+          imageUrl: data.imageUrl,
+        })
+      }
+
+      if (result?.success) {
         toast({
-          title: "Category updated",
-          description: "The category has been updated successfully.",
+          title: isCreating ? "Category created" : "Category updated",
+          description: isCreating
+            ? "The category has been created successfully."
+            : "The category has been updated successfully.",
         })
         onOpenChange(true) // Close modal and refresh data
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: result.error || "Failed to update category",
+          description: result?.error || (isCreating ? "Failed to create category" : "Failed to update category"),
         })
       }
     } catch (error) {
@@ -99,68 +129,125 @@ export function CategoryEditModal({ category, restaurants, open, onOpenChange }:
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onOpenChange(false)}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Edit Category</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Category name"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Category description (optional)"
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="restaurantId">Restaurant</Label>
-            <Select value={formData.restaurantId.toString()} onValueChange={handleSelectChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select a restaurant" />
-              </SelectTrigger>
-              <SelectContent>
-                {restaurants.map((restaurant) => (
-                  <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
-                    {restaurant.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="displayOrder">Display Order</Label>
-            <Input
-              id="displayOrder"
-              name="displayOrder"
-              type="number"
-              value={formData.displayOrder}
-              onChange={(e) => setFormData((prev) => ({ ...prev, displayOrder: Number.parseInt(e.target.value) || 0 }))}
-              min={0}
-            />
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : "Save changes"}
-            </Button>
-          </DialogFooter>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="Category name" disabled={isLoading} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          value={field.value || ""}
+                          placeholder="Category description (optional)"
+                          rows={3}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="restaurantId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Restaurant</FormLabel>
+                      <Select
+                        value={field.value?.toString() || ""}
+                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                        disabled={isLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a restaurant" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {restaurants.map((restaurant) => (
+                            <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                              {restaurant.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="displayOrder"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Order</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
+                          min={0}
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div>
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image</FormLabel>
+                      <FormControl>
+                        <ImageUpload value={field.value || null} onChange={field.onChange} disabled={isLoading} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Saving..." : buttonText}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   )
