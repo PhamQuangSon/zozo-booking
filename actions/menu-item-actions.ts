@@ -1,50 +1,33 @@
 "use server"
 
 import prisma from "@/lib/prisma"
+import { serializePrismaData } from "@/lib/prisma-helpers"
+import { revalidatePath } from "next/cache"
 
-// Menu CRUD
-export async function createMenu(data: {
-  name: string
-  description: string | null
-  restaurantId: number
-  is_active: boolean
-}) {
+// Get all Category
+export async function getMenuItems() {
   try {
-    const menu = await prisma.menu.create({ data })
-    return { success: true, data: menu }
-  } catch (error) {
-    console.error('Failed to create menu:', error)
-    return { success: false, error: 'Failed to create menu' }
-  }
-}
-
-export async function updateMenu(id: number, data: {
-  name: string
-  description: string | null
-  is_active: boolean
-}) {
-  try {
-    const menu = await prisma.menu.update({
-      where: { id },
-      data
+    const menus = await prisma.menuItem.findMany({
+      include: {
+        restaurant: true,
+      },
+      orderBy: {
+        restaurant: {
+          name: "asc",
+        },
+      },
     })
-    return { success: true, data: menu }
+
+    return { success: true, data: serializePrismaData(menus) }
   } catch (error) {
-    console.error('Failed to update menu:', error)
-    return { success: false, error: 'Failed to update menu' }
+    console.error("Failed to fetch menus:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to load menus",
+      data: [],
+    }
   }
 }
-
-export async function deleteMenu(id: number) {
-  try {
-    await prisma.menu.delete({ where: { id } })
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to delete menu:', error)
-    return { success: false, error: 'Failed to delete menu' }
-  }
-}
-
 
 // Menu Item CRUD
 export async function createMenuItem(data: {
@@ -92,49 +75,6 @@ export async function deleteMenuItem(id: number) {
   } catch (error) {
     console.error('Failed to delete menu item:', error)
     return { success: false, error: 'Failed to delete menu item' }
-  }
-}
-
-// Menu Item Option CRUD
-export async function createMenuItemOption(data: {
-  name: string
-  priceAdjustment: number
-  is_required: boolean
-  menu_item_id: number
-}) {
-  try {
-    const option = await prisma.menuItemOption.create({ data })
-    return { success: true, data: option }
-  } catch (error) {
-    console.error('Failed to create menu item option:', error)
-    return { success: false, error: 'Failed to create menu item option' }
-  }
-}
-
-export async function updateMenuItemOption(id: number, data: {
-  name: string
-  priceAdjustment: number
-  is_required: boolean
-}) {
-  try {
-    const option = await prisma.menuItemOption.update({
-      where: { id },
-      data
-    })
-    return { success: true, data: option }
-  } catch (error) {
-    console.error('Failed to update menu item option:', error)
-    return { success: false, error: 'Failed to update menu item option' }
-  }
-}
-
-export async function deleteMenuItemOption(id: number) {
-  try {
-    await prisma.menuItemOption.delete({ where: { id } })
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to delete menu item option:', error)
-    return { success: false, error: 'Failed to delete menu item option' }
   }
 }
 

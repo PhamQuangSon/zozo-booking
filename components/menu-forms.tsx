@@ -19,7 +19,7 @@ import {
   updateMenuItem,
   updateMenuItemOption,
   updateOptionChoice
-} from "@/actions/menu-actions"
+} from "@/actions/menu-item-actions"
 
 // Menu Form
 interface MenuFormProps {

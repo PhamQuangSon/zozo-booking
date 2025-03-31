@@ -7,56 +7,20 @@ import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 import { formatCurrency } from "@/lib/i18n"
 import { deleteMenuItem } from "@/actions/admin-actions"
-
-interface MenuItem {
-  id: number
-  name: string
-  description: string | null
-  price: number
-  is_available: boolean
-  menu_categories: {
-    name: string
-    menu: {
-      name: string
-      restaurant: {
-        id: number
-        name: string
-      }
-    }
-  }
-  display_order: number
-}
+import { getMenuItems } from "@/actions/menu-item-actions"
+import { MenuItem } from "@prisma/client"
+import { useCurrencyStore } from "@/store/currencyStore"
 
 export default async function MenuItemsPage() {
+  const { currency } = useCurrencyStore()
   // Fetch all menu items with their associated category, menu, and restaurant
-  const menuItems = await prisma.menuItem.findMany({
-    include: {
-      menu_categories: {
-        include: {
-          menu: {
-            include: {
-              restaurant: true,
-            },
-          },
-        },
-      },
-    },
-    orderBy: {
-      menu_categories: {
-        menu: {
-          restaurant: {
-            name: "asc",
-          },
-        },
-      },
-    },
-  })
+  const menuItems = await getMenuItems()
 
   // Serialize the data to handle Decimal values
   const serializedMenuItems = serializePrismaData(menuItems)
 
   // Define columns for the DataTable
-  const columns: ColumnDef<MenuItem>[] = [
+  const columns: ColumnDef<MenuItem & { restaurant: { name: string } }>[] = [
     {
       id: "name",
       header: "Name",
@@ -66,20 +30,20 @@ export default async function MenuItemsPage() {
     {
       id: "restaurant",
       header: "Restaurant",
-      accessorKey: "menu_categories.menu.restaurant.name",
+      accessorKey: "restaurant.name",
       sortable: true,
     },
     {
       id: "category",
       header: "Category",
-      accessorKey: "menu_categories.name",
+      accessorKey: "categories.name",
       sortable: true,
     },
     {
       id: "price",
       header: "Price",
       accessorKey: "price",
-      cell: (value) => formatCurrency(value, "USD"),
+      cell: (value) => formatCurrency(value, currency),
       sortable: true,
     },
     {
@@ -100,35 +64,15 @@ export default async function MenuItemsPage() {
   ]
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Menu Items</h2>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Menu Item
-        </Button>
-      </div>
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search menu items..." className="pl-8" />
-        </div>
-      </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>All Menu Items</CardTitle>
-          <CardDescription>Manage menu items across all restaurants</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            data={serializedMenuItems}
-            columns={columns}
-            deleteAction={deleteMenuItem}
-            editPath="/admin/menu-items/edit/"
-          />
-        </CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>All Menu Items</CardTitle>
+        <CardDescription>Manage menu items across all restaurants</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <CategoriesClient columns={columns} initialCategories={serializedMenuItems} restaurants={restaurants} />
+      </CardContent>
+    </Card>
   )
 }
 

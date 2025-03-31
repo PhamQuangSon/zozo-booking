@@ -10,7 +10,7 @@ import {
   updateMenuOrder, 
   updateCategoryOrder, 
   updateMenuItemOrder 
-} from "@/actions/menu-actions"
+} from "@/actions/menu-item-actions"
 
 interface MenuBuilderProps {
   restaurant: any

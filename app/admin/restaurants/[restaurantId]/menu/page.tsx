@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { notFound } from "next/navigation"
 import { getRestaurantById } from "@/actions/restaurant-actions"
-import { deleteMenu, deleteCategory, deleteMenuItem, deleteMenuItemOption } from "@/actions/menu-actions"
+import { deleteMenu, deleteCategory, deleteMenuItem, deleteMenuItemOption } from "@/actions/menu-item-actions"
 import { useToast } from "@/hooks/use-toast"
 import { MenuBuilder } from "@/components/menu-builder"
 
