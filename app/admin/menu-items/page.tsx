@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search } from "lucide-react"
-import { DataTable, type ColumnDef } from "@/components/data-table"
+import { DataTable, type ColumnDef } from "@/components/admin/data-table"
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 import { formatCurrency } from "@/lib/i18n"

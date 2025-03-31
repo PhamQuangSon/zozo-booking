@@ -82,6 +82,7 @@ export function AdminSidebar() {
     }
   }, [])
 
+  // Update the navItems array to include the new pages
   const navItems = [
     {
       title: "Dashboard",
@@ -99,22 +100,17 @@ export function AdminSidebar() {
       icon: Store,
     },
     {
-      title: "Menu management",
-      href: "/admin/menu",
-      icon: Store,
-    },
-    {
-      title: "Categories management",
+      title: "Categories",
       href: "/admin/categories",
       icon: ListOrdered,
     },
     {
-      title: "Menu Items management",
+      title: "Menu Items",
       href: "/admin/menu-items",
       icon: Coffee,
     },
     {
-      title: "Item Options management",
+      title: "Item Options",
       href: "/admin/item-options",
       icon: Utensils,
     },

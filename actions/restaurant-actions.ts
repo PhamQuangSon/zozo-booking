@@ -12,7 +12,7 @@ export async function getRestaurants() {
         id: true,
         name: true,
         description: true,
-        image_url: true,
+        imageUrl: true,
         address: true,
         phone: true,
         email: true,
@@ -51,9 +51,9 @@ export async function getRestaurantById(id: string) {
                   where: { is_available: true },
                   orderBy: { display_order: "asc" },
                   include: {
-                    menu_item_options: {
+                    menuItemOptions: {
                       include: {
-                        option_choices: true
+                        optionChoices: true
                       }
                     }
                   }
@@ -89,7 +89,7 @@ export async function createRestaurant(data: {
   address?: string
   phone?: string
   email?: string
-  image_url?: string
+  imageUrl?: string
   cuisine?: string
 }) {
   try {
@@ -100,7 +100,7 @@ export async function createRestaurant(data: {
         address: data.address,
         phone: data.phone,
         email: data.email,
-        image_url: data.image_url,
+        imageUrl: data.imageUrl,
         cuisine: data.cuisine,
       },
     })
@@ -124,7 +124,7 @@ export async function updateRestaurant(
     address?: string
     phone?: string
     email?: string
-    image_url?: string
+    imageUrl?: string
     cuisine?: string
   },
 ) {
@@ -137,7 +137,7 @@ export async function updateRestaurant(
         address: data.address,
         phone: data.phone,
         email: data.email,
-        image_url: data.image_url,
+        imageUrl: data.imageUrl,
         cuisine: data.cuisine,
       },
     })

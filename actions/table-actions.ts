@@ -31,7 +31,7 @@ export async function getRestaurantTables(restaurantId: string) {
   try {
     const tables = await prisma.table.findMany({
       where: {
-        restaurant_id: Number.parseInt(restaurantId),
+        restaurantId: Number.parseInt(restaurantId),
       },
       orderBy: {
         number: "asc",
@@ -49,17 +49,17 @@ export async function getRestaurantTables(restaurantId: string) {
 
 // Create a new table
 export async function createTable(data: {
-  restaurant_id: number
+  restaurantId: number
   number: number
   capacity: number
   status?: string
-  image_url?: string
+  imageUrl?: string
 }) {
   try {
     // Check if table number already exists for this restaurant
     const existingTable = await prisma.table.findFirst({
       where: {
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurantId,
         number: data.number,
       },
     })
@@ -70,11 +70,11 @@ export async function createTable(data: {
 
     const table = await prisma.table.create({
       data: {
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurantId,
         number: data.number,
         capacity: data.capacity,
         status: (data.status as any) || "AVAILABLE",
-        image_url: data.image_url,
+        imageUrl: data.imageUrl,
       },
     })
 
@@ -94,15 +94,15 @@ export async function updateTable(
     number: number
     capacity: number
     status?: string
-    restaurant_id: number
-    image_url?: string
+    restaurantId: number
+    imageUrl?: string
   },
 ) {
   try {
     // Check if table number already exists for this restaurant (excluding this table)
     const existingTable = await prisma.table.findFirst({
       where: {
-        restaurant_id: data.restaurant_id,
+        restaurantId: data.restaurantId,
         number: data.number,
         id: { not: id },
       },
@@ -118,7 +118,7 @@ export async function updateTable(
         number: data.number,
         capacity: data.capacity,
         status: (data.status as any) || "AVAILABLE",
-        image_url: data.image_url,
+        imageUrl: data.imageUrl,
       },
     })
 
@@ -136,18 +136,18 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
   try {
     const orders = await prisma.order.findMany({
       where: {
-        restaurant_id: Number.parseInt(restaurantId),
-        table_id: Number.parseInt(tableId),
+        restaurantId: Number.parseInt(restaurantId),
+        tableId: Number.parseInt(tableId),
         status: { notIn: ['COMPLETED', 'CANCELLED'] }
       },
       include: {
-        order_items: {
+        orderItems: {
           include: {
-            menu_item: true,
-            order_item_choices: {
+            menuItems: true,
+            orderItemChoices: {
               include: {
-                option_choice: true,
-                menu_item_option: true,
+                optionChoice: true,
+                menuItemOption: true,
               },
             },
           },
@@ -185,7 +185,7 @@ export async function getMenuForTable(restaurantId: string, tableId: string) {
     const table = await prisma.table.findFirst({
       where: {
         id: Number.parseInt(tableId),
-        restaurant_id: Number.parseInt(restaurantId),
+        restaurantId: Number.parseInt(restaurantId),
       },
     })
 
@@ -196,7 +196,7 @@ export async function getMenuForTable(restaurantId: string, tableId: string) {
     // Get the active menu for the restaurant
     const menu = await prisma.menu.findFirst({
       where: {
-        restaurant_id: Number.parseInt(restaurantId),
+        restaurantId: Number.parseInt(restaurantId),
         is_active: true,
       },
       include: {
@@ -207,9 +207,9 @@ export async function getMenuForTable(restaurantId: string, tableId: string) {
               where: { is_available: true },
               orderBy: { display_order: "asc" },
               include: {
-                menu_item_options: {
+                menuItemOptions: {
                   include: {
-                    option_choices: true,
+                    optionChoices: true,
                   },
                 },
               },
@@ -240,13 +240,13 @@ export async function formatTableMenuItems(menuCategories: any[], currency: Curr
       ...item,
       formattedPrice: formatCurrency(item.price, currency),
       price: Number(item.price),
-      menu_item_options: item.menu_item_options.map((option: any) => ({
+      menuItemOptions: item.menuItemOptions.map((option: any) => ({
         ...option,
-        option_choices: option.option_choices.map((choice: any) => ({
+        optionChoices: option.optionChoices.map((choice: any) => ({
           
           ...choice,
-          formattedPriceAdjustment: formatCurrency(choice.price_adjustment, currency),
-          price_adjustment: Number(choice.price_adjustment),
+          formattedPriceAdjustment: formatCurrency(choice.priceAdjustment, currency),
+          priceAdjustment: Number(choice.priceAdjustment),
         })),
       })),
     })),
@@ -273,7 +273,7 @@ export async function createTableOrder(data: {
     const table = await prisma.table.findFirst({
       where: {
         id: data.tableId,
-        restaurant_id: data.restaurantId,
+        restaurantId: data.restaurantId,
       },
     })
 
@@ -289,9 +289,9 @@ export async function createTableOrder(data: {
     const menuItems = await prisma.menuItem.findMany({
       where: { id: { in: menuItemIds } },
       include: {
-        menu_item_options: {
+        menuItemOptions: {
           include: {
-            option_choices: true,
+            optionChoices: true,
           },
         },
       },
@@ -307,12 +307,12 @@ export async function createTableOrder(data: {
       // Add price adjustments for choices if any
       if (orderItem.choices && orderItem.choices.length > 0) {
         for (const choice of orderItem.choices) {
-          const option = menuItem.menu_item_options.find((opt) => opt.id === choice.optionId)
+          const option = menuItem.menuItemOptions.find((opt) => opt.id === choice.optionId)
           if (!option) continue
 
-          const selectedChoice = option.option_choices.find((ch) => ch.id === choice.choiceId)
+          const selectedChoice = option.optionChoices.find((ch) => ch.id === choice.choiceId)
           if (selectedChoice) {
-            itemPrice += Number(selectedChoice.price_adjustment)
+            itemPrice += Number(selectedChoice.priceAdjustment)
           }
         }
       }
@@ -323,12 +323,12 @@ export async function createTableOrder(data: {
     // Create the order
     const order = await prisma.order.create({
       data: {
-        restaurant_id: data.restaurantId,
-        table_id: data.tableId,
+        restaurantId: data.restaurantId,
+        tableId: data.tableId,
         status: "NEW",
         total_amount: totalAmount,
         notes: data.notes,
-        order_items: {
+        orderItems: {
           create: data.items.map((item) => {
             const menuItem = menuItems.find((mi) => mi.id === item.menuItemId)
             return {
@@ -336,7 +336,7 @@ export async function createTableOrder(data: {
               quantity: item.quantity,
               unit_price: menuItem?.price || 0,
               notes: item.notes,
-              order_item_choices: item.choices
+              orderItemChoices: item.choices
                 ? {
                     create: item.choices.map((choice) => ({
                       option_id: choice.optionId,
@@ -349,13 +349,13 @@ export async function createTableOrder(data: {
         },
       },
       include: {
-        order_items: {
+        orderItems: {
           include: {
-            menu_item: true,
-            order_item_choices: {
+            menuItems: true,
+            orderItemChoices: {
               include: {
-                option_choice: true,
-                menu_item_option: true,
+                optionChoice: true,
+                menuItemOption: true,
               },
             },
           },

@@ -2,49 +2,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search } from "lucide-react"
-import { DataTable, type ColumnDef } from "@/components/data-table"
-import prisma from "@/lib/prisma"
-import { serializePrismaData } from "@/lib/prisma-helpers"
-import { deleteCategory } from "@/actions/admin-actions"
-
-interface Category {
-  id: number
-  name: string
-  description: string | null
-  menu: {
-    name: string
-    restaurant: {
-      id: number
-      name: string
-    }
-  }
-  display_order: number
-}
+import type { ColumnDef } from "@/components/admin/data-table"
+import { getCategories } from "@/actions/category-actions"
+import { getRestaurants } from "@/actions/restaurant-actions"
+import { CategoriesClient } from "@/components/admin/categories-client"
+import type { Category } from "@prisma/client"
 
 export default async function CategoriesPage() {
-  // Fetch all categories with their associated menu and restaurant
-  const categories = await prisma.menuCategory.findMany({
-    include: {
-      menu: {
-        include: {
-          restaurant: true,
-        },
-      },
-    },
-    orderBy: {
-      menu: {
-        restaurant: {
-          name: "asc",
-        },
-      },
-    },
-  })
+  // Fetch data using server actions
+  const categoriesResult = await getCategories()
+  const restaurantsResult = await getRestaurants()
 
-  // Serialize the data to handle Decimal values
-  const serializedCategories = serializePrismaData(categories)
+  const categories = categoriesResult.success ? categoriesResult.data : []
+  const restaurants = restaurantsResult.success ? restaurantsResult.data : []
 
   // Define columns for the DataTable
-  const columns: ColumnDef<Category>[] = [
+  const columns: ColumnDef<Category & { restaurant: { name: string } }>[] = [
     {
       id: "name",
       header: "Name",
@@ -54,19 +27,13 @@ export default async function CategoriesPage() {
     {
       id: "restaurant",
       header: "Restaurant",
-      accessorKey: "menu.restaurant.name",
-      sortable: true,
-    },
-    {
-      id: "menu",
-      header: "Menu",
-      accessorKey: "menu.name",
+      accessorKey: "restaurant.name",
       sortable: true,
     },
     {
       id: "displayOrder",
       header: "Display Order",
-      accessorKey: "display_order",
+      accessorKey: "displayOrder",
       sortable: true,
     },
   ]
@@ -92,12 +59,7 @@ export default async function CategoriesPage() {
           <CardDescription>Manage menu categories across all restaurants</CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTable
-            data={serializedCategories}
-            columns={columns}
-            deleteAction={deleteCategory}
-            editPath="/admin/categories/edit/"
-          />
+          <CategoriesClient columns={columns} initialCategories={categories} restaurants={restaurants} />
         </CardContent>
       </Card>
     </div>

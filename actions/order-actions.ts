@@ -13,7 +13,7 @@ type OrderItemWithRelations = Prisma.OrderItemGetPayload<{
   include: {
     order: {
       include: {
-        order_items: true
+        orderItems: true
         table: true
       }
     }
@@ -35,7 +35,7 @@ export async function getRestaurantOrders(restaurantId: string) {
   try {
     const orders = await prisma.order.findMany({
       where: {
-        restaurant_id: Number.parseInt(restaurantId),
+        restaurantId: Number.parseInt(restaurantId),
       },
       include: {
         table: true,
@@ -45,13 +45,13 @@ export async function getRestaurantOrders(restaurantId: string) {
             email: true,
           },
         },
-        order_items: {
+        orderItems: {
           include: {
-            menu_item: true,
-            order_item_choices: {
+            menuItems: true,
+            orderItemChoices: {
               include: {
-                option_choice: true,
-                menu_item_option: true,
+                optionChoice: true,
+                menuItemOption: true,
               },
             },
           },
@@ -95,9 +95,9 @@ export async function createOrder(data: {
     const menuItems = await prisma.menuItem.findMany({
       where: { id: { in: menuItemIds } },
       include: {
-        menu_item_options: {
+        menuItemOptions: {
           include: {
-            option_choices: true,
+            optionChoices: true,
           },
         },
       },
@@ -113,12 +113,12 @@ export async function createOrder(data: {
       // Add price adjustments for choices if any
       if (orderItem.choices && orderItem.choices.length > 0) {
         for (const choice of orderItem.choices) {
-          const option = menuItem.menu_item_options.find((opt) => opt.id === choice.optionId)
+          const option = menuItem.menuItemOptions.find((opt) => opt.id === choice.optionId)
           if (!option) continue
 
-          const selectedChoice = option.option_choices.find((ch) => ch.id === choice.choiceId)
+          const selectedChoice = option.optionChoices.find((ch) => ch.id === choice.choiceId)
           if (selectedChoice) {
-            itemPrice += Number(selectedChoice.price_adjustment)
+            itemPrice += Number(selectedChoice.priceAdjustment)
           }
         }
       }
@@ -139,25 +139,25 @@ export async function createOrder(data: {
       // Create the order
       return await prisma.order.create({
         data: {
-          restaurant_id: data.restaurantId,
-          table_id: data.tableId,
+          restaurantId: data.restaurantId,
+          tableId: data.tableId,
           user_id: data.userId !== undefined ? data.userId.toString() : undefined,
           status: "NEW",
           total_amount: totalAmount,
           notes: data.notes,
-          order_items: {
+          orderItems: {
             create: data.items.map((item) => {
               const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
               return {
-                menu_item: { connect: { id: item.menuItemId } },
+                menuItems: { connect: { id: item.menuItemId } },
                 quantity: item.quantity,
                 unit_price: menuItem?.price || 0,
                 notes: item.notes,
-                order_item_choices: item.choices
+                orderItemChoices: item.choices
                   ? {
                       create: item.choices.map((choice) => ({
-                        menu_item_option: { connect: { id: choice.optionId } },
-                        option_choice: { connect: { id: choice.choiceId } },
+                        menuItemOption: { connect: { id: choice.optionId } },
+                        optionChoice: { connect: { id: choice.choiceId } },
                       })),
                     }
                   : undefined,
@@ -166,13 +166,13 @@ export async function createOrder(data: {
           },
         },
         include: {
-          order_items: {
+          orderItems: {
             include: {
-              menu_item: true,
-              order_item_choices: {
+              menuItems: true,
+              orderItemChoices: {
                 include: {
-                  option_choice: true,
-                  menu_item_option: true,
+                  optionChoice: true,
+                  menuItemOption: true,
                 },
               },
             },
@@ -196,15 +196,15 @@ export async function updateOrderStatus(orderId: number, status: string) {
       data: { status: status as OrderStatus },
       include: {
         table: true,
-        order_items: true,
+        orderItems: true,
       },
     })
 
     // If order is completed or cancelled and table exists, check if there are other active orders
-    if ((status === 'COMPLETED' || status === 'CANCELLED') && order.table_id) {
+    if ((status === 'COMPLETED' || status === 'CANCELLED') && order.tableId) {
       const activeOrders = await prisma.order.findMany({
         where: {
-          table_id: order.table_id,
+          tableId: order.tableId,
           status: { notIn: ['COMPLETED', 'CANCELLED'] },
           id: { not: orderId }, // Exclude current order
         },
@@ -213,7 +213,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
       // If no other active orders, update table status to AVAILABLE
       if (activeOrders.length === 0) {
         await prisma.table.update({
-          where: { id: order.table_id },
+          where: { id: order.tableId },
           data: { status: 'AVAILABLE' },
         })
       }
@@ -240,7 +240,7 @@ export async function updateOrderItemStatus(
         include: {
           order: {
             include: {
-              order_items: true,
+              orderItems: true,
               table: true
             }
           }
@@ -248,7 +248,7 @@ export async function updateOrderItemStatus(
       }) as OrderItemWithRelations;
 
       // Check if all items in the order have the same status
-      const allItemsSameStatus = orderItem.order.order_items.every(
+      const allItemsSameStatus = orderItem.order.orderItems.every(
         (item: OrderItem) => item.status === newStatus
       );
 
@@ -268,7 +268,7 @@ export async function updateOrderItemStatus(
         ) {
           const activeOrders = await tx.order.count({
             where: {
-              table_id: orderItem.order.table.id,
+              tableId: orderItem.order.table.id,
               status: { notIn: ["COMPLETED", "CANCELLED"] },
               id: { not: orderItem.order.id }
             }

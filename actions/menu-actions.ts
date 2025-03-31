@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma"
 export async function createMenu(data: {
   name: string
   description: string | null
-  restaurant_id: number
+  restaurantId: number
   is_active: boolean
 }) {
   try {
@@ -45,55 +45,13 @@ export async function deleteMenu(id: number) {
   }
 }
 
-// Category CRUD
-export async function createCategory(data: {
-  name: string
-  description: string | null
-  menu_id: number
-  display_order: number
-}) {
-  try {
-    const category = await prisma.menuCategory.create({ data })
-    return { success: true, data: category }
-  } catch (error) {
-    console.error('Failed to create category:', error)
-    return { success: false, error: 'Failed to create category' }
-  }
-}
-
-export async function updateCategory(id: number, data: {
-  name: string
-  description: string | null
-  display_order: number
-}) {
-  try {
-    const category = await prisma.menuCategory.update({
-      where: { id },
-      data
-    })
-    return { success: true, data: category }
-  } catch (error) {
-    console.error('Failed to update category:', error)
-    return { success: false, error: 'Failed to update category' }
-  }
-}
-
-export async function deleteCategory(id: number) {
-  try {
-    await prisma.menuCategory.delete({ where: { id } })
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to delete category:', error)
-    return { success: false, error: 'Failed to delete category' }
-  }
-}
 
 // Menu Item CRUD
 export async function createMenuItem(data: {
   name: string
   description: string | null
   price: number
-  image_url: string | null
+  imageUrl: string | null
   category_id: number
   is_available: boolean
   display_order: number
@@ -111,7 +69,7 @@ export async function updateMenuItem(id: number, data: {
   name: string
   description: string | null
   price: number
-  image_url: string | null
+  imageUrl: string | null
   is_available: boolean
   display_order: number
 }) {
@@ -140,7 +98,7 @@ export async function deleteMenuItem(id: number) {
 // Menu Item Option CRUD
 export async function createMenuItemOption(data: {
   name: string
-  price_adjustment: number
+  priceAdjustment: number
   is_required: boolean
   menu_item_id: number
 }) {
@@ -155,7 +113,7 @@ export async function createMenuItemOption(data: {
 
 export async function updateMenuItemOption(id: number, data: {
   name: string
-  price_adjustment: number
+  priceAdjustment: number
   is_required: boolean
 }) {
   try {
@@ -183,7 +141,7 @@ export async function deleteMenuItemOption(id: number) {
 // Option Choice CRUD
 export async function createOptionChoice(data: {
   name: string
-  price_adjustment: number
+  priceAdjustment: number
   option_id: number
 }) {
   try {
@@ -197,7 +155,7 @@ export async function createOptionChoice(data: {
 
 export async function updateOptionChoice(id: number, data: {
   name: string
-  price_adjustment: number
+  priceAdjustment: number
 }) {
   try {
     const choice = await prisma.optionChoice.update({
@@ -240,7 +198,7 @@ export async function updateMenuOrder(menuId: number, newOrder: number) {
 export async function updateCategoryOrder(categoryId: number, newOrder: number) {
   try {
     await prisma.$executeRaw`
-      UPDATE "MenuCategory"
+      UPDATE "category"
       SET display_order = ${newOrder}
       WHERE id = ${categoryId}
     `
