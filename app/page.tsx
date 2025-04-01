@@ -110,7 +110,7 @@ export default async function Home() {
                     id={restaurant.id.toString()}
                     name={restaurant.name}
                     image={
-                      restaurant.image_url ||
+                      restaurant.imageUrl ||
                       "/placeholder.svg?height=200&width=300"
                     }
                     cuisine={restaurant.cuisine || "Various"}
