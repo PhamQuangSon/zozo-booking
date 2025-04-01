@@ -31,10 +31,10 @@ export async function getRestaurants() {
 }
 
 // Get restaurant by ID with categories, menu items, and item options
-export async function getRestaurantById(id: number) {
+export async function getRestaurantById(id: string) {
   try {
     const restaurant = await prisma.restaurant.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: {
         categories: {
           orderBy: {
