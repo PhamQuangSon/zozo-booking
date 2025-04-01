@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, use } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -13,9 +13,12 @@ import { useCurrencyStore } from "@/store/currencyStore"
 import { useCartStore } from "@/store/cartStore"
 import { getRestaurantById } from "@/actions/restaurant-actions"
 import { getTableDetails, getTableOrders } from "@/actions/table-actions"
+import { Restaurant } from "@prisma/client"
 
 export default function TableOrderPage({ params }: { params: { restaurantId: string; tableId: string } }) {
-  const [restaurant, setRestaurant] = useState<any>({ name: "", description: "", image_url: "", menus: [] })
+  const { restaurantId, tableId } = use(params)
+
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
   const [table, setTable] = useState<any>({ number: "" })
   const [activeCategory, setActiveCategory] = useState("all")
   const [allItems, setAllItems] = useState<any[]>([])
@@ -25,66 +28,67 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
   const { syncServerOrders } = useCartStore()
 
   // Fetch restaurant, menu data, and orders using server actions
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
+  const fetchData = async () => {
+    try {
+      setLoading(true)
 
-        // Get restaurant data using server action
-        const restaurantResult = await getRestaurantById(Number(params.restaurantId))
-        if (!restaurantResult.success || !restaurantResult.data) {
-          throw new Error(restaurantResult.error || "Failed to load restaurant")
-        }
+      // Get restaurant data using server action
+      const restaurantResult = await getRestaurantById(restaurantId)
+      if (!restaurantResult.success || !restaurantResult.data) {
+        throw new Error(restaurantResult.error || "Failed to load restaurant")
+      }
 
-        // Get table data using server action
-        const tableResult = await getTableDetails(params.tableId)
-        if (!tableResult.success || !tableResult.data) {
-          throw new Error(tableResult.error || "Failed to load table")
-        }
+      // Get table data using server action
+      const tableResult = await getTableDetails(tableId)
+      if (!tableResult.success || !tableResult.data) {
+        throw new Error(tableResult.error || "Failed to load table")
+      }
 
-        // Fetch active orders for this table
-        const ordersResult = await getTableOrders(params.restaurantId, params.tableId)
-        if (!ordersResult.success) {
-          throw new Error(ordersResult.error || "Failed to load orders")
-        }
+      // Fetch active orders for this table
+      const ordersResult = await getTableOrders(restaurantId, tableId)
+      if (!ordersResult.success) {
+        throw new Error(ordersResult.error || "Failed to load orders")
+      }
 
-        const restaurantData = restaurantResult.data
-        const tableData = tableResult.data
+      const restaurantData = restaurantResult.data
+      const tableData = tableResult.data
 
-        // Sync server orders with cart state
-        if (ordersResult.data) {
-          syncServerOrders(params.restaurantId, params.tableId, ordersResult.data)
-        }
-        setRestaurant(restaurantData)
-        setTable(tableData)
+      // Sync server orders with cart state
+      if (ordersResult.data) {
+        syncServerOrders(restaurantId, tableId, ordersResult.data)
+      }
+      setRestaurant(restaurantData)
+      setTable(tableData)
 
-        // Flatten all menu items for infinite scroll
-        const items: any[] = []
-        if (restaurantData.menus && restaurantData.menus.length > 0) {
-          restaurantData.menus.forEach((menu: any) => {
-            menu.menu_categories?.forEach((category: any) => {
-              category.menu_items.forEach((item: any) => {
-                items.push({
-                  ...item,
-                  categoryName: category.name,
-                  categoryId: category.id,
-                })
+      // Flatten all menu items for infinite scroll
+      const items: any[] = []
+      if (restaurantData.menus && restaurantData.menus.length > 0) {
+        restaurantData.menus.forEach((menu: any) => {
+          menu.menu_categories?.forEach((category: any) => {
+            category.menu_items.forEach((item: any) => {
+              items.push({
+                ...item,
+                categoryName: category.name,
+                categoryId: category.id,
               })
             })
           })
-        }
-
-        setAllItems(items)
-      } catch (err: any) {
-        console.error("Error fetching data:", err)
-        setError(err.message || "Failed to load data")
-      } finally {
-        setLoading(false)
+        })
       }
-    }
 
+      setAllItems(items)
+    } catch (err: any) {
+      console.error("Error fetching data:", err)
+      setError(err.message || "Failed to load data")
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  useEffect(() => {
+    console.log("Fetching data for restaurantId:", restaurantId, "and tableId:", tableId)
     fetchData()
-  }, [params.restaurantId, params.tableId])
+  }, [restaurantId, tableId, syncServerOrders])
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category)
@@ -131,7 +135,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
       <div className="bg-gradient-to-b from-amber-50 to-white py-6">
         <div className="container mx-auto px-4">
           <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link href={`/restaurants/${params.restaurantId}`}>
+            <Link href={`/restaurants/${restaurantId}`}>
               <ChevronLeft className="mr-1 h-4 w-4" />
               Back to Restaurant
             </Link>
@@ -140,7 +144,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg">
               <Image
-                src={restaurant.image_url || "/placeholder.svg?height=400&width=400"}
+                src={restaurant.imageUrl || "/placeholder.svg?height=400&width=400"}
                 alt={restaurant.name}
                 fill
                 className="object-cover"
@@ -195,7 +199,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
               </SheetDescription>
             </SheetHeader>
             <div className="mt-6 h-[calc(100vh-180px)]">
-              <OrderCart restaurantId={params.restaurantId} tableId={params.tableId} />
+              <OrderCart restaurantId={restaurantId} tableId={tableId} />
             </div>
           </SheetContent>
         </Sheet>
