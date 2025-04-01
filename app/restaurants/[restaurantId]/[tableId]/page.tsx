@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, use } from "react"
+import React, { useEffect, useState, use } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -11,15 +11,16 @@ import { OrderCart } from "@/components/order-cart"
 import { MenuCategory } from "@/components/menu-category"
 import { useCurrencyStore } from "@/store/currencyStore"
 import { useCartStore } from "@/store/cartStore"
-import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getTableDetails, getTableOrders } from "@/actions/table-actions"
-import { Restaurant } from "@prisma/client"
+import { getTableFullData } from "@/actions/table-actions"
 
 export default function TableOrderPage({ params }: { params: { restaurantId: string; tableId: string } }) {
   const { restaurantId, tableId } = use(params)
 
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
-  const [table, setTable] = useState<any>({ number: "" })
+  const [tableData, setTableData] = useState<any>({
+    restaurant: { name: "", description: "", imageUrl: "", categories: [] },
+    table: { number: "" },
+    orders: [],
+  })
   const [activeCategory, setActiveCategory] = useState("all")
   const [allItems, setAllItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -27,72 +28,64 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
   const { currency } = useCurrencyStore()
   const { syncServerOrders } = useCartStore()
 
-  // Fetch restaurant, menu data, and orders using server actions
-  const fetchData = async () => {
-    try {
-      setLoading(true)
-
-      // Get restaurant data using server action
-      const restaurantResult = await getRestaurantById(restaurantId)
-      if (!restaurantResult.success || !restaurantResult.data) {
-        throw new Error(restaurantResult.error || "Failed to load restaurant")
-      }
-
-      // Get table data using server action
-      const tableResult = await getTableDetails(tableId)
-      if (!tableResult.success || !tableResult.data) {
-        throw new Error(tableResult.error || "Failed to load table")
-      }
-
-      // Fetch active orders for this table
-      const ordersResult = await getTableOrders(restaurantId, tableId)
-      if (!ordersResult.success) {
-        throw new Error(ordersResult.error || "Failed to load orders")
-      }
-
-      const restaurantData = restaurantResult.data
-      const tableData = tableResult.data
-
-      // Sync server orders with cart state
-      if (ordersResult.data) {
-        syncServerOrders(restaurantId, tableId, ordersResult.data)
-      }
-      setRestaurant(restaurantData)
-      setTable(tableData)
-
-      // Flatten all menu items for infinite scroll
-      const items: any[] = []
-      if (restaurantData.menus && restaurantData.menus.length > 0) {
-        restaurantData.menus.forEach((menu: any) => {
-          menu.menu_categories?.forEach((category: any) => {
-            category.menu_items.forEach((item: any) => {
-              items.push({
-                ...item,
-                categoryName: category.name,
-                categoryId: category.id,
-              })
-            })
-          })
-        })
-      }
-
-      setAllItems(items)
-    } catch (err: any) {
-      console.error("Error fetching data:", err)
-      setError(err.message || "Failed to load data")
-    } finally {
-      setLoading(false)
-    }
-  }
-  
+  // Fetch all data using a single server action
   useEffect(() => {
-    console.log("Fetching data for restaurantId:", restaurantId, "and tableId:", tableId)
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+
+        // Get all data in one call
+        const result = await getTableFullData(restaurantId, tableId)
+        if (!result.success || !result.data) {
+          throw new Error(result.error || "Failed to load data")
+        }
+
+        const { table, restaurant, orders } = result.data
+        console.log(table, restaurant, orders)
+        // Sync server orders with cart state
+        if (orders && Array.isArray(orders)) {
+          syncServerOrders(restaurantId, tableId, orders)
+        }
+
+        setTableData({
+          restaurant,
+          table,
+          orders,
+        })
+
+        // Flatten all menu items for display
+        const items: any[] = []
+        if (restaurant.categories && Array.isArray(restaurant.categories)) {
+          restaurant.categories.forEach((category: any) => {
+            if (category.items && Array.isArray(category.items)) {
+              category.items.forEach((item: any) => {
+                items.push({
+                  ...item,
+                  categoryName: category.name,
+                  categoryId: category.id,
+                })
+              })
+            }
+          })
+        }
+
+        setAllItems(items)
+      } catch (err: any) {
+        console.error("Error fetching data:", err)
+        setError(err.message || "Failed to load data")
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchData()
   }, [restaurantId, tableId, syncServerOrders])
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category)
   }
+
+  const { restaurant, table } = tableData
 
   if (loading) {
     return (
@@ -174,7 +167,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
             items={allItems}
             activeCategory={activeCategory}
             onCategoryChange={handleCategoryChange}
-            categories={restaurant.menus?.[0]?.menu_categories || []}
+            categories={restaurant.categories || []}
           />
         </div>
       </div>

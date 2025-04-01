@@ -132,17 +132,49 @@ export async function updateTable(
 }
 
 // Get table orders
+// export async function getTableOrders(restaurantId: string, tableId: string) {
+//   try {
+//     const orders = await prisma.order.findMany({
+//       where: {
+//         restaurantId: Number(restaurantId),
+//         tableId: Number(tableId),
+//         status: { notIn: ['COMPLETED', 'CANCELLED'] }
+//       },
+//       include: {
+//         orderItems: {
+//           include: {
+//             orderItemChoices: {
+//               include: {
+//                 optionChoice: true,
+//                 menuItemOption: true,
+//               },
+//             },
+//           },
+//         },
+//       },
+//       orderBy: { createdAt: 'desc' },
+//     });
+
+//     const serializedOrders = serializePrismaData(orders)
+//     return { success: true, data: serializedOrders }
+//   } catch (error) {
+//     console.error(`Failed to fetch orders for table ${tableId}:`, error)
+//     return { success: false, error: "Failed to load orders" }
+//   }
+// }
+
 export async function getTableOrders(restaurantId: string, tableId: string) {
   try {
     const orders = await prisma.order.findMany({
       where: {
-        restaurantId: Number.parseInt(restaurantId),
-        tableId: Number.parseInt(tableId),
-        status: { notIn: ['COMPLETED', 'CANCELLED'] }
+        restaurantId: Number(restaurantId),
+        tableId: Number(tableId),
+        status: { notIn: ["COMPLETED", "CANCELLED"] },
       },
       include: {
         orderItems: {
           include: {
+            menuItem: true,
             orderItemChoices: {
               include: {
                 optionChoice: true,
@@ -152,13 +184,11 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
-    });
+    })
 
-    const serializedOrders = serializePrismaData(orders)
-    return { success: true, data: serializedOrders }
+    return { success: true, data: serializePrismaData(orders) }
   } catch (error) {
-    console.error(`Failed to fetch orders for table ${tableId}:`, error)
+    console.error("Failed to fetch orders:", error)
     return { success: false, error: "Failed to load orders" }
   }
 }
@@ -373,5 +403,88 @@ export async function createTableOrder(data: {
   } catch (error) {
     console.error("Failed to create table order:", error)
     return { success: false, error: "Failed to create order" }
+  }
+}
+
+
+// Get all table data including restaurant, menu items, options, and active orders in one call
+export async function getTableFullData(restaurantId: string, tableId: string) {
+  try {
+    // Get table data
+    const table = await prisma.table.findUnique({
+      where: { id: Number(tableId) },
+    })
+
+    if (!table) {
+      return { success: false, error: "Table not found" }
+    }
+
+    // Get restaurant with all menu data
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: Number(restaurantId) },
+      include: {
+        categories: {
+          orderBy: {
+            displayOrder: "asc",
+          },
+          include: {
+            items: {
+              orderBy: {
+                displayOrder: "asc",
+              },
+              include: {
+                menuItemOptions: {
+                  include: {
+                    optionChoices: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!restaurant) {
+      return { success: false, error: "Restaurant not found" }
+    }
+
+    // Get active orders for this table
+    const orders = await prisma.order.findMany({
+      where: {
+        restaurantId: Number(restaurantId),
+        tableId: Number(tableId),
+        status: { notIn: ["COMPLETED", "CANCELLED"] },
+      },
+      include: {
+        orderItems: {
+          include: {
+            menuItem: true,
+            orderItemChoices: {
+              include: {
+                optionChoice: true,
+                menuItemOption: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    // Return all data in one response
+    return {
+      success: true,
+      data: serializePrismaData({
+        table,
+        restaurant,
+        orders,
+      }),
+    }
+  } catch (error) {
+    console.error("Failed to fetch table data:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to load table data",
+    }
   }
 }
