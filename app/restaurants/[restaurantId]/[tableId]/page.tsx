@@ -41,7 +41,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
         }
 
         const { table, restaurant, orders } = result.data
-        console.log(table, restaurant, orders)
+
         // Sync server orders with cart state
         if (orders && Array.isArray(orders)) {
           syncServerOrders(restaurantId, tableId, orders)
@@ -157,7 +157,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
 
       {/* Food Menu Section */}
       <div className="bg-gray-50 flex-grow py-8">
-        <div className="container mx-auto bg-white p-8 rounded-t-3xl shadow-lg">
+        <div className="container mx-auto bg-white p-4 md:p-8 rounded-t-3xl shadow-lg">
           <div className="flex justify-center items-center gap-2 mb-2">
             <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
           </div>

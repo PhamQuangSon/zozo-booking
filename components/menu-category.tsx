@@ -17,7 +17,7 @@ interface MenuItem {
   name: string
   description: string
   price: number
-  image_url?: string
+  imageUrl?: string
   categoryName: string
   options?: any[]
 }
@@ -84,7 +84,7 @@ export function MenuCategory({ items, activeCategory, onCategoryChange, categori
       })
       return
     }
-    console.log("Adding item to cart:", item, options, quantity, specialInstructions);
+
     // Create a new cart item
     const cartItem: CartItem = {
       id: item.id,
@@ -132,7 +132,7 @@ export function MenuCategory({ items, activeCategory, onCategoryChange, categori
             >
               <div className="relative h-4 w-4 flex-shrink-0 mr-2">
                 <Image
-                  src={category.description || "/placeholder.svg?height=100&width=100"}
+                  src={category.imageUrl || "/placeholder.svg?height=100&width=100"}
                   alt={category.name}
                   fill
                   className="object-cover"
@@ -145,17 +145,17 @@ export function MenuCategory({ items, activeCategory, onCategoryChange, categori
       </div>
 
       {/* Menu Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-8">
         {filteredItems.slice(0, visibleItems).map((item) => (
           <div
             key={item.id}
-            className="group flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow p-4 gap-4"
+            className="group flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow p-2 md:p-4 gap-4"
           >
             {/* Image */}
             <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md">
               <div className="absolute inset-0 bg-black/50 group-hover:bg-transparent transition-colors duration-300"></div>
               <Image
-                src={item.image_url || "/placeholder.svg?height=100&width=100"}
+                src={item.imageUrl || "/placeholder.svg?height=100&width=100"}
                 alt={item.name}
                 fill
                 className="object-cover"
@@ -164,7 +164,7 @@ export function MenuCategory({ items, activeCategory, onCategoryChange, categori
             {/* Content */}
             <div className="flex-1 p-4 relative">
               {/* Item Name and Price */}
-              <div className="flex justify-between items-start mb-2">
+              <div className="flex justify-between items-start mb-2 flex-column md:flex-row">
                 <Dialog
                   open={dialogOpen && selectedItem?.id === item.id}
                   onOpenChange={(open) => {
