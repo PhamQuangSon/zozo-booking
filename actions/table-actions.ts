@@ -143,7 +143,6 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
       include: {
         orderItems: {
           include: {
-            menuItems: true,
             orderItemChoices: {
               include: {
                 optionChoice: true,
@@ -351,7 +350,6 @@ export async function createTableOrder(data: {
       include: {
         orderItems: {
           include: {
-            menuItems: true,
             orderItemChoices: {
               include: {
                 optionChoice: true,

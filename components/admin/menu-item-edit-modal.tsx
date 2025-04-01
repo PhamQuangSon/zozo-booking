@@ -35,27 +35,30 @@ interface MenuItemEditModalProps {
 export function MenuItemEditModal({
   menuItem,
   categories,
-  restaurants,
+  restaurants = [], // Add default empty array to prevent null/undefined errors
   open,
   onOpenChange,
   mode = "edit",
 }: MenuItemEditModalProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>(categories)
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>(categories || []) // Add default empty array
 
   const isCreating = mode === "create"
   const title = isCreating ? "Add Menu Item" : "Edit Menu Item"
   const buttonText = isCreating ? "Create" : "Save changes"
 
+  const defaultRestaurantId = restaurants?.[0]?.id
+  const defaultCategoryId = categories?.find(c => c.restaurantId === defaultRestaurantId)?.id
+
   const form = useForm<MenuItemFormValues>({
     resolver: zodResolver(menuItemSchema),
     defaultValues: {
       name: "",
-      description: "",
+      description: null,
       price: 0,
-      categoryId: 0,
-      restaurantId: 0,
+      categoryId: defaultCategoryId || 0,
+      restaurantId: defaultRestaurantId || 0,
       isAvailable: true,
       displayOrder: 0,
       imageUrl: null,
@@ -67,10 +70,10 @@ export function MenuItemEditModal({
 
   // Filter categories based on selected restaurant
   useEffect(() => {
-    if (currentRestaurantId) {
+    if (currentRestaurantId && categories?.length) {
       setFilteredCategories(categories.filter((category) => category.restaurantId === currentRestaurantId))
     } else {
-      setFilteredCategories(categories)
+      setFilteredCategories(categories || [])
     }
   }, [currentRestaurantId, categories])
 
@@ -80,7 +83,7 @@ export function MenuItemEditModal({
       form.reset({
         name: menuItem.name,
         description: menuItem.description,
-        price: Number(menuItem.price),
+        price: typeof menuItem.price === 'number' ? menuItem.price : Number(menuItem.price.toString()),
         categoryId: menuItem.categoryId,
         restaurantId: menuItem.restaurantId,
         isAvailable: menuItem.isAvailable,
@@ -88,8 +91,8 @@ export function MenuItemEditModal({
         imageUrl: menuItem.imageUrl,
       })
     } else if (mode === "create") {
-      const defaultRestaurantId = restaurants[0]?.id || 0
-      const defaultCategoryId = categories.find((c) => c.restaurantId === defaultRestaurantId)?.id || 0
+      const defaultRestaurantId = restaurants?.[0]?.id || 0
+      const defaultCategoryId = categories?.find((c) => c.restaurantId === defaultRestaurantId)?.id || 0
 
       form.reset({
         name: "",
@@ -110,27 +113,29 @@ export function MenuItemEditModal({
       let result
 
       if (isCreating) {
-        result = await createMenuItem({
+        const payload = {
           name: data.name,
-          description: data.description,
-          price: data.price,
-          categoryId: data.categoryId,
-          restaurantId: data.restaurantId,
-          isAvailable: data.isAvailable,
-          displayOrder: data.displayOrder,
-          imageUrl: data.imageUrl,
-        })
+          description: data.description ?? null,
+          price: parseFloat(data.price.toFixed(2)),
+          categoryId: Number(data.categoryId),
+          restaurantId: Number(data.restaurantId),
+          isAvailable: Boolean(data.isAvailable),
+          displayOrder: data.displayOrder ?? 0, 
+          imageUrl: data.imageUrl ?? null,
+        }
+        result = await createMenuItem(payload)
       } else if (menuItem) {
-        result = await updateMenuItem(menuItem.id, {
+        const payload = {
           name: data.name,
-          description: data.description,
-          price: data.price,
-          categoryId: data.categoryId,
-          restaurantId: data.restaurantId,
-          isAvailable: data.isAvailable,
-          displayOrder: data.displayOrder,
-          imageUrl: data.imageUrl,
-        })
+          description: data.description ?? null,
+          price: parseFloat(data.price.toFixed(2)),
+          categoryId: Number(data.categoryId),
+          restaurantId: Number(data.restaurantId),
+          isAvailable: Boolean(data.isAvailable),
+          displayOrder: data.displayOrder ?? menuItem.displayOrder ?? 0,
+          imageUrl: data.imageUrl ?? null,
+        }
+        result = await updateMenuItem(menuItem.id, payload)
       }
 
       if (result?.success) {
@@ -165,12 +170,11 @@ export function MenuItemEditModal({
 
     // Reset category if it doesn't belong to the selected restaurant
     const currentCategoryId = form.getValues("categoryId")
-    const categoryBelongsToRestaurant = categories.some(
-      (c) => c.id === currentCategoryId && c.restaurantId === restaurantId,
-    )
+    const categoryBelongsToRestaurant =
+      categories?.some((c) => c.id === currentCategoryId && c.restaurantId === restaurantId) || false
 
     if (!categoryBelongsToRestaurant) {
-      const firstCategoryForRestaurant = categories.find((c) => c.restaurantId === restaurantId)
+      const firstCategoryForRestaurant = categories?.find((c) => c.restaurantId === restaurantId)
       form.setValue("categoryId", firstCategoryForRestaurant?.id || 0)
     }
   }
@@ -229,8 +233,12 @@ export function MenuItemEditModal({
                         <Input
                           type="number"
                           step="0.01"
+                          min="0"
                           {...field}
-                          onChange={(e) => field.onChange(Number.parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value === '' ? 0 : Number(value));
+                          }}
                           disabled={isLoading}
                         />
                       </FormControl>
@@ -256,11 +264,11 @@ export function MenuItemEditModal({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {restaurants.map((restaurant) => (
+                          {restaurants?.map((restaurant) => (
                             <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
                               {restaurant.name}
                             </SelectItem>
-                          ))}
+                          )) || <SelectItem value="none">No restaurants available</SelectItem>}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -326,7 +334,7 @@ export function MenuItemEditModal({
                     control={form.control}
                     name="isAvailable"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-end space-x-2 space-y-0 rounded-md border p-4">
+                      <FormItem className="flex flex-column items-start items-end space-x-2 space-y-0 rounded-md p-4">
                         <FormControl>
                           <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
                         </FormControl>

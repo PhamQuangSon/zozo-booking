@@ -31,7 +31,7 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
         setLoading(true)
 
         // Get restaurant data using server action
-        const restaurantResult = await getRestaurantById(params.restaurantId)
+        const restaurantResult = await getRestaurantById(Number(params.restaurantId))
         if (!restaurantResult.success || !restaurantResult.data) {
           throw new Error(restaurantResult.error || "Failed to load restaurant")
         }

@@ -30,36 +30,15 @@ export async function getRestaurants() {
   }
 }
 
-// Get restaurant by ID
-export async function getRestaurantById(id: string) {
+// Get restaurant by ID with categories, menu items, and item options
+export async function getRestaurantById(id: number) {
   try {
-    const parsedId = Number.parseInt(id)
-    if (isNaN(parsedId)) {
-      return { success: false, error: "Invalid restaurant ID" }
-    }
-
     const restaurant = await prisma.restaurant.findUnique({
-      where: { id: parsedId },
+      where: { id },
       include: {
-        menus: {
-          where: { is_active: true },
-          include: {
-            menu_categories: {
-              orderBy: { display_order: "asc" },
-              include: {
-                menu_items: {
-                  where: { is_available: true },
-                  orderBy: { display_order: "asc" },
-                  include: {
-                    menuItemOptions: {
-                      include: {
-                        optionChoices: true
-                      }
-                    }
-                  }
-                },
-              },
-            },
+        categories: {
+          orderBy: {
+            displayOrder: "asc",
           },
         },
       },
@@ -69,15 +48,12 @@ export async function getRestaurantById(id: string) {
       return { success: false, error: "Restaurant not found" }
     }
 
-    // Serialize all Decimal values to numbers
-    const serializedRestaurant = serializePrismaData(restaurant)
-
-    return { success: true, data: serializedRestaurant }
+    return { success: true, data: serializePrismaData(restaurant) }
   } catch (error) {
-    console.error(`Failed to fetch restaurant with ID ${id}:`, error)
+    console.error("Failed to fetch restaurant:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to load restaurant details",
+      error: error instanceof Error ? error.message : "Failed to load restaurant",
     }
   }
 }
@@ -170,14 +146,42 @@ export async function deleteRestaurant(id: number) {
 }
 
 // Format menu items with proper currency
-export async function formatMenuItems(menuItems: any[], currency: Currency) {
+export async function formatMenuItems(menuItems: any[], currency: Currency = "USD") {
+  if (!menuItems || !Array.isArray(menuItems)) return []
+
   // First serialize any Decimal values
   const serializedItems = serializePrismaData(menuItems)
 
   // Then format the prices
-  return serializedItems.map((item: { price: number }) => ({
+  return serializedItems.map((item) => ({
     ...item,
-    formattedPrice: formatCurrency(item.price, currency),
+    formattedPrice: formatCurrency(item.price || 0, currency),
   }))
 }
 
+// Add a new function for formatting item options
+export async function formatItemOptions(itemOptions: any[], currency: Currency = "USD") {
+  if (!itemOptions || !Array.isArray(itemOptions)) return []
+
+  // First serialize any Decimal values
+  const serializedOptions = serializePrismaData(itemOptions)
+
+  // Then format the prices for options and their choices
+  return serializedOptions.map((option) => {
+    const formattedOption = {
+      ...option,
+      formattedPriceAdjustment: formatCurrency(option.priceAdjustment || 0, currency),
+    }
+
+    if (option.optionChoices && Array.isArray(option.optionChoices)) {
+      formattedOption.optionChoices = option.optionChoices.map((choice: any) => ({
+        ...choice,
+        formattedPriceAdjustment: formatCurrency(choice.priceAdjustment || 0, currency),
+      }))
+    } else {
+      formattedOption.optionChoices = []
+    }
+
+    return formattedOption
+  })
+}

@@ -18,11 +18,20 @@ import { Trash2, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Extended ItemOption type with relations
-type ItemOptionWithRelations = MenuItemOption & {
+// Extended ItemOption type with relations
+interface ItemOptionWithRelations extends Omit<MenuItemOption, "priceAdjustment"> {
   menuItem: MenuItem & {
     restaurant: Restaurant
   }
-  optionChoices: OptionChoice[]
+  optionChoices: (Omit<OptionChoice, "priceAdjustment"> & {
+    priceAdjustment: number
+  })[]
+}
+
+// Convert string/number to valid number
+const toValidNumber = (value: string | number | null | undefined): number => {
+  if (value === null || value === undefined || value === "") return 0
+  return typeof value === "number" ? value : Number(value)
 }
 
 interface ItemOptionEditModalProps {
@@ -35,7 +44,7 @@ interface ItemOptionEditModalProps {
 
 export function ItemOptionEditModal({
   itemOption,
-  menuItems,
+  menuItems = [], // Add default empty array to prevent null/undefined errors
   open,
   onOpenChange,
   mode = "edit",
@@ -52,11 +61,29 @@ export function ItemOptionEditModal({
 
   // Extract unique restaurants from menu items
   useEffect(() => {
-    const uniqueRestaurants = Array.from(
-      new Map(menuItems.map((item) => [item.restaurant.id, item.restaurant])).values(),
-    )
-    setRestaurants(uniqueRestaurants)
+    if (menuItems && menuItems.length > 0) {
+      // Create a map to store unique restaurants by ID
+      const restaurantMap = new Map<number, Restaurant>()
+
+      // Populate the map with restaurants from menu items
+      menuItems.forEach((item) => {
+        if (item.restaurant && !restaurantMap.has(item.restaurant.id)) {
+          restaurantMap.set(item.restaurant.id, item.restaurant)
+        }
+      })
+
+      // Convert the map values to an array
+      const uniqueRestaurants = Array.from(restaurantMap.values())
+      setRestaurants(uniqueRestaurants)
+    } else {
+      setRestaurants([])
+    }
   }, [menuItems])
+
+  const newOptionChoice = {
+    name: "",
+    priceAdjustment: 0,
+  }
 
   const form = useForm<ItemOptionFormValues>({
     resolver: zodResolver(itemOptionSchema),
@@ -64,7 +91,7 @@ export function ItemOptionEditModal({
       name: "",
       isRequired: false,
       menuItemId: 0,
-      optionChoices: [{ name: "", priceAdjustment: 0 }],
+      optionChoices: [newOptionChoice],
     },
   })
 
@@ -80,16 +107,18 @@ export function ItemOptionEditModal({
         name: itemOption.name,
         isRequired: itemOption.isRequired,
         menuItemId: itemOption.menuItemId,
-        optionChoices: itemOption.optionChoices.map((choice) => ({
-          id: choice.id,
-          name: choice.name,
-          priceAdjustment: Number(choice.priceAdjustment),
-        })),
+        optionChoices: Array.isArray(itemOption.optionChoices)
+          ? itemOption.optionChoices.map((choice) => ({
+              id: choice.id,
+              name: choice.name,
+              priceAdjustment: toValidNumber(choice.priceAdjustment),
+            }))
+          : [],
       })
 
       // Set selected restaurant
       const menuItem = menuItems.find((item) => item.id === itemOption.menuItemId)
-      if (menuItem) {
+      if (menuItem && menuItem.restaurant) {
         setSelectedRestaurantId(menuItem.restaurantId)
       }
     } else if (mode === "create") {
@@ -104,14 +133,14 @@ export function ItemOptionEditModal({
         name: "",
         isRequired: false,
         menuItemId: defaultMenuItem?.id || 0,
-        optionChoices: [{ name: "", priceAdjustment: 0 }],
+        optionChoices: [newOptionChoice],
       })
     }
   }, [itemOption, mode, form, menuItems, restaurants])
 
   // Filter menu items based on selected restaurant
   useEffect(() => {
-    if (selectedRestaurantId) {
+    if (selectedRestaurantId && menuItems.length > 0) {
       setFilteredMenuItems(menuItems.filter((item) => item.restaurantId === selectedRestaurantId))
     } else {
       setFilteredMenuItems(menuItems)
@@ -121,12 +150,35 @@ export function ItemOptionEditModal({
   const onSubmit = async (data: ItemOptionFormValues) => {
     setIsLoading(true)
     try {
+      // Validate that we have at least one option choice with a name
+      if (!data.optionChoices || data.optionChoices.length === 0 || !data.optionChoices[0].name) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "At least one option choice with a name is required",
+        })
+        setIsLoading(false)
+        return
+      }
+
       let result
 
       if (isCreating) {
-        result = await createItemOption(data)
+        result = await createItemOption({
+          ...data,
+          optionChoices: data.optionChoices.map((choice) => ({
+            ...choice,
+            priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+          })),
+        })
       } else if (itemOption) {
-        result = await updateItemOption(itemOption.id, data)
+        result = await updateItemOption(itemOption.id, {
+          ...data,
+          optionChoices: data.optionChoices.map((choice) => ({
+            ...choice,
+            priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+          })),
+        })
       }
 
       if (result?.success) {
@@ -199,7 +251,7 @@ export function ItemOptionEditModal({
                   control={form.control}
                   name="isRequired"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-end space-x-2 space-y-0 rounded-md border p-4">
+                    <FormItem className="flex flex-row items-end space-x-2 space-y-0 rounded-md p-4">
                       <FormControl>
                         <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
                       </FormControl>
@@ -221,11 +273,15 @@ export function ItemOptionEditModal({
                       <SelectValue placeholder="Select a restaurant" />
                     </SelectTrigger>
                     <SelectContent>
-                      {restaurants.map((restaurant) => (
-                        <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
-                          {restaurant.name}
-                        </SelectItem>
-                      ))}
+                      {restaurants.length > 0 ? (
+                        restaurants.map((restaurant) => (
+                          <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                            {restaurant.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-restaurants">No restaurants available</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </FormItem>
@@ -251,11 +307,15 @@ export function ItemOptionEditModal({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {filteredMenuItems.map((item) => (
-                            <SelectItem key={item.id} value={item.id.toString()}>
-                              {item.name}
-                            </SelectItem>
-                          ))}
+                          {filteredMenuItems.length > 0 ? (
+                            filteredMenuItems.map((item) => (
+                              <SelectItem key={item.id} value={item.id.toString()}>
+                                {item.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-menu-items">No menu items available</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -272,7 +332,7 @@ export function ItemOptionEditModal({
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => append({ name: "", priceAdjustment: 0 })}
+                      onClick={() => append(newOptionChoice)}
                       disabled={isLoading}
                     >
                       <Plus className="h-4 w-4 mr-1" /> Add Choice
@@ -308,8 +368,12 @@ export function ItemOptionEditModal({
                                 <Input
                                   type="number"
                                   step="0.01"
+                                  min="0"
                                   {...field}
-                                  onChange={(e) => field.onChange(Number.parseFloat(e.target.value) || 0)}
+                                  onChange={(e) => {
+                                    const value = e.target.value
+                                    field.onChange(value === "" ? 0 : Number.parseFloat(value))
+                                  }}
                                   disabled={isLoading}
                                 />
                               </FormControl>

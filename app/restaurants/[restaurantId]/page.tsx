@@ -27,7 +27,7 @@ import {
 export default function RestaurantPage() {
   const params = useParams()
   const router = useRouter()
-  const restaurantId = params.restaurantId as string
+  const restaurantId = params.restaurantId 
   const { currency } = useCurrencyStore()
 
   const [restaurant, setRestaurant] = useState<any>(null)
@@ -47,7 +47,7 @@ export default function RestaurantPage() {
   const fetchRestaurant = useCallback(async () => {
     try {
       setLoading(true)
-      const { success, data, error } = await getRestaurantById(restaurantId)
+      const { success, data, error } = await getRestaurantById(Number(restaurantId))
 
       if (success && data) {
         setRestaurant(data)

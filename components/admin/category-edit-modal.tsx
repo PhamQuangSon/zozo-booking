@@ -86,17 +86,17 @@ export function CategoryEditModal({
       if (isCreating) {
         result = await createCategory({
           name: data.name,
-          description: data.description,
+          description: data.description ?? null,
           restaurantId: data.restaurantId,
-          displayOrder: data.displayOrder,
+          displayOrder: data.displayOrder || 0,
           imageUrl: data.imageUrl,
         })
       } else if (category) {
         result = await updateCategory(category.id, {
           name: data.name,
-          description: data.description,
+          description: data.description ?? null,
           restaurantId: data.restaurantId,
-          displayOrder: data.displayOrder,
+          displayOrder: data.displayOrder || 0,
           imageUrl: data.imageUrl,
         })
       }

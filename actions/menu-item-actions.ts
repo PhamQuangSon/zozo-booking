@@ -4,10 +4,41 @@ import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 import { revalidatePath } from "next/cache"
 
-// Get all Category
+// Get all menu items
 export async function getMenuItems() {
   try {
-    const menus = await prisma.menuItem.findMany({
+    const menuItems = await prisma.menuItem.findMany({
+      include: {
+        category: true,
+        restaurant: true,
+        menuItemOptions: {
+          include: {
+            optionChoices: true,
+          },
+        },
+      },
+      orderBy: {
+        restaurant: {
+          name: "asc",
+        },
+      },
+    })
+
+    return { success: true, data: serializePrismaData(menuItems) }
+  } catch (error) {
+    console.error("Failed to fetch menu items:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to load menu items",
+      data: [],
+    }
+  }
+}
+
+// Get categories for menu items
+export async function getCategories() {
+  try {
+    const categories = await prisma.category.findMany({
       include: {
         restaurant: true,
       },
@@ -18,12 +49,12 @@ export async function getMenuItems() {
       },
     })
 
-    return { success: true, data: serializePrismaData(menus) }
+    return { success: true, data: serializePrismaData(categories) }
   } catch (error) {
-    console.error("Failed to fetch menus:", error)
+    console.error("Failed to fetch categories:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to load menus",
+      error: error instanceof Error ? error.message : "Failed to load categories",
       data: [],
     }
   }
@@ -34,155 +65,101 @@ export async function createMenuItem(data: {
   name: string
   description: string | null
   price: number
-  imageUrl: string | null
-  category_id: number
-  is_available: boolean
-  display_order: number
+  categoryId: number
+  restaurantId: number
+  isAvailable: boolean
+  displayOrder: number
+  imageUrl?: string | null
 }) {
   try {
-    const item = await prisma.menuItem.create({ data })
-    return { success: true, data: item }
+    const menuItem = await prisma.menuItem.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price.toFixed(2)),
+        categoryId: data.categoryId,
+        restaurantId: data.restaurantId,
+        isAvailable: data.isAvailable,
+        displayOrder: data.displayOrder,
+        imageUrl: data.imageUrl || null,
+      },
+    })
+    revalidatePath("/admin/menu-items")
+    return { success: true, data: menuItem }
   } catch (error) {
-    console.error('Failed to create menu item:', error)
-    return { success: false, error: 'Failed to create menu item' }
+    console.error("Failed to create menu item:", error)
+    return { success: false, error: "Failed to create menu item" }
   }
 }
 
-export async function updateMenuItem(id: number, data: {
-  name: string
-  description: string | null
-  price: number
-  imageUrl: string | null
-  is_available: boolean
-  display_order: number
-}) {
+export async function updateMenuItem(
+  id: number,
+  data: {
+    name: string
+    description: string | null
+    price: number
+    categoryId: number
+    restaurantId: number
+    isAvailable: boolean
+    displayOrder?: number
+    imageUrl?: string | null
+  },
+) {
   try {
-    const item = await prisma.menuItem.update({
+    const menuItem = await prisma.menuItem.update({
       where: { id },
-      data
+      data: {
+        name: data.name,
+        description: data.description,
+        price: parseFloat(data.price.toFixed(2)),
+        categoryId: data.categoryId,
+        restaurantId: data.restaurantId,
+        isAvailable: data.isAvailable,
+        displayOrder: data.displayOrder ?? 0,
+        imageUrl: data.imageUrl,
+      },
     })
-    return { success: true, data: item }
+    revalidatePath("/admin/menu-items")
+    return { success: true, data: menuItem }
   } catch (error) {
-    console.error('Failed to update menu item:', error)
-    return { success: false, error: 'Failed to update menu item' }
+    console.error("Failed to update menu item:", error)
+    return { success: false, error: "Failed to update menu item" }
   }
 }
 
 export async function deleteMenuItem(id: number) {
   try {
-    await prisma.menuItem.delete({ where: { id } })
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to delete menu item:', error)
-    return { success: false, error: 'Failed to delete menu item' }
-  }
-}
-
-// Option Choice CRUD
-export async function createOptionChoice(data: {
-  name: string
-  priceAdjustment: number
-  option_id: number
-}) {
-  try {
-    const choice = await prisma.optionChoice.create({ data })
-    return { success: true, data: choice }
-  } catch (error) {
-    console.error('Failed to create option choice:', error)
-    return { success: false, error: 'Failed to create option choice' }
-  }
-}
-
-export async function updateOptionChoice(id: number, data: {
-  name: string
-  priceAdjustment: number
-}) {
-  try {
-    const choice = await prisma.optionChoice.update({
+    // Get the menu item to find its restaurantId for path revalidation
+    const menuItem = await prisma.menuItem.findUnique({
       where: { id },
-      data
-    })
-    return { success: true, data: choice }
-  } catch (error) {
-    console.error('Failed to update option choice:', error)
-    return { success: false, error: 'Failed to update option choice' }
-  }
-}
-
-export async function deleteOptionChoice(id: number) {
-  try {
-    await prisma.optionChoice.delete({ where: { id } })
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to delete option choice:', error)
-    return { success: false, error: 'Failed to delete option choice' }
-  }
-}
-
-// Reordering functions
-export async function updateMenuOrder(menuId: number, newOrder: number) {
-  try {
-    await prisma.$executeRaw`
-      UPDATE "Menu"
-      SET display_order = ${newOrder}
-      WHERE id = ${menuId}
-    `
-
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to update menu order:', error)
-    return { success: false, error: 'Failed to update menu order' }
-  }
-}
-
-export async function updateCategoryOrder(categoryId: number, newOrder: number) {
-  try {
-    await prisma.$executeRaw`
-      UPDATE "category"
-      SET display_order = ${newOrder}
-      WHERE id = ${categoryId}
-    `
-
-    return { success: true }
-  } catch (error) {
-    console.error('Failed to update category order:', error)
-    return { success: false, error: 'Failed to update category order' }
-  }
-}
-
-export async function updateMenuItemOrder(itemId: number, newOrder: number) {
-  try {
-    // Start transaction to ensure all updates are atomic
-    await prisma.$transaction(async (prisma) => {
-      const menuItem = await prisma.menuItem.findUnique({
-        where: { id: itemId },
-        select: { category_id: true }
-      })
-
-      if (!menuItem) throw new Error('Menu item not found')
-
-      // Update the specific item's order
-      await prisma.menuItem.update({
-        where: { id: itemId },
-        data: { display_order: newOrder }
-      })
-
-      // Update other items' orders within the same category
-      await prisma.menuItem.updateMany({
-        where: {
-          NOT: { id: itemId },
-          category_id: menuItem.category_id,
-          display_order: { gte: newOrder }
-        },
-        data: {
-          display_order: { increment: 1 }
-        }
-      })
+      select: { restaurantId: true },
     })
 
+    await prisma.menuItem.delete({ where: { id } })
+
+    revalidatePath("/admin/menu-items")
+    if (menuItem?.restaurantId) {
+      revalidatePath(`/admin/restaurants/${menuItem.restaurantId}/menu`)
+    }
     return { success: true }
   } catch (error) {
-    console.error('Failed to update menu item order:', error)
-    return { success: false, error: 'Failed to update menu item order' }
+    console.error("Failed to delete menu item:", error)
+    return { success: false, error: "Failed to delete menu item" }
+  }
+}
+
+// Update menu item display order
+export async function updateMenuItemOrder(id: number, displayOrder: number) {
+  try {
+    await prisma.menuItem.update({
+      where: { id },
+      data: { displayOrder },
+    })
+
+    revalidatePath("/admin/restaurants/[restaurantId]/menu")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to update menu item display order:", error)
+    return { success: false, error: "Failed to update menu item display order" }
   }
 }
