@@ -1,25 +1,26 @@
 "use client"
-
-import type React from "react"
-
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Edit, Trash2, DotIcon as DragHandleDots2Icon } from "lucide-react"
+import { Plus, Trash2, GripVertical, ChevronDown, ChevronRight } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { MenuItemEditModal } from "@/components/admin/menu-item-edit-modal"
 import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal"
 import { deleteMenuItem, updateMenuItemOrder } from "@/actions/menu-item-actions"
-import { deleteItemOption } from "@/actions/item-option-actions"
+import { deleteItemOption, updateItemOptionDisplayOrder } from "@/actions/item-option-actions"
 import { useRouter } from "next/navigation"
-import type { Restaurant, MenuItem, MenuItemOption, Category } from "@prisma/client"
+import type { Restaurant, MenuItem, MenuItemOption, Category, OptionChoice } from "@prisma/client"
+import Image from "next/image"
 import {
   DndContext,
+  DragOverlay,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
+  type UniqueIdentifier,
+  type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core"
 import {
@@ -27,15 +28,14 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
-  arrayMove,
 } from "@dnd-kit/sortable"
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
 import { CSS } from "@dnd-kit/utilities"
 
 type RestaurantWithRelations = Restaurant & {
   categories: (Category & {
-    menuItems: (MenuItem & {
-      itemOptions: MenuItemOption[]
+    items: (MenuItem & {
+      menuItemOptions: MenuItemOption[]
     })[]
   })[]
 }
@@ -43,29 +43,25 @@ type RestaurantWithRelations = Restaurant & {
 type MenuItemWithRelations = MenuItem & {
   category: Category
   restaurant: Restaurant
-  itemOptions: MenuItemOption[]
-  formattedPrice?: string
+  menuItemOptions: MenuItemOption[]
 }
 
 type ItemOptionWithRelations = MenuItemOption & {
-  menuItem: MenuItem & {
+  optionChoices: OptionChoice[]
+  menuItem?: MenuItem & {
     restaurant: Restaurant
   }
-  formattedPriceAdjustment?: string
-  optionChoices: {
-    id: number
-    name: string
-    priceAdjustment: number
-    formattedPriceAdjustment?: string
-  }[]
 }
 
 interface RestaurantMenuClientProps {
   restaurant: RestaurantWithRelations
   allMenuItems: MenuItemWithRelations[]
   allItemOptions: ItemOptionWithRelations[]
-  restaurantId: number
+  restaurantId: string
 }
+
+// Helper function to generate unique IDs for drag items
+const generateItemId = (type: string, id: number) => `${type}-${id}`
 
 export function RestaurantMenuClient({
   restaurant,
@@ -79,6 +75,7 @@ export function RestaurantMenuClient({
   // State for menu items and options
   const [menuItems, setMenuItems] = useState<MenuItemWithRelations[]>([])
   const [itemOptions, setItemOptions] = useState<ItemOptionWithRelations[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
 
   // State for modals
   const [menuItemModalOpen, setMenuItemModalOpen] = useState(false)
@@ -87,25 +84,49 @@ export function RestaurantMenuClient({
   const [selectedItemOption, setSelectedItemOption] = useState<ItemOptionWithRelations | null>(null)
   const [modalMode, setModalMode] = useState<"create" | "edit">("create")
 
-  // State for active category and menu item
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null)
-  const [activeMenuItemId, setActiveMenuItemId] = useState<number | null>(null)
+  // State for expanded categories and items
+  const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({})
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(null)
+
+  // Drag and drop state
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
+  const [activeItem, setActiveItem] = useState<any | null>(null)
 
   // Filter menu items and options for this restaurant
   useEffect(() => {
-    // Filter menu items for this restaurant
-    const filteredMenuItems = allMenuItems.filter((item) => item.restaurantId === restaurantId)
-    setMenuItems(filteredMenuItems)
+    try {
+      // Set categories
+      const restaurantCategories = restaurant.categories || []
+      setCategories(restaurantCategories)
 
-    // Filter item options for the filtered menu items
-    const filteredItemOptions = allItemOptions.filter((option) =>
-      filteredMenuItems.some((item) => item.id === option.menuItemId),
-    )
-    setItemOptions(filteredItemOptions)
+      // Initialize expanded state for all categories
+      const initialExpandedState: Record<number, boolean> = {}
+      restaurantCategories.forEach((category) => {
+        initialExpandedState[category.id] = true
+      })
+      setExpandedCategories(initialExpandedState)
 
-    // Set active category if there are categories
-    if (restaurant.categories && restaurant.categories.length > 0) {
-      setActiveCategoryId(restaurant.categories[0].id)
+      // Filter menu items for this restaurant
+      const filteredMenuItems = Array.isArray(allMenuItems)
+        ? allMenuItems.filter((item) => item && item.restaurantId === Number(restaurantId))
+        : []
+      setMenuItems(filteredMenuItems)
+
+      // Filter item options for the filtered menu items
+      const filteredItemOptions = Array.isArray(allItemOptions)
+        ? allItemOptions.filter(
+            (option) => option && filteredMenuItems.some((item) => item && item.id === option.menuItemId),
+          )
+        : []
+      setItemOptions(filteredItemOptions)
+
+      // Set first category as selected if there are categories
+      if (restaurantCategories.length > 0) {
+        setSelectedCategoryId(restaurantCategories[0].id)
+      }
+    } catch (error) {
+      console.error("Error processing menu data:", error)
     }
   }, [restaurant, allMenuItems, allItemOptions, restaurantId])
 
@@ -113,7 +134,7 @@ export function RestaurantMenuClient({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // 8px movement required before drag starts
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -121,8 +142,17 @@ export function RestaurantMenuClient({
     }),
   )
 
+  // Toggle category expansion
+  const toggleCategoryExpansion = (categoryId: number) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [categoryId]: !prev[categoryId],
+    }))
+  }
+
   // Handle menu item modal
-  const handleAddMenuItem = () => {
+  const handleAddMenuItem = (categoryId: number) => {
+    setSelectedCategoryId(categoryId)
     setSelectedMenuItem(null)
     setModalMode("create")
     setMenuItemModalOpen(true)
@@ -143,7 +173,7 @@ export function RestaurantMenuClient({
 
   // Handle item option modal
   const handleAddItemOption = (menuItem: MenuItemWithRelations) => {
-    setActiveMenuItemId(menuItem.id)
+    setSelectedMenuItemId(menuItem.id)
     setSelectedItemOption(null)
     setModalMode("create")
     setItemOptionModalOpen(true)
@@ -159,71 +189,6 @@ export function RestaurantMenuClient({
     setItemOptionModalOpen(false)
     if (refresh) {
       router.refresh()
-    }
-  }
-
-  // Handle drag end for menu items
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-
-    if (!over || active.id === over.id) {
-      return
-    }
-
-    // Extract the IDs from the sortable item IDs (format: "item-{id}")
-    const activeId = Number(active.id.toString().replace("item-", ""))
-    const overId = Number(over.id.toString().replace("item-", ""))
-
-    // Find the items in the current category items
-    const activeIndex = categoryMenuItems.findIndex((item) => item.id === activeId)
-    const overIndex = categoryMenuItems.findIndex((item) => item.id === overId)
-
-    if (activeIndex !== -1 && overIndex !== -1) {
-      // Update the local state first for immediate UI feedback
-      const newItems = arrayMove(categoryMenuItems, activeIndex, overIndex)
-
-      // Update the display order of the items
-      const updatedItems = newItems.map((item, index) => ({
-        ...item,
-        displayOrder: index,
-      }))
-
-      // Update the menu items state
-      const updatedMenuItems = [...menuItems]
-      updatedItems.forEach((item) => {
-        if (item.categoryId === activeCategoryId) {
-          const updatedItem = updatedItems.find((updated) => updated.id === item.id)
-          if (updatedItem) {
-            item.displayOrder = updatedItem.displayOrder
-          }
-        }
-      })
-      setMenuItems(updatedMenuItems)
-
-      // Save the new order to the server
-      try {
-        const updates = updatedItems.map((item) => ({
-          id: item.id,
-          displayOrder: item.displayOrder,
-        }))
-
-        const result = await updateMenuItemOrder(updates)
-
-        if (!result.success) {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to update menu item order",
-          })
-        }
-      } catch (error) {
-        console.error("Error updating menu item order:", error)
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "An unexpected error occurred while updating the order",
-        })
-      }
     }
   }
 
@@ -278,218 +243,359 @@ export function RestaurantMenuClient({
     }
   }
 
-  // Get categories for this restaurant
-  const categories = restaurant.categories || []
+  // Drag and drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event
+    setActiveId(active.id)
 
-  // Get menu items for active category
-  const categoryMenuItems = activeCategoryId
-    ? menuItems
-        .filter((item) => item.categoryId === activeCategoryId)
-        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-    : []
+    // Find the item being dragged
+    if (typeof active.id === "string") {
+      const [type, idStr] = active.id.toString().split("-")
+      const id = Number.parseInt(idStr)
 
-  // Get item options for active menu item
-  const menuItemOptions = activeMenuItemId
-    ? itemOptions.filter((option) => option.menuItemId === activeMenuItemId).sort((a, b) => (a.id || 0) - (b.id || 0))
-    : []
+      if (type === "item") {
+        const item = menuItems.find((item) => item.id === id)
+        setActiveItem({ type, item })
+      } else if (type === "option") {
+        const option = itemOptions.find((option) => option.id === id)
+        setActiveItem({ type, item: option })
+      }
+    }
+  }
 
-  // Sortable item component
-  function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id })
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event
+
+    if (!over) {
+      setActiveId(null)
+      setActiveItem(null)
+      return
+    }
+
+    // Handle menu item reordering
+    if (active.id.toString().startsWith("item-") && over.id.toString().startsWith("item-")) {
+      const activeId = Number.parseInt(active.id.toString().split("-")[1])
+      const overId = Number.parseInt(over.id.toString().split("-")[1])
+
+      if (activeId !== overId) {
+        try {
+          const result = await updateMenuItemOrder(activeId, overId)
+
+          if (result.success) {
+            toast({
+              title: "Order updated",
+              description: "Menu item order has been updated successfully.",
+            })
+            router.refresh()
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: result.error || "Failed to update menu item order",
+            })
+          }
+        } catch (error) {
+          console.error("Error updating order:", error)
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to update item order",
+          })
+        }
+      }
+    }
+
+    // Handle option reordering
+    if (active.id.toString().startsWith("option-") && over.id.toString().startsWith("option-")) {
+      const activeId = Number.parseInt(active.id.toString().split("-")[1])
+      const overId = Number.parseInt(over.id.toString().split("-")[1])
+
+      if (activeId !== overId) {
+        try {
+          const result = await updateItemOptionDisplayOrder(activeId, overId)
+
+          if (result.success) {
+            toast({
+              title: "Order updated",
+              description: "Option order has been updated successfully.",
+            })
+            router.refresh()
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: result.error || "Failed to update option order",
+            })
+          }
+        } catch (error) {
+          console.error("Error updating order:", error)
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to update option order",
+          })
+        }
+      }
+    }
+
+    setActiveId(null)
+    setActiveItem(null)
+  }
+
+  // Sortable item components
+  const SortableCategory = ({ category }: { category: Category }) => {
+    const isExpanded = expandedCategories[category.id] || false
+    const categoryItems = menuItems.filter((item) => item.categoryId === category.id)
+
+    return (
+      <div className="border-b last:border-b-0">
+        <div className="flex items-center justify-between p-4 hover:bg-gray-50">
+          <div className="flex items-center gap-2">
+            <GripVertical className="h-5 w-5 text-gray-400" />
+            <button onClick={() => toggleCategoryExpansion(category.id)} className="flex items-center gap-2">
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4 text-gray-500" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-gray-500" />
+              )}
+              <span className="font-medium">{category.name}</span>
+            </button>
+            <span className="text-sm text-gray-500">• {categoryItems.length} items</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleAddMenuItem(category.id)}>
+              Add Item
+            </Button>
+            <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50">
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {isExpanded && (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={categoryItems.map((item) => generateItemId("item", item.id))}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="pl-8">
+                {categoryItems.map((item) => (
+                  <SortableMenuItem key={item.id} item={item} />
+                ))}
+              </div>
+            </SortableContext>
+
+            <DragOverlay>
+              {activeId && activeItem?.type === "item" ? (
+                <div className="p-4 bg-white border rounded-md shadow-md">
+                  <div className="flex items-center gap-3">
+                    {activeItem.item.imageUrl && (
+                      <div className="relative h-10 w-10 rounded-md overflow-hidden">
+                        <Image
+                          src={activeItem.item.imageUrl || "/placeholder.svg"}
+                          alt={activeItem.item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-medium">{activeItem.item.name}</div>
+                      <div className="text-sm text-gray-500">${Number(activeItem.item.price).toFixed(2)}</div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
+      </div>
+    )
+  }
+
+  const SortableMenuItem = ({ item }: { item: MenuItemWithRelations }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+      id: generateItemId("item", item.id),
+    })
 
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+
+    const itemOptions = allItemOptions.filter((option) => option.menuItemId === item.id)
+    const isExpanded = selectedMenuItemId === item.id
+
+    return (
+      <div className="border-b last:border-b-0">
+        <div ref={setNodeRef} style={style} className="flex items-center justify-between p-4 hover:bg-gray-50">
+          <div className="flex items-center gap-3">
+            <div {...attributes} {...listeners} className="cursor-grab">
+              <GripVertical className="h-5 w-5 text-gray-400" />
+            </div>
+            <div
+              className="flex items-center gap-3 cursor-pointer"
+              onClick={() => setSelectedMenuItemId(isExpanded ? null : item.id)}
+            >
+              {item.imageUrl ? (
+                <div className="relative h-10 w-10 rounded-md overflow-hidden">
+                  <Image src={item.imageUrl || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                </div>
+              ) : (
+                <div className="h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">
+                  <span className="text-xs text-gray-500">No img</span>
+                </div>
+              )}
+              <div>
+                <div className="font-medium">{item.name}</div>
+                <div className="text-sm text-gray-500">
+                  ${Number(item.price).toFixed(2)} • {item.isAvailable ? "Available" : "Unavailable"}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => handleAddItemOption(item)}>
+              Add Option
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => handleEditMenuItem(item)}>
+              <Plus className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={() => handleDeleteMenuItem(item.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {isExpanded && (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={itemOptions.map((option) => generateItemId("option", option.id))}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="pl-12 bg-gray-50">
+                {itemOptions.map((option) => (
+                  <SortableItemOption key={option.id} option={option} />
+                ))}
+                {itemOptions.length === 0 && (
+                  <div className="p-4 text-center text-gray-500 text-sm">No options for this item</div>
+                )}
+              </div>
+            </SortableContext>
+
+            <DragOverlay>
+              {activeId && activeItem?.type === "option" ? (
+                <div className="p-4 bg-white border rounded-md shadow-md">
+                  <div className="font-medium">{activeItem.item.name}</div>
+                  <div className="text-sm text-gray-500">{activeItem.item.isRequired ? "Required" : "Optional"}</div>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
+      </div>
+    )
+  }
+
+  const SortableItemOption = ({ option }: { option: ItemOptionWithRelations }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+      id: generateItemId("option", option.id),
+    })
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
     }
 
     return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        {children}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="flex items-center justify-between p-4 border-b last:border-b-0 hover:bg-gray-100"
+      >
+        <div className="flex items-center gap-3">
+          <div {...attributes} {...listeners} className="cursor-grab">
+            <GripVertical className="h-5 w-5 text-gray-400" />
+          </div>
+          <div>
+            <div className="font-medium">{option.name}</div>
+            <div className="text-sm text-gray-500">{option.isRequired ? "Required" : "Optional"}</div>
+
+            {/* Option Choices */}
+            {Array.isArray(option.optionChoices) && option.optionChoices.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {option.optionChoices.map((choice) => (
+                  <div key={choice.id} className="text-sm pl-4 border-l-2 border-gray-200">
+                    <span className="font-medium">{choice.name}</span>
+                    {Number(choice.priceAdjustment) > 0 && (
+                      <span className="text-gray-500"> (+${Number(choice.priceAdjustment).toFixed(2)})</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => handleEditItemOption(option)}>
+            <Plus className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-red-500 hover:text-red-600 hover:bg-red-50"
+            onClick={() => handleDeleteItemOption(option.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">{restaurant.name} - Menu</h2>
-        <Button onClick={handleAddMenuItem}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Menu Item
-        </Button>
+      <div>
+        <h1 className="text-2xl font-bold">Menu Management</h1>
+        <p className="text-gray-500">Drag and drop to organize your menu structure</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Categories */}
-        <Card className="md:col-span-3">
-          <CardHeader>
-            <CardTitle>Categories</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {categories.map((category) => (
-                <div
-                  key={category.id}
-                  className={`p-4 cursor-pointer hover:bg-accent ${
-                    activeCategoryId === category.id ? "bg-accent" : ""
-                  }`}
-                  onClick={() => setActiveCategoryId(category.id)}
-                >
-                  <div className="font-medium">{category.name}</div>
-                  <div className="text-sm text-muted-foreground">{category.menuItems?.length || 0} items</div>
-                </div>
-              ))}
-              {categories.length === 0 && (
-                <div className="p-4 text-center text-muted-foreground">No categories found</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+      <Card>
+        <CardContent className="p-0">
+          <div className="p-4 flex items-center justify-between border-b">
+            <h2 className="text-lg font-semibold">Menu Structure</h2>
+            <Button>Add Menu</Button>
+          </div>
 
-        {/* Menu Items */}
-        <Card className="md:col-span-4">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Menu Items</CardTitle>
-            {activeCategoryId && (
-              <Button size="sm" onClick={handleAddMenuItem}>
-                <Plus className="h-4 w-4 mr-1" />
-                Add
-              </Button>
+          <div>
+            {categories.map((category) => (
+              <SortableCategory key={category.id} category={category} />
+            ))}
+            {categories.length === 0 && (
+              <div className="p-8 text-center text-gray-500">No categories found. Add a category to get started.</div>
             )}
-          </CardHeader>
-          <CardContent className="p-0">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              modifiers={[restrictToVerticalAxis]}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={categoryMenuItems.map((item) => `item-${item.id}`)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="divide-y">
-                  {categoryMenuItems.map((item) => (
-                    <SortableItem key={item.id} id={`item-${item.id}`}>
-                      <div
-                        className={`p-4 cursor-pointer hover:bg-accent ${
-                          activeMenuItemId === item.id ? "bg-accent" : ""
-                        }`}
-                        onClick={() => setActiveMenuItemId(item.id)}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <DragHandleDots2Icon className="h-5 w-5 text-muted-foreground cursor-grab" />
-                            <div>
-                              <div className="font-medium">{item.name}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {item.formattedPrice || `$${Number(item.price).toFixed(2)}`} •
-                                {item.isAvailable ? " Available" : " Unavailable"}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditMenuItem(item)
-                              }}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleDeleteMenuItem(item.id)
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </SortableItem>
-                  ))}
-                  {categoryMenuItems.length === 0 && activeCategoryId && (
-                    <div className="p-4 text-center text-muted-foreground">No menu items in this category</div>
-                  )}
-                  {!activeCategoryId && (
-                    <div className="p-4 text-center text-muted-foreground">Select a category to view menu items</div>
-                  )}
-                </div>
-              </SortableContext>
-            </DndContext>
-          </CardContent>
-        </Card>
-
-        {/* Item Options */}
-        <Card className="md:col-span-5">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Item Options</CardTitle>
-            {activeMenuItemId && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  const menuItem = menuItems.find((item) => item.id === activeMenuItemId)
-                  if (menuItem) {
-                    handleAddItemOption(menuItem)
-                  }
-                }}
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Option
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {menuItemOptions.map((option) => (
-                <div key={option.id} className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{option.name}</div>
-                      <div className="text-sm text-muted-foreground">{option.isRequired ? "Required" : "Optional"}</div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleEditItemOption(option)}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteItemOption(option.id)}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Option Choices */}
-                  <div className="mt-2 space-y-1">
-                    {option.optionChoices?.map((choice) => (
-                      <div key={choice.id} className="text-sm pl-4 border-l-2 border-muted">
-                        <span className="font-medium">{choice.name}</span>
-                        {choice.priceAdjustment > 0 && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            ({choice.formattedPriceAdjustment || `+$${Number(choice.priceAdjustment).toFixed(2)}`})
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {menuItemOptions.length === 0 && activeMenuItemId && (
-                <div className="p-4 text-center text-muted-foreground">No options for this menu item</div>
-              )}
-              {!activeMenuItemId && (
-                <div className="p-4 text-center text-muted-foreground">Select a menu item to view options</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Modals */}
       <MenuItemEditModal
@@ -511,4 +617,6 @@ export function RestaurantMenuClient({
     </div>
   )
 }
+
+export default RestaurantMenuClient
 

@@ -127,12 +127,20 @@ export async function deleteMenuItem(id: number) {
 // Update menu item display order
 export async function updateMenuItemOrder(id: number, displayOrder: number) {
   try {
+    // Get the menu item to find its restaurantId for path revalidation
+    const menuItem = await prisma.menuItem.findUnique({
+      where: { id },
+      select: { restaurantId: true },
+    })
+
     await prisma.menuItem.update({
       where: { id },
       data: { displayOrder },
     })
 
-    revalidatePath("/admin/restaurants/[restaurantId]/menu")
+    if (menuItem?.restaurantId) {
+      revalidatePath(`/admin/restaurants/${menuItem.restaurantId}/menu`)
+    }
     return { success: true }
   } catch (error) {
     console.error("Failed to update menu item display order:", error)

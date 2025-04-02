@@ -1,30 +1,27 @@
-import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getMenuItems } from "@/actions/menu-item-actions"
-import { getItemOptions } from "@/actions/item-option-actions"
+import { getCachedRestaurantById } from "@/lib/restaurant-cache"
 import { notFound } from "next/navigation"
 import { RestaurantMenuClient } from "@/components/admin/restaurant-menu-client"
 
 export default async function RestaurantMenuPage({ params }: { params: { restaurantId: string } }) {
-  // Fetch restaurant data
-  const restaurantResult = await getRestaurantById(Number.parseInt(params.restaurantId))
+  const { restaurantId } = params
 
-  if (!restaurantResult.success || !restaurantResult.data) {
+  // Use the cached version of getRestaurantById
+  const { success, data: restaurant, error } = await getCachedRestaurantById(restaurantId)
+
+  if (!success || !restaurant) {
     notFound()
   }
 
-  // Fetch all menu items (we'll filter by restaurant on the client)
-  const menuItemsResult = await getMenuItems()
-
-  // Fetch all item options
-  const itemOptionsResult = await getItemOptions()
-
   return (
-    <RestaurantMenuClient
-      restaurant={restaurantResult.data}
-      allMenuItems={menuItemsResult.success ? menuItemsResult.data : []}
-      allItemOptions={itemOptionsResult.success ? itemOptionsResult.data : []}
-      restaurantId={Number.parseInt(params.restaurantId)}
-    />
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Menu for {restaurant.name}</h1>
+      <RestaurantMenuClient
+        restaurant={restaurant}
+        restaurantId={restaurantId}
+        allMenuItems={restaurant.categories?.flatMap((c) => c.items) || []}
+        allItemOptions={restaurant.categories?.flatMap((c) => c.items?.flatMap((i) => i.menuItemOptions) || []) || []}
+      />
+    </div>
   )
 }
 

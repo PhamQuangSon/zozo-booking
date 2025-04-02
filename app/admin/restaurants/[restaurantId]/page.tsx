@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getRestaurantTables } from "@/actions/table-actions"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,11 +7,12 @@ import Link from "next/link"
 import { Edit, Plus } from "lucide-react"
 import { tableStatusColors } from "@/types/status-colors"
 import { formatCurrency } from "@/lib/i18n";
+import { getCachedRestaurantById } from "@/lib/restaurant-cache"
 
 export default async function RestaurantDetailPage({ params }: { params: { restaurantId: string } }) {
-  const restaurantId  = params.restaurantId;
+  const { restaurantId } = params
   // Fetch restaurant details
-  const { success, data: restaurant, error } = await getRestaurantById(restaurantId)
+  const { success, data: restaurant, error } = await getCachedRestaurantById(restaurantId)
 
   if (!success || !restaurant) {
     notFound()

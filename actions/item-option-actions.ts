@@ -182,14 +182,28 @@ export async function deleteItemOption(id: number) {
 }
 
 // Update item option display order
-export async function updateItemOptionDisplayOrder(id: number, displayOrder: number) {
+export async function updateItemOptionDisplayOrder(itemOptionId: number, newOrder: number) {
   try {
-    await prisma.menuItemOption.update({
-      where: { id },
-      data: { displayOrder },
+    // Get the current item option
+    const itemOption = await prisma.menuItemOption.findUnique({
+      where: { id: itemOptionId },
+      select: { menuItemId: true, displayOrder: true },
     })
 
-    revalidatePath("/admin/restaurants/[restaurantId]/menu")
+    if (!itemOption) {
+      return { success: false, error: "Item option not found" }
+    }
+
+    // Update the display order
+    await prisma.menuItemOption.update({
+      where: { id: itemOptionId },
+      data: { displayOrder: newOrder },
+    })
+
+    // Revalidate paths
+    revalidatePath("/admin/item-options")
+    revalidatePath(`/admin/restaurants/${itemOption.menuItemId}/menu`)
+
     return { success: true }
   } catch (error) {
     console.error("Failed to update item option display order:", error)
