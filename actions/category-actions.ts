@@ -95,3 +95,47 @@ export async function deleteCategory(id: number) {
   }
 }
 
+
+// Update category display order
+export async function updateCategoryDisplayOrder(categoryId: number, targetOrderId: number) {
+  try {
+    // Get the category to update
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
+      select: { restaurantId: true }
+    });
+
+    if (!category) {
+      return { success: false, error: "Category not found" };
+    }
+
+    // Get the target category to get its display order
+    const targetCategory = await prisma.category.findUnique({
+      where: { id: targetOrderId },
+      select: { displayOrder: true }
+    });
+
+    if (!targetCategory) {
+      return { success: false, error: "Target category not found" };
+    }
+
+    // Update the category's display order
+    const updatedCategory = await prisma.category.update({
+      where: { id: categoryId },
+      data: { displayOrder: targetCategory.displayOrder }
+    });
+
+    // Revalidate paths
+    revalidatePath("/admin/categories");
+    revalidatePath(`/admin/restaurants/${category.restaurantId}/menu`);
+    
+    return { success: true, data: updatedCategory };
+  } catch (error) {
+    console.error("Failed to update category display order:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to update category display order" 
+    };
+  }
+}
+

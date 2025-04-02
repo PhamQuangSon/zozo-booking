@@ -43,7 +43,9 @@ export async function getRestaurantById(id: string) {
           },
           include: {
             items: {
-              include: {
+              include: { // Add includes for category and restaurant on the item itself
+                category: true, // Include the parent category
+                restaurant: true, // Include the parent restaurant
                 menuItemOptions: {
                   include: {
                     optionChoices: true,

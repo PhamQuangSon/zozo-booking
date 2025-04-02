@@ -187,7 +187,7 @@ export async function updateItemOptionDisplayOrder(itemOptionId: number, newOrde
     // Get the current item option
     const itemOption = await prisma.menuItemOption.findUnique({
       where: { id: itemOptionId },
-      select: { menuItemId: true, displayOrder: true },
+      select: { menuItemId: true },
     })
 
     if (!itemOption) {
@@ -210,4 +210,3 @@ export async function updateItemOptionDisplayOrder(itemOptionId: number, newOrde
     return { success: false, error: "Failed to update item option display order" }
   }
 }
-

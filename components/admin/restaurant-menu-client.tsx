@@ -11,10 +11,16 @@ import { deleteItemOption, updateItemOptionDisplayOrder } from "@/actions/item-o
 import { useRouter } from "next/navigation"
 import type { Restaurant, MenuItem, MenuItemOption, Category, OptionChoice } from "@prisma/client"
 import Image from "next/image"
+import type {
+  RestaurantWithCategories, // Renamed from RestaurantWithRelations
+  MenuItemWithRelations,
+  ItemOptionWithRelations,
+  RestaurantMenuClientProps, // Import props type
+} from "@/types/menu-buider-types"
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
+  closestCorners,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -22,6 +28,8 @@ import {
   type UniqueIdentifier,
   type DragStartEvent,
   type DragEndEvent,
+	defaultDropAnimationSideEffects,
+	DropAnimation,
 } from "@dnd-kit/core"
 import {
   SortableContext,
@@ -31,34 +39,8 @@ import {
 } from "@dnd-kit/sortable"
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
 import { CSS } from "@dnd-kit/utilities"
-
-type RestaurantWithRelations = Restaurant & {
-  categories: (Category & {
-    items: (MenuItem & {
-      menuItemOptions: MenuItemOption[]
-    })[]
-  })[]
-}
-
-type MenuItemWithRelations = MenuItem & {
-  category: Category
-  restaurant: Restaurant
-  menuItemOptions: MenuItemOption[]
-}
-
-type ItemOptionWithRelations = MenuItemOption & {
-  optionChoices: OptionChoice[]
-  menuItem?: MenuItem & {
-    restaurant: Restaurant
-  }
-}
-
-interface RestaurantMenuClientProps {
-  restaurant: RestaurantWithRelations
-  allMenuItems: MenuItemWithRelations[]
-  allItemOptions: ItemOptionWithRelations[]
-  restaurantId: string
-}
+import { updateCategoryOrder } from "@/actions/order-actions"
+import { updateCategoryDisplayOrder } from "@/actions/category-actions"
 
 // Helper function to generate unique IDs for drag items
 const generateItemId = (type: string, id: number) => `${type}-${id}`
@@ -93,6 +75,16 @@ export function RestaurantMenuClient({
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null)
   const [activeItem, setActiveItem] = useState<any | null>(null)
 
+	const dropAnimation: DropAnimation = {
+		sideEffects: defaultDropAnimationSideEffects({
+			styles: {
+				active: {
+					opacity: '0.5',
+				},
+			},
+		}),
+	};
+	
   // Filter menu items and options for this restaurant
   useEffect(() => {
     try {
@@ -256,21 +248,55 @@ export function RestaurantMenuClient({
       if (type === "item") {
         const item = menuItems.find((item) => item.id === id)
         setActiveItem({ type, item })
-      } else if (type === "option") {
-        const option = itemOptions.find((option) => option.id === id)
-        setActiveItem({ type, item: option })
-      }
+      } else if (type === "category") {
+				const category = categories.find((category) => category.id === id)
+				setActiveItem({ type, item: category })
+			}
     }
   }
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
-
+		console.log(active, over)
+		
     if (!over) {
       setActiveId(null)
       setActiveItem(null)
       return
     }
+
+		// Handle category reordering
+		if (active.id.toString().startsWith("category-") && over.id.toString().startsWith("category-")) {
+			const activeId = Number.parseInt(active.id.toString().split("-")[1])
+			const overId = Number.parseInt(over.id.toString().split("-")[1])
+
+			if (activeId !== overId) {
+				try {
+          const result = await updateCategoryDisplayOrder(activeId, overId)
+
+          if (result.success) {
+            toast({
+              title: "Order updated",
+              description: "Category order has been updated successfully.",
+            })
+            router.refresh()
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: result.error || "Failed to update category order",
+            })
+          }
+				} catch (error) {
+					console.error("Error updating order:", error)
+					toast({
+						variant: "destructive",
+						title: "Error",
+						description: "Failed to update category order",
+					})
+				}
+			}
+		}
 
     // Handle menu item reordering
     if (active.id.toString().startsWith("item-") && over.id.toString().startsWith("item-")) {
@@ -305,53 +331,32 @@ export function RestaurantMenuClient({
       }
     }
 
-    // Handle option reordering
-    if (active.id.toString().startsWith("option-") && over.id.toString().startsWith("option-")) {
-      const activeId = Number.parseInt(active.id.toString().split("-")[1])
-      const overId = Number.parseInt(over.id.toString().split("-")[1])
-
-      if (activeId !== overId) {
-        try {
-          const result = await updateItemOptionDisplayOrder(activeId, overId)
-
-          if (result.success) {
-            toast({
-              title: "Order updated",
-              description: "Option order has been updated successfully.",
-            })
-            router.refresh()
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Error",
-              description: result.error || "Failed to update option order",
-            })
-          }
-        } catch (error) {
-          console.error("Error updating order:", error)
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: "Failed to update option order",
-          })
-        }
-      }
-    }
-
     setActiveId(null)
     setActiveItem(null)
   }
 
   // Sortable item components
   const SortableCategory = ({ category }: { category: Category }) => {
+		const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+      id: generateItemId("category", category.id),
+    })
+
+		const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    }
+
     const isExpanded = expandedCategories[category.id] || false
     const categoryItems = menuItems.filter((item) => item.categoryId === category.id)
 
     return (
       <div className="border-b last:border-b-0">
-        <div className="flex items-center justify-between p-4 hover:bg-gray-50">
+        <div ref={setNodeRef} style={style}  className="flex items-center justify-between p-4 hover:bg-gray-50">
           <div className="flex items-center gap-2">
-            <GripVertical className="h-5 w-5 text-gray-400" />
+						<div {...attributes} {...listeners} className="cursor-grab">
+              <GripVertical className="h-5 w-5 text-gray-400" />
+            </div>
             <button onClick={() => toggleCategoryExpansion(category.id)} className="flex items-center gap-2">
               {isExpanded ? (
                 <ChevronDown className="h-4 w-4 text-gray-500" />
@@ -373,16 +378,9 @@ export function RestaurantMenuClient({
         </div>
 
         {isExpanded && (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
             <SortableContext
-              items={categoryItems.map((item) => generateItemId("item", item.id))}
-              strategy={verticalListSortingStrategy}
+              items={categoryItems.map((category) => generateItemId("category", category.id))}
+              strategy={verticalListSortingStrategy} 
             >
               <div className="pl-8">
                 {categoryItems.map((item) => (
@@ -390,30 +388,6 @@ export function RestaurantMenuClient({
                 ))}
               </div>
             </SortableContext>
-
-            <DragOverlay>
-              {activeId && activeItem?.type === "item" ? (
-                <div className="p-4 bg-white border rounded-md shadow-md">
-                  <div className="flex items-center gap-3">
-                    {activeItem.item.imageUrl && (
-                      <div className="relative h-10 w-10 rounded-md overflow-hidden">
-                        <Image
-                          src={activeItem.item.imageUrl || "/placeholder.svg"}
-                          alt={activeItem.item.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <div>
-                      <div className="font-medium">{activeItem.item.name}</div>
-                      <div className="text-sm text-gray-500">${Number(activeItem.item.price).toFixed(2)}</div>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
         )}
       </div>
     )
@@ -480,36 +454,14 @@ export function RestaurantMenuClient({
         </div>
 
         {isExpanded && (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={itemOptions.map((option) => generateItemId("option", option.id))}
-              strategy={verticalListSortingStrategy}
-            >
-              <div className="pl-12 bg-gray-50">
-                {itemOptions.map((option) => (
-                  <SortableItemOption key={option.id} option={option} />
-                ))}
-                {itemOptions.length === 0 && (
-                  <div className="p-4 text-center text-gray-500 text-sm">No options for this item</div>
-                )}
-              </div>
-            </SortableContext>
-
-            <DragOverlay>
-              {activeId && activeItem?.type === "option" ? (
-                <div className="p-4 bg-white border rounded-md shadow-md">
-                  <div className="font-medium">{activeItem.item.name}</div>
-                  <div className="text-sm text-gray-500">{activeItem.item.isRequired ? "Required" : "Optional"}</div>
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+						<div className="pl-12 bg-gray-50">
+						{itemOptions.map((option) => (
+							<SortableItemOption key={option.id} option={option} />
+						))}
+						{itemOptions.length === 0 && (
+							<div className="p-4 text-center text-gray-500 text-sm">No options for this item</div>
+						)}
+					</div>
         )}
       </div>
     )
@@ -572,6 +524,34 @@ export function RestaurantMenuClient({
     )
   }
 
+	// Drag Preview Components (Ensure types match imported ones)
+	const CategoryDragPreview = ({ category }: { category: Category }) => (
+		<div className="p-4 bg-white border rounded-md shadow-lg">
+			<div className="font-medium">{category.name}</div>
+		</div>
+	)
+	
+	const MenuItemDragPreview = ({ item }: { item: MenuItemWithRelations }) => (
+	<div className="p-4 bg-white border rounded-md shadow-lg">
+		<div className="flex items-center gap-3">
+			{item.imageUrl && (
+				<div className="relative h-10 w-10 rounded-md overflow-hidden">
+					<Image
+						src={item.imageUrl || "/placeholder.svg"}
+						alt={item.name}
+						fill
+						className="object-cover"
+					/>
+				</div>
+			)}
+			<div>
+				<div className="font-medium">{item.name}</div>
+				<div className="text-sm text-gray-500">${Number(item.price).toFixed(2)}</div>
+			</div>
+		</div>
+	</div>
+	)
+
   return (
     <div className="space-y-6">
       <div>
@@ -585,15 +565,26 @@ export function RestaurantMenuClient({
             <h2 className="text-lg font-semibold">Menu Structure</h2>
             <Button>Add Menu</Button>
           </div>
-
-          <div>
-            {categories.map((category) => (
-              <SortableCategory key={category.id} category={category} />
-            ))}
-            {categories.length === 0 && (
-              <div className="p-8 text-center text-gray-500">No categories found. Add a category to get started.</div>
-            )}
-          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            modifiers={[restrictToVerticalAxis]}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+						<div>
+							{categories.map((category) => (
+								<SortableCategory key={category.id} category={category} />
+							))}
+							{categories.length === 0 && (
+								<div className="p-8 text-center text-gray-500">No categories found. Add a category to get started.</div>
+							)}
+						</div>
+            <DragOverlay dropAnimation={dropAnimation}>
+              {activeId && activeItem?.type === "item" && activeItem.item && <MenuItemDragPreview item={activeItem.item} />}
+              {activeId && activeItem?.type === "category" && activeItem.item && <CategoryDragPreview category={activeItem.item} />}
+            </DragOverlay>						
+					</DndContext>
         </CardContent>
       </Card>
 

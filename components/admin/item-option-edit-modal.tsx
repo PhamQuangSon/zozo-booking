@@ -9,7 +9,8 @@ import { toast } from "@/components/ui/use-toast"
 import { createItemOption, updateItemOption } from "@/actions/item-option-actions"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { MenuItem, MenuItemOption, OptionChoice, Restaurant } from "@prisma/client"
+import type { MenuItem, Restaurant } from "@prisma/client" // Keep base types if needed elsewhere
+import type { ItemOptionEditModalProps } from "@/types/menu-buider-types" // Import shared props type
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { itemOptionSchema, type ItemOptionFormValues } from "@/schemas/item-option-schema"
@@ -17,29 +18,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Trash2, Plus } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-// Extended ItemOption type with relations
-// Extended ItemOption type with relations
-interface ItemOptionWithRelations extends Omit<MenuItemOption, "priceAdjustment"> {
-  menuItem: MenuItem & {
-    restaurant: Restaurant
-  }
-  optionChoices: (Omit<OptionChoice, "priceAdjustment"> & {
-    priceAdjustment: number
-  })[]
-}
 
 // Convert string/number to valid number
 const toValidNumber = (value: string | number | null | undefined): number => {
   if (value === null || value === undefined || value === "") return 0
   return typeof value === "number" ? value : Number(value)
-}
-
-interface ItemOptionEditModalProps {
-  itemOption?: ItemOptionWithRelations | null
-  menuItems: (MenuItem & { restaurant: Restaurant })[]
-  open: boolean
-  onOpenChange: (refresh: boolean) => void
-  mode: "create" | "edit"
 }
 
 export function ItemOptionEditModal({
@@ -48,7 +31,7 @@ export function ItemOptionEditModal({
   open,
   onOpenChange,
   mode = "edit",
-}: ItemOptionEditModalProps) {
+}: ItemOptionEditModalProps) { // Using imported props type
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
