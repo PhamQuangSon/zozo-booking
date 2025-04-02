@@ -47,22 +47,20 @@ export default function RestaurantPage() {
   const fetchRestaurant = useCallback(async () => {
     try {
       setLoading(true)
-      const { success, data, error } = await getRestaurantById(restaurantId)
+      const { success, data: restaurant, error } = await getRestaurantById(restaurantId)
 
-      if (success && data) {
-        setRestaurant(data)
+      if (success && restaurant) {
+        setRestaurant(restaurant)
 
         // Flatten all menu items for infinite scroll
         const items: any[] = []
-        if (data.menus && data.menus.length > 0) {
-          data.menus.forEach((menu: any) => {
-            menu.menu_categories?.forEach((category: any) => {
-              category.menu_items.forEach((item: any) => {
-                items.push({
-                  ...item,
-                  categoryName: category.name,
-                  categoryId: category.id,
-                })
+        if (restaurant.categories && restaurant.categories.length > 0) {
+          restaurant.categories?.forEach((category: any) => {
+            category.items.forEach((item: any) => {
+              items.push({
+                ...item,
+                categoryName: category.name,
+                categoryId: category.id,
               })
             })
           })

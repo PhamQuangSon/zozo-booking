@@ -14,7 +14,8 @@ import { useCartStore } from "@/store/cartStore"
 import { getTableFullData } from "@/actions/table-actions"
 
 export default function TableOrderPage({ params }: { params: { restaurantId: string; tableId: string } }) {
-  const { restaurantId, tableId } = use(params)
+  const unwrappedParams = use(params)
+  const { restaurantId, tableId } = unwrappedParams
 
   const [tableData, setTableData] = useState<any>({
     restaurant: { name: "", description: "", imageUrl: "", categories: [] },
