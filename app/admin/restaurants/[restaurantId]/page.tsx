@@ -8,18 +8,18 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Edit, Plus } from "lucide-react"
 import { tableStatusColors } from "@/types/status-colors"
+import { formatCurrency } from "@/lib/i18n";
 
 export default async function RestaurantDetailPage({ params }: { params: { restaurantId: string } }) {
+  const restaurantId  = params.restaurantId;
   // Fetch restaurant details
-  const { success, data: restaurant, error } = await getRestaurantById(params.restaurantId)
+  const { success, data: restaurant, error } = await getRestaurantById(restaurantId)
 
   if (!success || !restaurant) {
     notFound()
   }
-
-  // Fetch tables for this restaurant
-  const tablesResult = await getRestaurantTables(params.restaurantId)
-  const tables = tablesResult.success ? tablesResult.data : []
+  console.log(restaurant)
+  const tables = restaurant.tables ? restaurant.tables : []
 
   return (
     <div className="flex min-h-screen">
@@ -27,7 +27,7 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-3xl font-bold">{restaurant.name}</h1>
           <Button asChild>
-            <Link href={`/admin/restaurants/${params.restaurantId}/edit`}>
+            <Link href={`/admin/restaurants/${restaurantId}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
               Edit Restaurant
             </Link>
@@ -42,10 +42,10 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
             </CardHeader>
             <CardContent>
               <div className="mb-4 flex justify-center">
-                {restaurant.image_url ? (
+                {restaurant.imageUrl ? (
                   <div className="relative h-48 w-full overflow-hidden rounded-md">
                     <Image
-                      src={restaurant.image_url || "/placeholder.svg"}
+                      src={restaurant.imageUrl || "/placeholder.svg"}
                       alt={restaurant.name}
                       fill
                       className="object-cover"
@@ -86,7 +86,7 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
                 <CardDescription>Tables in this restaurant</CardDescription>
               </div>
               <Button asChild size="sm">
-                <Link href={`/admin/restaurants/${params.restaurantId}/tables`}>
+                <Link href={`/admin/restaurants/${restaurantId}/tables`}>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Table
                 </Link>
@@ -111,7 +111,7 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
                   ))}
                   {tables.length > 6 && (
                     <Link
-                      href={`/admin/restaurants/${params.restaurantId}/tables`}
+                      href={`/admin/restaurants/${restaurantId}/tables`}
                       className="flex items-center justify-center rounded-md border p-3 text-sm text-muted-foreground hover:bg-accent"
                     >
                       View all {tables.length} tables
@@ -131,50 +131,56 @@ export default async function RestaurantDetailPage({ params }: { params: { resta
                 <CardDescription>Menu items for this restaurant</CardDescription>
               </div>
               <Button asChild size="sm">
-                <Link href={`/admin/restaurants/${params.restaurantId}/menu`}>
+                <Link href={`/admin/restaurants/${restaurantId}/menu`}>
                   <Plus className="mr-2 h-4 w-4" />
                   Manage Menu
                 </Link>
               </Button>
             </CardHeader>
             <CardContent>
-              {restaurant.menus && restaurant.menus.length > 0 ? (
                 <div>
-                  {restaurant.menus.map((menu) => (
-                    <div key={menu.id}>
-                      <h3 className="mb-2 font-medium">{menu.name}</h3>
-                      {menu.menu_categories && menu.menu_categories.length > 0 ? (
-                        <div className="space-y-4">
-                          {menu.menu_categories.map((category) => (
-                            <div key={category.id}>
-                              <h4 className="text-sm font-medium text-muted-foreground">{category.name}</h4>
-                              <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                                {category.menu_items.slice(0, 3).map((item) => (
-                                  <div key={item.id} className="rounded-md border p-2">
-                                    <div className="font-medium">{item.name}</div>
-                                    <div className="text-sm text-muted-foreground">
-                                      ${Number(item.price).toFixed(2)}
-                                    </div>
+                    {restaurant.categories && restaurant.categories.length > 0 ? (
+                      <div className="space-y-4">
+                        {restaurant.categories.map((category) => (
+                          <div key={category.id}>
+                            <h3 className="text-sm font-medium text-muted-foreground">{category.name}</h3>
+                            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+                              {category.items.slice(0, 3).map((item) => (
+                                <div key={item.id} className="group flex bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow p-2 md:p-4 gap-4">
+                                  {/* Image */}
+                                  <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-full border-2 border-white shadow-md">
+                                    <div className="absolute inset-0 bg-black/50 group-hover:bg-transparent transition-colors duration-300"></div>
+                                    <Image
+                                      src={item.imageUrl || "/placeholder.svg?height=100&width=100"}
+                                      alt={item.name}
+                                      fill
+                                      className="object-cover"
+                                    />
                                   </div>
-                                ))}
-                                {category.menu_items.length > 3 && (
-                                  <div className="rounded-md border p-2 text-center text-sm text-muted-foreground">
-                                    +{category.menu_items.length - 3} more items
+                                  {/* Content */}
+                                  <div className="flex-1 p-4 relative">
+                                    {/* Item Name and Price */}
+                                    <h4 className="font-medium text-xl group-hover:text-amber-500 transition-colors duration-300">
+                                      {item.name}
+                                    </h4>
+                                    <p className="font-bold text-medium text-amber-500">${Number(item.price)}</p>
+                                    <p className="font-bold text-medium text-gray-500 ">{formatCurrency(Number(item.price), "VND")}</p>
                                   </div>
-                                )}
-                              </div>
+                                </div>
+                              ))}
+                              {category.items.length > 3 && (
+                                <div className="rounded-md border p-2 text-center text-sm text-muted-foreground">
+                                  {category.items.length - 3} more items
+                                </div>
+                              )}
                             </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">No categories in this menu</p>
-                      )}
-                    </div>
-                  ))}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No categories in this menu</p>
+                    )}
                 </div>
-              ) : (
-                <p className="text-center text-muted-foreground">No menus added yet</p>
-              )}
             </CardContent>
           </Card>
         </div>

@@ -35,12 +35,24 @@ export async function getRestaurantById(id: string) {
   try {
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: Number(id) },
-      include: {
+      include: {          
+        tables: true,
         categories: {
           orderBy: {
             displayOrder: "asc",
           },
-        },
+          include: {
+            items: {
+              include: {
+                menuItemOptions: {
+                  include: {
+                    optionChoices: true,
+                  },
+                },
+              },
+            }
+          }
+        }
       },
     })
 

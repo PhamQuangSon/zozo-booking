@@ -35,30 +35,6 @@ export async function getMenuItems() {
   }
 }
 
-// Get categories for menu items
-export async function getCategories() {
-  try {
-    const categories = await prisma.category.findMany({
-      include: {
-        restaurant: true,
-      },
-      orderBy: {
-        restaurant: {
-          name: "asc",
-        },
-      },
-    })
-
-    return { success: true, data: serializePrismaData(categories) }
-  } catch (error) {
-    console.error("Failed to fetch categories:", error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to load categories",
-      data: [],
-    }
-  }
-}
 
 // Menu Item CRUD
 export async function createMenuItem(data: {
