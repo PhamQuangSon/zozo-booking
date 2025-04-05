@@ -1,10 +1,9 @@
-import { getServerSession } from "next-auth/next"
 import prisma from "@/lib/prisma"
-import { authOptions } from "@/config/auth"
+import { auth } from "@/config/auth"
 
 export async function getCurrentUser() {
-  const session = await getServerSession(authOptions)
-
+  const session = await auth()
+  
   if (!session?.user?.email) {
     return null
   }
@@ -31,4 +30,3 @@ export async function isAdmin() {
   const user = await getCurrentUser()
   return user?.role === "ADMIN"
 }
-

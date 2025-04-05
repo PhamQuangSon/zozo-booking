@@ -95,47 +95,44 @@ export async function deleteCategory(id: number) {
   }
 }
 
-
 // Update category display order
-export async function updateCategoryDisplayOrder(categoryId: number, targetOrderId: number) {
+export async function updateCategoryDisplayOrder(categoryId: number, targetCategoryId: number) {
   try {
-    // Get the category to update
-    const category = await prisma.category.findUnique({
+    // Get both categories to determine their current display orders
+    const sourceCategory = await prisma.category.findUnique({
       where: { id: categoryId },
-      select: { restaurantId: true }
-    });
+      select: { displayOrder: true, restaurantId: true },
+    })
 
-    if (!category) {
-      return { success: false, error: "Category not found" };
-    }
-
-    // Get the target category to get its display order
     const targetCategory = await prisma.category.findUnique({
-      where: { id: targetOrderId },
-      select: { displayOrder: true }
-    });
+      where: { id: targetCategoryId },
+      select: { displayOrder: true },
+    })
 
-    if (!targetCategory) {
-      return { success: false, error: "Target category not found" };
+    if (!sourceCategory || !targetCategory) {
+      return { success: false, error: "One or both categories not found" }
     }
 
-    // Update the category's display order
-    const updatedCategory = await prisma.category.update({
+    // Update the source category's display order to match the target
+    await prisma.category.update({
       where: { id: categoryId },
-      data: { displayOrder: targetCategory.displayOrder }
-    });
+      data: { displayOrder: targetCategory.displayOrder },
+    })
 
     // Revalidate paths
-    revalidatePath("/admin/categories");
-    revalidatePath(`/admin/restaurants/${category.restaurantId}/menu`);
-    
-    return { success: true, data: updatedCategory };
+    revalidatePath("/admin/categories")
+    if (sourceCategory.restaurantId) {
+      revalidatePath(`/admin/restaurants/${sourceCategory.restaurantId}/menu`)
+      // revalidatePath(`/admin/restaurants/${sourceCategory.restaurantId}/menu/categories`)
+    }
+
+    return { success: true }
   } catch (error) {
-    console.error("Failed to update category display order:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Failed to update category display order" 
-    };
+    console.error("Failed to update category display order:", error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update category display order",
+    }
   }
 }
 

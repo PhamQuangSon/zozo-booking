@@ -7,6 +7,22 @@ try {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config, { isServer }) => {
+    // Fix for the @mapbox/node-pre-gyp issue
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        os: false,
+      }
+    }
+
+    // Ignore problematic packages
+    config.externals = [...(config.externals || []), "@mapbox/node-pre-gyp"]
+
+    return config
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

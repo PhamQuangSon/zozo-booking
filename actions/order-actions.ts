@@ -47,7 +47,7 @@ export async function getRestaurantOrders(restaurantId: string) {
         },
         orderItems: {
           include: {
-            menuItems: true,
+            menuItem: true,
             orderItemChoices: {
               include: {
                 optionChoice: true,
@@ -149,9 +149,9 @@ export async function createOrder(data: {
             create: data.items.map((item) => {
               const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
               return {
-                menuItems: { connect: { id: item.menuItemId } },
+                menuItem: { connect: { id: item.menuItemId } }, // Corrected field name
                 quantity: item.quantity,
-                unit_price: menuItem?.price || 0,
+                unitPrice: menuItem?.price || 0, // Corrected field name (camelCase)
                 notes: item.notes,
                 orderItemChoices: item.choices
                   ? {
@@ -168,7 +168,7 @@ export async function createOrder(data: {
         include: {
           orderItems: {
             include: {
-              menuItems: true,
+              menuItem: true, // Corrected field name
               orderItemChoices: {
                 include: {
                   optionChoice: true,
@@ -307,7 +307,15 @@ export async function createOptionChoice(data: {
   option_id: number
 }) {
   try {
-    const choice = await prisma.optionChoice.create({ data })
+    const choice = await prisma.optionChoice.create({
+      data: {
+        name: data.name,
+        priceAdjustment: data.priceAdjustment,
+        menuItemOption: { // Connect to the parent MenuItemOption
+          connect: { id: data.option_id }
+        }
+      }
+    })
     return { success: true, data: choice }
   } catch (error) {
     console.error('Failed to create option choice:', error)

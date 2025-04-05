@@ -1,8 +1,7 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { createHash } from "crypto"
 import prisma from "@/lib/prisma"
-import { UserRole } from "@prisma/client"
+import bcrypt from "bcrypt"
 
 // Types
 type AuthError = {
@@ -18,11 +17,6 @@ type AuthState = {
   redirectUrl?: string;
 }
 
-// Hash password using SHA-256
-const hashPassword = (password: string) => {
-  return createHash('sha256').update(password).digest('hex')
-}
-
 // This is the NextAuth v5 configuration
 export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } = NextAuth({
   providers: [
@@ -33,6 +27,7 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("🟠 Login with", credentials);
         try {
           const typedCredentials = credentials as Record<"email" | "password", string>
           if (!typedCredentials?.email || !typedCredentials?.password) {
@@ -57,14 +52,7 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
           }
 
           // Hash the provided password
-          const providedHash = hashPassword(typedCredentials.password)
-          console.log('Auth check:', {
-            provided: providedHash,
-            stored: foundUser.password,
-            match: providedHash === foundUser.password
-          })
-
-          const isCorrectPassword = providedHash === foundUser.password
+          const isCorrectPassword = await bcrypt.compare(typedCredentials.password, foundUser.password)
           if (!isCorrectPassword) {
             console.log('Password mismatch')
             return null
@@ -76,7 +64,7 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
             name: foundUser.name,
             role: foundUser.role,
           }
-          console.log('Auth successful:', userData)
+          console.log('🟢 Auth successful:', userData)
           return userData
         } catch (error) {
           console.error('Auth error:', error)
@@ -87,6 +75,7 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
   ],
   callbacks: {
     async jwt({ token, user }) {
+      console.log("🟢 JWT callback", { token, user });
       // Add user data to the token when signing in
       if (user) {
         token.id = user.id
@@ -97,6 +86,7 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
       return token
     },
     async session({ session, token }) {
+      console.log("🟢 Session callback", { session, token });
       // Add token data to the session
       if (token && session.user) {
         session.user.id = token.id as string
@@ -109,6 +99,9 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
   },
   pages: {
     signIn: "/login",
+    signOut: "/logout",
+    error: "/login", // Error code passed in query string as ?error=
+    verifyRequest: "/verify", // (used for check email message)
   },
   session: {
     strategy: "jwt",

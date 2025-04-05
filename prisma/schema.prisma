@@ -124,6 +124,7 @@ model Order {
   id            Int         @id @default(autoincrement())
   status        OrderStatus @default(NEW)
   totalAmount   Decimal     @db.Decimal(10, 2)
+  userId       String
   tableId       Int
   restaurantId  Int
   notes         String?
@@ -134,7 +135,8 @@ model Order {
 
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
   table         Table?      @relation(fields: [tableId], references: [id])
-
+  user         User     @relation(fields: [userId], references: [id])
+  
   @@index([restaurantId])
   @@index([tableId])
 }
