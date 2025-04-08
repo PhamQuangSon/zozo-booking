@@ -4,8 +4,24 @@ import prisma from "@/lib/prisma"
 import { formatCurrency, type Currency } from "@/lib/i18n"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 
+export type Restaurant = {
+  id: number
+  name: string
+  description?: string | null
+  imageUrl?: string | null
+  address?: string | null
+  phone?: string | null
+  email?: string | null
+  cuisine?: string | null
+}
+
+export type GetRestaurantsResponse =
+  | { success: true; data: Restaurant[] }
+  | { success: false; error: string }
+
+
 // Get all restaurants
-export async function getRestaurants() {
+export async function getRestaurants(): Promise<GetRestaurantsResponse> {
   try {
     const restaurants = await prisma.restaurant.findMany({
       select: {

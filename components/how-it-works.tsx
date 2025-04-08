@@ -1,11 +1,12 @@
-import { Utensils, QrCode, Clock, Check } from "lucide-react"
+import { Utensils, QrCode, Clock, Check } from "lucide-react";
+import Image from "next/image"
 
 const steps = [
-  {
-    icon: <Utensils className="h-10 w-10" />,
-    title: "Choose Restaurant",
-    description: "Browse our selection of restaurants and find your favorite cuisine.",
-  },
+  // {
+  //   icon: <Utensils className="h-10 w-10" />,
+  //   title: "Choose Restaurant",
+  //   description: "Browse our selection of restaurants and find your favorite cuisine.",
+  // },
   {
     icon: <QrCode className="h-10 w-10" />,
     title: "Scan QR Code",
@@ -14,25 +15,27 @@ const steps = [
   {
     icon: <Clock className="h-10 w-10" />,
     title: "Place Order",
-    description: "Select your items, customize as needed, and place your order.",
+    description:
+      "Select your items, customize as needed, and place your order.",
   },
   {
     icon: <Check className="h-10 w-10" />,
     title: "Enjoy Your Meal",
-    description: "Sit back and relax while your food is prepared and served to your table.",
+    description:
+      "Sit back and relax while your food is prepared and served to your table.",
   },
-]
+];
 
 export function HowItWorks() {
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-3">
+      <div className="container mx-auto px-4 mb-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-2">How It Works</h2>
           <p className="text-muted-foreground">Simple steps to order food with Zozo Booking</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {steps.map((step, index) => (
             <div key={index} className="flex flex-col items-center text-center">
               <div className="flex items-center justify-center h-20 w-20 rounded-full bg-primary/10 text-primary mb-4">
@@ -55,4 +58,3 @@ export function HowItWorks() {
     </section>
   )
 }
-
