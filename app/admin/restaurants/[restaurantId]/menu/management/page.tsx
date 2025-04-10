@@ -7,13 +7,13 @@ import { getRestaurantById } from "@/actions/restaurant-actions"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { 
-  MenuForm, 
-  CategoryForm, 
-  MenuItemForm, 
-  MenuItemOptionForm, 
-  OptionChoiceForm 
-} from "@/components/menu-forms"
+// import { 
+//   MenuForm, 
+//   CategoryForm, 
+//   MenuItemForm, 
+//   MenuItemOptionForm, 
+//   OptionChoiceForm 
+// } from "@/components/menu-forms"
 import { useToast } from "@/hooks/use-toast"
 
 export default function MenuManagementPage({ params }: { params: { restaurantId: string } }) {
@@ -133,13 +133,13 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Menus</CardTitle>
-                <MenuForm
+                {/* <MenuForm
                   restaurantId={Number(params.restaurantId)}
                   onSuccess={() => {
                     fetchData()
                     toast({ title: "Menu created successfully" })
                   }}
-                />
+                /> */}
               </div>
             </CardHeader>
             <CardContent>
@@ -173,7 +173,7 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Categories</CardTitle>
-                {selectedMenu && (
+                {/* {selectedMenu && (
                   <CategoryForm
                     menuId={selectedMenu.id}
                     onSuccess={() => {
@@ -181,7 +181,7 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
                       toast({ title: "Category created successfully" })
                     }}
                   />
-                )}
+                )} */}
               </div>
             </CardHeader>
             <CardContent>
@@ -215,13 +215,13 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
               <div className="flex items-center justify-between">
                 <CardTitle>Menu Items</CardTitle>
                 {selectedCategory && (
-                  <MenuItemForm
-                    categoryId={selectedCategory.id}
-                    onSuccess={() => {
-                      fetchData()
-                      toast({ title: "Menu item created successfully" })
-                    }}
-                  />
+                  // <MenuItemForm
+                  //   categoryId={selectedCategory.id}
+                  //   onSuccess={() => {
+                  //     fetchData()
+                  //     toast({ title: "Menu item created successfully" })
+                  //   }}
+                  // />
                 )}
               </div>
             </CardHeader>
@@ -254,7 +254,7 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Options & Choices</CardTitle>
-                {selectedMenuItem && (
+                {/* {selectedMenuItem && (
                   <MenuItemOptionForm
                     menuItemId={selectedMenuItem.id}
                     onSuccess={() => {
@@ -262,7 +262,7 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
                       toast({ title: "Option created successfully" })
                     }}
                   />
-                )}
+                )} */}
               </div>
             </CardHeader>
             <CardContent>
@@ -277,7 +277,7 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="font-medium">{option.name}</div>
-                      {selectedOption?.id === option.id && (
+                      {/* {selectedOption?.id === option.id && (
                         <OptionChoiceForm
                           optionId={option.id}
                           onSuccess={() => {
@@ -285,7 +285,7 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
                             toast({ title: "Choice created successfully" })
                           }}
                         />
-                      )}
+                      )} */}
                     </div>
                     <div className="space-y-2">
                       {option.option_choices?.map((choice: OptionChoice) => (
