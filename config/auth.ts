@@ -3,22 +3,23 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcrypt"
 
-// Types
-type AuthError = {
-  _form?: string;
-  email?: string[];
-  password?: string[];
+// Enable more verbose logging
+const DEBUG = process.env.NODE_ENV === "development"
+
+// Helper function for consistent logging
+function debugLog(message: string, data?: any) {
+  if (DEBUG) {
+    console.log(`🔍 NextAuth Debug: ${message}`, data || "")
+  }
 }
 
-type AuthState = {
-  success: boolean;
-  error?: AuthError;
-  message?: string;
-  redirectUrl?: string;
-}
-
-// This is the NextAuth v5 configuration
-export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } = NextAuth({
+export const {
+  handlers: authHandlers,
+  signIn,
+  signOut,
+  auth,
+  unstable_update,
+} = NextAuth({
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -27,11 +28,11 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        console.log("🟠 Login with", credentials);
+        debugLog("🟢 authorize() called with credentials", credentials ? "provided" : "missing")
         try {
           const typedCredentials = credentials as Record<"email" | "password", string>
           if (!typedCredentials?.email || !typedCredentials?.password) {
-            console.log('Missing credentials')
+            debugLog("🟢 Missing credentials")
             return null
           }
 
@@ -42,19 +43,14 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
           })
 
           if (!foundUser || !foundUser.password) {
-            console.log('User not found or no password')
+            debugLog("🟢 User not found or no password")
             return null
-          }
-
-          if (!foundUser.emailVerified) {
-            console.log('Email not verified')
-            throw new Error("Please verify your email before logging in")
           }
 
           // Hash the provided password
           const isCorrectPassword = await bcrypt.compare(typedCredentials.password, foundUser.password)
           if (!isCorrectPassword) {
-            console.log('Password mismatch')
+            debugLog("🟢 Password mismatch")
             return null
           }
 
@@ -64,37 +60,66 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
             name: foundUser.name,
             role: foundUser.role,
           }
-          console.log('🟢 Auth successful:', userData)
+          debugLog("🟢 Auth successful", userData)
           return userData
         } catch (error) {
-          console.error('Auth error:', error)
+          console.error("Auth error:", error)
           return null
         }
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      console.log("🟢 JWT callback", { token, user });
+    async jwt({ token, user, account, trigger }) {
+      debugLog(`JWT callback triggered by ${trigger}`, {
+        tokenExists: !!token,
+        userExists: !!user,
+        accountExists: !!account,
+      })
+
       // Add user data to the token when signing in
       if (user) {
+        debugLog("🟢 Adding user data to token", user)
         token.id = user.id
         token.email = user.email
         token.name = user.name
         token.role = user.role
       }
+
+      debugLog("🟢 JWT token created/updated", token)
       return token
     },
-    async session({ session, token }) {
-      console.log("🟢 Session callback", { session, token });
+    async session({ session, token, trigger }) {
+      debugLog(`Session callback triggered by ${trigger}`, { sessionExists: !!session, tokenExists: !!token })
+
       // Add token data to the session
       if (token && session.user) {
+        debugLog("🟢 Adding token data to session", token)
         session.user.id = token.id as string
         session.user.email = token.email as string
         session.user.name = token.name as string
         session.user.role = token.role as string
       }
+
+      debugLog("🟢 Session created/updated", session)
       return session
+    },
+  },
+  events: {
+    async signIn(message) {
+      debugLog("🟢 signIn event", { user: message.user.email })
+    },
+    async signOut(message) {
+      debugLog("🟢 signOut event", { session: message.session })
+    },
+    async createUser(message) {
+      debugLog("🟢 createUser event", { user: message.user.email })
+    },
+    async linkAccount(message) {
+      debugLog("🟢 linkAccount event", { account: message.account.provider })
+    },
+    async session(message) {
+      debugLog("🟢 session event", { session: message.session })
     },
   },
   pages: {
@@ -105,6 +130,18 @@ export const { handlers: authHandlers, signIn, signOut, auth, unstable_update } 
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+  debug: DEBUG,
 })
-

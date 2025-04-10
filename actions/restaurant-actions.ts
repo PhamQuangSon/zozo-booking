@@ -19,7 +19,6 @@ export type GetRestaurantsResponse =
   | { success: true; data: Restaurant[] }
   | { success: false; error: string }
 
-
 // Get all restaurants
 export async function getRestaurants(): Promise<GetRestaurantsResponse> {
   try {
@@ -51,7 +50,7 @@ export async function getRestaurantById(id: string) {
   try {
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: Number(id) },
-      include: {          
+      include: {
         tables: true,
         categories: {
           orderBy: {

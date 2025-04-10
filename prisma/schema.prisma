@@ -20,6 +20,7 @@ model User {
   verificationToken String?   @unique
   resetToken        String?   @unique
   resetTokenExpiry  DateTime?
+  orders            Order[]
 
   @@index([email])
 }

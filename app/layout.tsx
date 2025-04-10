@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from "@/components/providers/auth-provider"
+import { SessionDebug } from "@/components/session-debug"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>          
           <AuthProvider>
             {children}
+            {process.env.NODE_ENV === "development" && <SessionDebug />}
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

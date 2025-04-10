@@ -23,7 +23,7 @@ import { useState, useEffect } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RestaurantSelector, RESTAURANT_CHANGE_EVENT } from "@/components/restaurant-selector"
-import { useSession, signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -34,11 +34,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+// Add this near the top of the file, after the imports
+function debugLog(message: string, data?: any) {
+  if (process.env.NODE_ENV === "development") {
+    console.log(`🔍 AdminSidebar Debug: ${message}`, data || "")
+  }
+}
+
 export function AdminSidebar() {
   const pathname = usePathname()
   const [defaultRestaurant, setDefaultRestaurant] = useState<{ id: string; name: string } | null>(null)
   const [isRestaurantOpen, setIsRestaurantOpen] = useState(true)
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
+
+  // Then update the useEffect for session debugging
+  useEffect(() => {
+    debugLog("Session state changed", {
+      status,
+      sessionExists: !!session,
+      userData: session?.user
+        ? {
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }
+        : null,
+    })
+  }, [session, status])
 
   // Update the useEffect to use prisma/seed.ts data and listen for restaurant changes
   useEffect(() => {
@@ -212,17 +235,25 @@ export function AdminSidebar() {
           <CurrencySelector />
         </div>
 
-        {session?.user ? (
+        {status === "loading" ? (
+          <div className="flex items-center justify-center py-2">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+          </div>
+        ) : status === "authenticated" && session?.user ? (
           <div className="flex items-center justify-between">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={`https://ui-avatars.com/api/?name=${session.user.name}`} />
-                    <AvatarFallback>{session.user.name?.charAt(0) || session.user.email?.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || "User")}`}
+                    />
+                    <AvatarFallback>
+                      {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col items-start text-sm">
-                    <span className="font-medium">{session.user.name}</span>
+                    <span className="font-medium">{session.user.name || "User"}</span>
                     <span className="text-xs text-muted-foreground">{session.user.email}</span>
                   </div>
                 </Button>
@@ -255,4 +286,3 @@ export function AdminSidebar() {
     </div>
   )
 }
-

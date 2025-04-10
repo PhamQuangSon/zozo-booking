@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma"
 import { auth } from "@/config/auth"
+import { redirect } from "next/navigation"
 
 export async function getCurrentUser() {
   const session = await auth()
@@ -15,7 +16,7 @@ export async function getCurrentUser() {
   })
 
   if (!currentUser) {
-    return null
+    redirect("/login")
   }
 
   return {

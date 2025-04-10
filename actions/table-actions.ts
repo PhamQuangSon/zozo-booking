@@ -14,12 +14,13 @@ export async function getTableDetails(tableId: string) {
       },
     })
 
-    if (!table) { return { success: false, error: "Table not found" } }
+    if (!table) {
+      return { success: false, error: "Table not found" }
+    }
 
     const serializedTable = serializePrismaData(table)
 
     return { success: true, data: serializedTable }
-
   } catch (error) {
     console.error(`Failed to fetch table with ID ${tableId}:`, error)
     return { success: false, error: "Failed to load table details" }
@@ -44,6 +45,25 @@ export async function getRestaurantTables(restaurantId: string) {
   } catch (error) {
     console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
     return { success: false, error: "Failed to load tables" }
+  }
+}
+
+// Add this function to get tables by restaurant ID
+export async function getTablesByRestaurantId(restaurantId: string) {
+  try {
+    const tables = await prisma.table.findMany({
+      where: {
+        restaurantId: Number.parseInt(restaurantId),
+      },
+      orderBy: {
+        number: "asc",
+      },
+    })
+
+    return serializePrismaData(tables)
+  } catch (error) {
+    console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
+    return []
   }
 }
 
@@ -130,38 +150,6 @@ export async function updateTable(
     return { success: false, error: "Failed to update table" }
   }
 }
-
-// Get table orders
-// export async function getTableOrders(restaurantId: string, tableId: string) {
-//   try {
-//     const orders = await prisma.order.findMany({
-//       where: {
-//         restaurantId: Number(restaurantId),
-//         tableId: Number(tableId),
-//         status: { notIn: ['COMPLETED', 'CANCELLED'] }
-//       },
-//       include: {
-//         orderItems: {
-//           include: {
-//             orderItemChoices: {
-//               include: {
-//                 optionChoice: true,
-//                 menuItemOption: true,
-//               },
-//             },
-//           },
-//         },
-//       },
-//       orderBy: { createdAt: 'desc' },
-//     });
-
-//     const serializedOrders = serializePrismaData(orders)
-//     return { success: true, data: serializedOrders }
-//   } catch (error) {
-//     console.error(`Failed to fetch orders for table ${tableId}:`, error)
-//     return { success: false, error: "Failed to load orders" }
-//   }
-// }
 
 export async function getTableOrders(restaurantId: string, tableId: string) {
   try {
@@ -272,7 +260,6 @@ export async function formatTableMenuItems(menuCategories: any[], currency: Curr
       menuItemOptions: item.menuItemOptions.map((option: any) => ({
         ...option,
         optionChoices: option.optionChoices.map((choice: any) => ({
-          
           ...choice,
           formattedPriceAdjustment: formatCurrency(choice.priceAdjustment, currency),
           priceAdjustment: Number(choice.priceAdjustment),
@@ -405,7 +392,6 @@ export async function createTableOrder(data: {
     return { success: false, error: "Failed to create order" }
   }
 }
-
 
 // Get all table data including restaurant, menu items, options, and active orders in one call
 export async function getTableFullData(restaurantId: string, tableId: string) {

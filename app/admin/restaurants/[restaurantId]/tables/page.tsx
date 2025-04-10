@@ -28,7 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TableForm } from "@/components/table-form"
 import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getRestaurantTables, deleteTable } from "@/actions/table-actions"
+import { deleteTable, getTablesByRestaurantId } from "@/actions/table-actions"
 import { useToast } from "@/hooks/use-toast"
 
 export default function TablesPage() {
@@ -70,17 +70,16 @@ export default function TablesPage() {
   const loadTables = async () => {
     setIsLoading(true)
     try {
-      const result = await getRestaurantTables(restaurantId)
-      if (!result.success) {
+      const tables = await getTablesByRestaurantId(restaurantId)
+      if (Array.isArray(tables)) {
+        setTables(tables)
+      } else {
         toast({
           title: "Error",
-          description: result.error || "Failed to load tables",
+          description: "Failed to load tables",
           variant: "destructive",
         })
-        return
       }
-      
-      setTables(result.data || [])
     } catch (error) {
       console.error("Error loading tables:", error)
       toast({
@@ -258,4 +257,3 @@ export default function TablesPage() {
     </div>
   )
 }
-
