@@ -1,8 +1,18 @@
-export function ZodErrors({ error }: { error: string[] }) {
-  if (!error) return null;
-  return error.map((err: string, index: number) => (
-    <div key={index} className="text-pink-500 text-xs italic mt-1 py-2">
-      {err}
+import { cn } from "@/lib/utils"
+
+interface ZodErrorsProps {
+  error: string[]
+  className?: string
+}
+
+export function ZodErrors({ error, className }: ZodErrorsProps) {
+  if (!error || error.length === 0) return null
+
+  return (
+    <div className={cn("mt-1 text-sm text-destructive", className)}>
+      {error.map((err, i) => (
+        <p key={i}>{err}</p>
+      ))}
     </div>
-  ));
+  )
 }

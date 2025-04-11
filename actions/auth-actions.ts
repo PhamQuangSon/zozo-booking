@@ -1,7 +1,10 @@
 "use server"
+
+import bcrypt from "bcrypt"
+import { v4 as uuidv4 } from "uuid"
+import prisma from "@/lib/prisma"
 import { signIn } from "@/config/auth"
-import { AuthError } from "next-auth"
-import { loginSchema } from "@/schemas/auth-schema"
+import { loginSchema, registerSchema } from "@/schemas/auth-schema"
 
 // Types
 export type AuthState = {
@@ -15,17 +18,21 @@ export type AuthState = {
   redirectUrl?: string
 }
 
-// Debug helper
-function debugLog(message: string, data?: any) {
-  if (process.env.NODE_ENV === "development") {
-    console.log(`🔍 Auth Action Debug: ${message}`, data || "")
+export type RegisterState = {
+  success: boolean
+  zodErrors?: {
+    _form?: string
+    name?: string[]
+    email?: string[]
+    password?: string[]
+    confirmPassword?: string[]
   }
+  message?: string
+  redirectUrl?: string
 }
 
 // Login action
 export async function login(prevState: AuthState, formData: FormData): Promise<AuthState> {
-  debugLog("Login action started", { formDataExists: !!formData })
-
   try {
     const validatedFields = loginSchema.safeParse({
       email: formData.get("email"),
@@ -33,7 +40,7 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
     })
 
     if (!validatedFields.success) {
-      debugLog("Validation failed", validatedFields.error.flatten())
+      console.log("Validation failed:", validatedFields.error.flatten())
       return {
         ...prevState,
         zodErrors: validatedFields.error.flatten().fieldErrors as AuthState["zodErrors"],
@@ -43,30 +50,27 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
     }
 
     const { email, password } = validatedFields.data
-    debugLog("Login attempt with validated data", { email })
+    console.log("Login attempt:", { email })
 
     try {
-      debugLog("Calling signIn function")
-      const responseData = await signIn("credentials", {
+      const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       })
 
-      debugLog("Sign in response", responseData)
+      console.log("Sign in result:", result)
 
-      if (responseData?.error) {
-        debugLog("Sign in error from response", responseData.error)
+      if (result?.error) {
         return {
           ...prevState,
           success: false,
           zodErrors: {
-            _form: "Invalid credentials",
+            _form: result.error,
           },
         } as AuthState
       }
 
-      debugLog("Login successful, redirecting")
       return {
         ...prevState,
         success: true,
@@ -74,13 +78,13 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
         redirectUrl: "/admin/dashboard",
       } as AuthState
     } catch (error) {
-      debugLog("Sign in error caught", error)
-      if (error instanceof AuthError) {
+      console.error("Sign in error:", error)
+      if (error instanceof Error) {
         return {
           ...prevState,
           success: false,
           zodErrors: {
-            _form: "Invalid credentials",
+            _form: error.message,
           },
         } as AuthState
       }
@@ -93,7 +97,6 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
       } as AuthState
     }
   } catch (error: any) {
-    debugLog("Unexpected error in login action", error)
     return {
       ...prevState,
       success: false,
@@ -104,4 +107,115 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
   }
 }
 
-// Register action and other functions remain the same...
+// Register action
+export async function register(prevState: RegisterState, formData: FormData): Promise<RegisterState> {
+  try {
+    const validatedFields = registerSchema.safeParse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password"),
+      confirmPassword: formData.get("confirmPassword"),
+    })
+
+    if (!validatedFields.success) {
+      console.log("Validation failed:", validatedFields.error.flatten())
+      return {
+        ...prevState,
+        zodErrors: validatedFields.error.flatten().fieldErrors as RegisterState["zodErrors"],
+        success: false,
+        message: "Missing Fields. Failed to Register.",
+      } as RegisterState
+    }
+
+    const { name, email, password } = validatedFields.data
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    })
+
+    if (existingUser) {
+      return {
+        ...prevState,
+        success: false,
+        zodErrors: {
+          email: ["Email already in use"],
+        },
+      } as RegisterState
+    }
+
+    // Hash password with bcrypt
+    const saltRounds = 10
+    const hashedPassword = await bcrypt.hash(password, saltRounds)
+
+    // Generate verification token
+    const verificationToken = uuidv4()
+
+    // Create user
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        verificationToken,
+        // For development, set emailVerified to current date
+        emailVerified: new Date(),
+      },
+    })
+
+    // In a real app, you would send an email with the verification link
+    // For now, we'll just log it
+    console.log(`Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/verify/${verificationToken}`)
+
+    return {
+      ...prevState,
+      success: true,
+      message: "Registration successful! Please check your email to verify your account.",
+      redirectUrl: `/verify/${verificationToken}`, // Redirect to login after successful registration
+    } as RegisterState
+  } catch (error: any) {
+    console.error("Registration error:", error)
+    return {
+      ...prevState,
+      success: false,
+      zodErrors: {
+        _form: error.message || "Something went wrong",
+      },
+    } as RegisterState
+  }
+}
+
+// Verify email action
+export async function verifyEmail(token: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { verificationToken: token },
+    })
+
+    if (!user) {
+      return {
+        success: false,
+        error: "Invalid verification token",
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: new Date(),
+        verificationToken: null,
+      },
+    })
+
+    return {
+      success: true,
+      message: "Email verified successfully! You can now log in.",
+    }
+  } catch (error: any) {
+    console.error("Verification error:", error)
+    return {
+      success: false,
+      error: error.message || "Something went wrong",
+    }
+  }
+}

@@ -46,6 +46,7 @@ export function AdminSidebar() {
   const [defaultRestaurant, setDefaultRestaurant] = useState<{ id: string; name: string } | null>(null)
   const [isRestaurantOpen, setIsRestaurantOpen] = useState(true)
   const { data: session, status } = useSession()
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
 
   // Then update the useEffect for session debugging
   useEffect(() => {
@@ -56,11 +57,18 @@ export function AdminSidebar() {
         ? {
             id: session.user.id,
             name: session.user.name,
+            image: session.user.image,
             email: session.user.email,
             role: session.user.role,
           }
         : null,
     })
+    if (session?.user?.image) {
+      setAvatarUrl(session.user.image)
+    } else if (session?.user?.name) {
+      // Use UI Avatars as fallback
+      setAvatarUrl(`https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`)
+    }
   }, [session, status])
 
   // Update the useEffect to use prisma/seed.ts data and listen for restaurant changes
@@ -245,12 +253,13 @@ export function AdminSidebar() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name || "User")}`}
-                    />
-                    <AvatarFallback>
-                      {session.user.name?.charAt(0) || session.user.email?.charAt(0) || "U"}
-                    </AvatarFallback>
+                    {avatarUrl ? (
+                      <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
+                    ) : (
+                      <AvatarFallback>
+                        {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || "U"}
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                   <div className="flex flex-col items-start text-sm">
                     <span className="font-medium">{session.user.name || "User"}</span>

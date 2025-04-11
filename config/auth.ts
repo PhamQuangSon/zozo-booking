@@ -57,9 +57,12 @@ export const {
           const userData = {
             id: foundUser.id,
             email: foundUser.email,
+            image: foundUser.imageUrl,
+            bio: foundUser.bio,
             name: foundUser.name,
             role: foundUser.role,
           }
+          debugLog("🟢 Auth foundUser", foundUser)
           debugLog("🟢 Auth successful", userData)
           return userData
         } catch (error) {
@@ -82,6 +85,8 @@ export const {
         debugLog("🟢 Adding user data to token", user)
         token.id = user.id
         token.email = user.email
+        token.image = user.image
+        token.bio = user.bio
         token.name = user.name
         token.role = user.role
       }
@@ -97,6 +102,8 @@ export const {
         debugLog("🟢 Adding token data to session", token)
         session.user.id = token.id as string
         session.user.email = token.email as string
+        session.user.image = token.image as string
+        session.user.bio = token.bio as string
         session.user.name = token.name as string
         session.user.role = token.role as string
       }
