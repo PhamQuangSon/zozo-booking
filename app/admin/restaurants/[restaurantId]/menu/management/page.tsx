@@ -214,15 +214,15 @@ export default function MenuManagementPage({ params }: { params: { restaurantId:
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Menu Items</CardTitle>
-                {selectedCategory && (
-                  // <MenuItemForm
-                  //   categoryId={selectedCategory.id}
-                  //   onSuccess={() => {
-                  //     fetchData()
-                  //     toast({ title: "Menu item created successfully" })
-                  //   }}
-                  // />
-                )}
+                {/* {selectedCategory && (
+                  <MenuItemForm
+                    categoryId={selectedCategory.id}
+                    onSuccess={() => {
+                      fetchData()
+                      toast({ title: "Menu item created successfully" })
+                    }}
+                  />
+                )} */}
               </div>
             </CardHeader>
             <CardContent>

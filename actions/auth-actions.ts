@@ -61,12 +61,22 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
 
       console.log("Sign in result:", result)
 
-      if (result?.error) {
+      if (!result) {
         return {
           ...prevState,
           success: false,
           zodErrors: {
-            _form: result.error,
+            _form: "Authentication failed. Please try again.",
+          },
+        } as AuthState
+      }
+
+      if (result.error) {
+        return {
+          ...prevState,
+          success: false,
+          zodErrors: {
+            _form: result.error === "CredentialsSignin" ? "Invalid email or password" : result.error,
           },
         } as AuthState
       }
@@ -79,20 +89,11 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
       } as AuthState
     } catch (error) {
       console.error("Sign in error:", error)
-      if (error instanceof Error) {
-        return {
-          ...prevState,
-          success: false,
-          zodErrors: {
-            _form: error.message,
-          },
-        } as AuthState
-      }
       return {
         ...prevState,
         success: false,
         zodErrors: {
-          _form: "Something went wrong",
+          _form: error instanceof Error ? error.message : "Authentication failed",
         },
       } as AuthState
     }
@@ -118,11 +119,10 @@ export async function register(prevState: RegisterState, formData: FormData): Pr
     })
 
     if (!validatedFields.success) {
-      console.log("Validation failed:", validatedFields.error.flatten())
       return {
         ...prevState,
-        zodErrors: validatedFields.error.flatten().fieldErrors as RegisterState["zodErrors"],
         success: false,
+        zodErrors: validatedFields.error.flatten().fieldErrors as RegisterState["zodErrors"],
         message: "Missing Fields. Failed to Register.",
       } as RegisterState
     }
@@ -158,23 +158,20 @@ export async function register(prevState: RegisterState, formData: FormData): Pr
         email,
         password: hashedPassword,
         verificationToken,
-        // For development, set emailVerified to current date
-        emailVerified: new Date(),
       },
     })
 
     // In a real app, you would send an email with the verification link
-    // For now, we'll just log it
-    console.log(`Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/verify/${verificationToken}`)
+    // For now, we'll just return the token for redirection
+    console.log(`Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/auth/verify/${verificationToken}`)
 
     return {
       ...prevState,
       success: true,
-      message: "Registration successful! Please check your email to verify your account.",
-      redirectUrl: `/verify/${verificationToken}`, // Redirect to login after successful registration
+      message: "Registration successful! Please verify your email.",
+      redirectUrl: `/verify/${verificationToken}`,
     } as RegisterState
   } catch (error: any) {
-    console.error("Registration error:", error)
     return {
       ...prevState,
       success: false,
