@@ -1,6 +1,6 @@
 "use server"
 
-import { auth } from "@/config/auth"
+import { auth, unstable_update } from "@/config/auth"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcrypt"
 import { z } from "zod"
@@ -118,18 +118,18 @@ export async function updateProfile(prevState: ProfileState, formData: FormData)
       data: {
         name,
         bio: bio || null,
-        ...(image && { imageUrl: image }),
+        ...(image && { image }),
       },
     })
 
     // Update session
-    // await unstable_update({
-    //   user: {
-    //     name: updatedUser.name,
-    //     bio: updatedUser.bio,
-    //     ...(image && { imageUrl: image }),
-    //   },
-    // })
+    await unstable_update({
+      user: {
+        name: updatedUser.name,
+        bio: updatedUser.bio,
+        ...(image && { imageUrl: image }),
+      },
+    })
 
     return {
       ...prevState,

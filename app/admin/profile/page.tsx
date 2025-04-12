@@ -112,14 +112,10 @@ export default function ProfilePage() {
   // Handle session update after successful profile change
   useEffect(() => {
     if (profileState.success) {
-      // Instead of calling update directly, which can cause CSRF issues,
-      // we'll reload the session data by refreshing the page
-      if (typeof window !== "undefined") {
-        // Use a small timeout to ensure the server has processed the update
-        setTimeout(() => {
-          window.location.reload()
-        }, 500)
-      }
+      // The session will be automatically updated by the server action
+      // We can either wait for the session to update naturally
+      // or force a refresh of the session data
+      update()
     }
   }, [profileState.success])
 
