@@ -1,21 +1,36 @@
 "use client"
 
 import React, { useEffect, useState, use } from "react"
+import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ShoppingCart } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollingBanner } from "@/components/scrolling-banner"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { OrderCart } from "@/components/order-cart"
 import { MenuCategory } from "@/components/menu-category"
 import { useCurrencyStore } from "@/store/currencyStore"
 import { useCartStore } from "@/store/cartStore"
 import { getTableFullData } from "@/actions/table-actions"
+import { CustomerInfoForm } from "@/components/customer-info-form"
+import { useSession } from "next-auth/react"
+import { useToast } from "@/hooks/use-toast"
 
-export default function TableOrderPage({ params }: { params: { restaurantId: string; tableId: string } }) {
-  const unwrappedParams = use(params)
-  const { restaurantId, tableId } = unwrappedParams
+
+export default function TableOrderPage() {
+  const params = useParams()
+  const router = useRouter()
+  const { data: session } = useSession()
+  const { toast } = useToast()
+  const { currency } = useCurrencyStore()
+
+  const restaurantId = params.restaurantId as string
+  const tableId = params.tableId as string
+  const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false)
+  const [showCustomerForm, setShowCustomerForm] = useState(false)
 
   const [tableData, setTableData] = useState<any>({
     restaurant: { name: "", description: "", imageUrl: "", categories: [] },
@@ -26,7 +41,6 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
   const [allItems, setAllItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { currency } = useCurrencyStore()
   const { syncServerOrders } = useCartStore()
 
   // Fetch all data using a single server action
@@ -81,6 +95,30 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
 
     fetchData()
   }, [restaurantId, tableId, syncServerOrders])
+
+  // Check if customer info is needed
+  useEffect(() => {
+    // If user is logged in, we don't need customer info
+    if (session?.user) {
+      setCustomerInfoSubmitted(true)
+      return
+    }
+
+    // Check if customer info is already in localStorage
+    const savedName = localStorage.getItem("customerName")
+    const savedEmail = localStorage.getItem("customerEmail")
+
+    if (savedName && savedEmail) {
+      setCustomerInfoSubmitted(true)
+    } else {
+      setShowCustomerForm(true)
+    }
+  }, [session])
+
+  const handleCustomerInfoSubmit = (name: string, email: string) => {
+    setCustomerInfoSubmitted(true)
+    setShowCustomerForm(false)
+  }
 
   const handleCategoryChange = (category: string) => {
     setActiveCategory(category)
@@ -138,7 +176,9 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg">
               <Image
-                src={restaurant.imageUrl || "/placeholder.svg?height=400&width=400"}
+                src={
+                  restaurant.imageUrl || "/placeholder.svg?height=400&width=400"
+                }
                 alt={restaurant.name}
                 fill
                 className="object-cover"
@@ -147,7 +187,9 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
 
             <div className="text-center md:text-left">
               <h1 className="text-3xl font-bold">{restaurant.name}</h1>
-              <p className="mt-2 text-muted-foreground max-w-md">{restaurant.description}</p>
+              <p className="mt-2 text-muted-foreground max-w-md">
+                {restaurant.description}
+              </p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800">
                 <span className="font-medium">Table {table.number}</span>
               </div>
@@ -155,23 +197,30 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
           </div>
         </div>
       </div>
-
-      {/* Food Menu Section */}
-      <div className="bg-gray-50 flex-grow py-8">
-        <div className="container mx-auto bg-white p-4 md:p-8 rounded-t-3xl shadow-lg">
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
-          </div>
-          <h2 className="text-3xl font-bold mb-6 text-center">{restaurant.name} Menu</h2>
-
-          <MenuCategory
-            items={allItems}
-            activeCategory={activeCategory}
-            onCategoryChange={handleCategoryChange}
-            categories={restaurant.categories || []}
-          />
+      {showCustomerForm && !customerInfoSubmitted ? (
+        <div className="container mx-auto my-6 bg-white p-4 md:p-8 rounded-t-3xl shadow-lg w-96 h-[400px]">
+          <CustomerInfoForm onSubmit={handleCustomerInfoSubmit} />
         </div>
-      </div>
+      ) : (
+        <div className="bg-gray-50 flex-grow py-8">
+          {/* Food Menu Section */}
+          <div className="container mx-auto bg-white p-4 md:p-8 rounded-t-3xl shadow-lg">
+            <div className="flex justify-center items-center gap-2 mb-2">
+              <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
+            </div>
+            <h2 className="text-3xl font-bold mb-6 text-center">
+              {restaurant.name} Menu
+            </h2>
+
+            <MenuCategory
+              items={allItems}
+              activeCategory={activeCategory}
+              onCategoryChange={handleCategoryChange}
+              categories={restaurant.categories || []}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Scrolling Text Banner */}
       <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
@@ -199,6 +248,6 @@ export default function TableOrderPage({ params }: { params: { restaurantId: str
         </Sheet>
       </div>
     </main>
-  )
+  );
 }
 
