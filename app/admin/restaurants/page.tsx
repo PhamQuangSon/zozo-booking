@@ -25,6 +25,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { RestaurantForm } from "@/components/restaurant-form"
 import { getRestaurants, deleteRestaurant } from "@/actions/restaurant-actions"
 import { useToast } from "@/hooks/use-toast"
+import { RestaurantsClient } from "@/components/admin/restaurants-client"
 
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<any[]>([])
@@ -108,129 +109,10 @@ export default function RestaurantsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Restaurants</h2>
-        <Dialog
-          open={isAddDialogOpen}
-          onOpenChange={(open) => {
-            setIsAddDialogOpen(open)
-            if (!open) setEditingRestaurant(null)
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Restaurant
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>{editingRestaurant ? "Edit Restaurant" : "Add Restaurant"}</DialogTitle>
-              <DialogDescription>
-                {editingRestaurant
-                  ? "Update restaurant details below"
-                  : "Fill in the details to create a new restaurant"}
-              </DialogDescription>
-            </DialogHeader>
-            <RestaurantForm
-              initialData={editingRestaurant}
-              onSuccess={() => {
-                setIsAddDialogOpen(false)
-                setEditingRestaurant(null)
-                loadRestaurants()
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search restaurants..."
-            className="pl-9"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>All Restaurants</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex justify-center py-8">
-              <p className="text-muted-foreground">Loading restaurants...</p>
-            </div>
-          ) : filteredRestaurants.length === 0 ? (
-            <div className="flex justify-center py-8">
-              <p className="text-muted-foreground">No restaurants found</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRestaurants.map((restaurant) => (
-                  <TableRow key={restaurant.id}>
-                    <TableCell className="font-medium">{restaurant.name}</TableCell>
-                    <TableCell>{restaurant.address || "—"}</TableCell>
-                    <TableCell>{restaurant.phone || "—"}</TableCell>
-                    <TableCell>{restaurant.email || "—"}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Actions</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEditRestaurant(restaurant)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => (window.location.href = `/admin/restaurants/${restaurant.id}/tables`)}
-                          >
-                            Manage Tables
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => (window.location.href = `/admin/restaurants/${restaurant.id}/menu`)}
-                          >
-                            Manage Menu
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => handleDeleteRestaurant(restaurant.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <h1 className="text-2xl font-bold mb-6">Restaurants</h1>
+      <RestaurantsClient restaurants={restaurants} />
+    </>
   )
 }
 

@@ -9,6 +9,7 @@ import type { Category, Restaurant } from "@prisma/client"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import Image from "next/image"
 
 // Extended Category type with restaurant relation
 type CategoryWithRestaurant = Category & {
@@ -24,7 +25,7 @@ interface CategoriesClientProps {
   restaurants: Restaurant[]
 }
 
-export function CategoriesClient({ columns, initialCategories, restaurants }: CategoriesClientProps) {
+export function CategoriesClient({ initialCategories, restaurants }: CategoriesClientProps) {
   const router = useRouter()
   const [categories, setCategories] = useState<CategoryWithRestaurant[]>(initialCategories)
   const [selectedCategory, setSelectedCategory] = useState<CategoryWithRestaurant | null>(null)
@@ -38,6 +39,41 @@ export function CategoriesClient({ columns, initialCategories, restaurants }: Ca
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       category.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+
+  const columns: ColumnDef<Category & { restaurant: { name: string } }>[] = [
+    {
+      id: "name",
+      header: "Name",
+      accessorKey: "name",
+      sortable: true,
+    },
+    {
+      id: "imageUrl",
+      header: "Image",
+      accessorKey: "imageUrl",
+      cell: (value) =>
+        value ? (
+          <div className="relative w-12 h-12">
+            <Image src={value || "/placeholder.svg"} alt="Menu item" fill className="object-cover rounded-md" />
+          </div>
+        ) : (
+          <div className="text-gray-400">No image</div>
+        ),
+      sortable: false,
+    },
+    {
+      id: "restaurant",
+      header: "Restaurant",
+      accessorKey: "restaurant.name",
+      sortable: true,
+    },
+    {
+      id: "displayOrder",
+      header: "Display Order",
+      accessorKey: "displayOrder",
+      sortable: true,
+    },
+  ]
 
   // Handle edit button click
   const handleEdit = (category: CategoryWithRestaurant) => {

@@ -14,10 +14,10 @@ import { ImageUpload } from "@/components/image-upload"
 
 interface RestaurantFormProps {
   initialData?: any
-  onSuccess: () => void
+  onOpenChange: (refresh: boolean) => void
 }
 
-export function RestaurantForm({ initialData, onSuccess }: RestaurantFormProps) {
+export function RestaurantForm({ initialData, onOpenChange }: RestaurantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
@@ -51,7 +51,7 @@ export function RestaurantForm({ initialData, onSuccess }: RestaurantFormProps) 
           title: "Success",
           description: initialData ? "Restaurant updated successfully" : "Restaurant created successfully",
         })
-        onSuccess()
+        onOpenChange(true) // Close modal and refresh data
       } else {
         toast({
           title: "Error",
@@ -108,6 +108,9 @@ export function RestaurantForm({ initialData, onSuccess }: RestaurantFormProps) 
         </div>
       </div>
       <DialogFooter>
+        <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Saving..." : initialData ? "Update Restaurant" : "Create Restaurant"}
         </Button>
