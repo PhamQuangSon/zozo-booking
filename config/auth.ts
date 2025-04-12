@@ -57,7 +57,7 @@ export const {
           const userData = {
             id: foundUser.id,
             email: foundUser.email,
-            image: foundUser.imageUrl,
+            image: foundUser.image,
             bio: foundUser.bio,
             name: foundUser.name,
             role: foundUser.role,

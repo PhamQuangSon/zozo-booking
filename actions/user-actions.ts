@@ -127,7 +127,7 @@ export async function updateProfile(prevState: ProfileState, formData: FormData)
       user: {
         name: updatedUser.name,
         bio: updatedUser.bio,
-        ...(image && { imageUrl: image }),
+        ...(image && { image }),
       },
     })
 
@@ -135,7 +135,7 @@ export async function updateProfile(prevState: ProfileState, formData: FormData)
       ...prevState,
       success: true,
       message: "Profile updated successfully!",
-      image: image || updatedUser.imageUrl,
+      image: image || updatedUser.image,
     }
   } catch (error: any) {
     console.error("Failed to update profile:", error)

@@ -1,10 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Plus, Search } from "lucide-react"
-import type { ColumnDef } from "@/components/admin/data-table"
 import { getCategories } from "@/actions/category-actions"
-import { getRestaurants } from "@/actions/restaurant-actions"
+import { getRestaurants, Restaurant } from "@/actions/restaurant-actions"
 import { CategoriesClient } from "@/components/admin/categories-client"
 
 export default async function CategoriesPage() {
@@ -13,8 +9,7 @@ export default async function CategoriesPage() {
   const restaurantsResult = await getRestaurants()
 
   const categories = categoriesResult.success ? categoriesResult.data : []
-  const restaurants = restaurantsResult.success ? restaurantsResult.data : []
-  console.log(categories)
+  const restaurants: Restaurant[] = restaurantsResult.success ? restaurantsResult.data : []
 
   return (
     <Card>

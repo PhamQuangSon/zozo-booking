@@ -219,4 +219,5 @@ enum OrderItemStatus {
   READY
   DELIVERED
   COMPLETED
+  CANCELLED
 }

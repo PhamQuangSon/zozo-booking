@@ -102,7 +102,7 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
         })
 
         // Mark items as submitted instead of removing them
-        markItemsAsSubmitted(restaurantId, tableId)
+        markItemsAsSubmitted(restaurantId, tableId, Number(result.data?.id))
       } else {
         toast({
           title: "Error",

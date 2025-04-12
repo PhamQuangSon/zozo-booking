@@ -5,11 +5,12 @@ import { DataTable, type ColumnDef } from "@/components/admin/data-table"
 import { deleteCategory } from "@/actions/category-actions"
 import { CategoryEditModal } from "@/components/admin/category-edit-modal"
 import { useRouter } from "next/navigation"
-import type { Category, Restaurant } from "@prisma/client"
+import type { Category } from "@prisma/client"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
+import { Restaurant } from "@/actions/restaurant-actions"
 
 // Extended Category type with restaurant relation
 type CategoryWithRestaurant = Category & {
@@ -20,7 +21,6 @@ type CategoryWithRestaurant = Category & {
 }
 
 interface CategoriesClientProps {
-  columns: ColumnDef<CategoryWithRestaurant>[]
   initialCategories: CategoryWithRestaurant[]
   restaurants: Restaurant[]
 }

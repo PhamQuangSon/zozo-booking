@@ -135,9 +135,9 @@ export default async function RestaurantOrdersPage({ params }: PageProps) {
                                     Status: {(item.status || 'NEW').charAt(0) + (item.status || 'NEW').slice(1).toLowerCase()}
                                   </div>
                                 </div>
-                                <div className="font-medium">
+                                {/* <div className="font-medium">
                                   {formatCurrency(Number(item.unitPrice) * item.quantity)}
-                                </div>
+                                </div> */}
                               </div>
 
                               {/* Item choices */}
