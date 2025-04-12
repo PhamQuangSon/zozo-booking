@@ -32,7 +32,7 @@ export function SiteHeader() {
                 <Link href="/contact" className="text-lg font-semibold">
                   Contact
                 </Link>
-                <Link href="/auth/login" className="text-lg font-semibold">
+                <Link href="/login" className="text-lg font-semibold">
                   Admin Login
                 </Link>
               </div>
@@ -84,7 +84,7 @@ export function SiteHeader() {
           </Button>
 
           <Button variant="ghost" size="icon" asChild>
-            <Link href="/auth/login">
+            <Link href="/login">
               <User className="h-5 w-5" />
               <span className="sr-only">User account</span>
             </Link>

@@ -3,8 +3,9 @@ import { notFound } from "next/navigation"
 import { RestaurantMenuClient } from "@/components/admin/restaurant-menu-client"
 import { getRestaurantById } from "@/actions/restaurant-actions"
 import { use } from "react"
+import { PageProps } from "@/types/page-props"
 
-export default async function RestaurantMenuPage({ params }: { params: { restaurantId: string } }) {
+export default async function RestaurantMenuPage({ params }: PageProps) {
   const { restaurantId } = params
 
   // Use the cached version of getRestaurantById

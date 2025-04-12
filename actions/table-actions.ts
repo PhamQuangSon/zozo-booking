@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 import { formatCurrency, type Currency } from "@/lib/i18n"
+import { auth } from "@/config/auth"
 
 // Get table details
 export async function getTableDetails(tableId: string) {
@@ -195,60 +196,6 @@ export async function deleteTable(id: number) {
   }
 }
 
-// Get menu for a specific table
-export async function getMenuForTable(restaurantId: string, tableId: string) {
-  try {
-    // First verify the table exists and belongs to the restaurant
-    const table = await prisma.table.findFirst({
-      where: {
-        id: Number.parseInt(tableId),
-        restaurantId: Number.parseInt(restaurantId),
-      },
-    })
-
-    if (!table) {
-      return { success: false, error: "Table not found or does not belong to this restaurant" }
-    }
-
-    // Get the active menu for the restaurant
-    const menu = await prisma.menu.findFirst({
-      where: {
-        restaurantId: Number.parseInt(restaurantId),
-        is_active: true,
-      },
-      include: {
-        menu_categories: {
-          orderBy: { display_order: "asc" },
-          include: {
-            menu_items: {
-              where: { is_available: true },
-              orderBy: { display_order: "asc" },
-              include: {
-                menuItemOptions: {
-                  include: {
-                    optionChoices: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    })
-
-    if (!menu) {
-      return { success: false, error: "No active menu found for this restaurant" }
-    }
-
-    const serializedMenu = serializePrismaData(menu)
-
-    return { success: true, data: { table, menu: serializedMenu } }
-  } catch (error) {
-    console.error(`Failed to fetch menu for table ${tableId} at restaurant ${restaurantId}:`, error)
-    return { success: false, error: "Failed to load menu" }
-  }
-}
-
 // Format menu items with proper currency
 export async function formatTableMenuItems(menuCategories: any[], currency: Currency) {
   return menuCategories.map((category) => ({
@@ -273,6 +220,8 @@ export async function formatTableMenuItems(menuCategories: any[], currency: Curr
 export async function createTableOrder(data: {
   restaurantId: number
   tableId: number
+  customerName?: string
+  customerEmail?: string
   items: Array<{
     menuItemId: number
     quantity: number
@@ -336,27 +285,39 @@ export async function createTableOrder(data: {
       totalAmount += itemPrice * orderItem.quantity
     }
 
+    // Get current user if authenticated
+    const session = await auth()
+    const userId = session?.user?.id
+
+    // Prepare notes with customer info if provided and user is not authenticated
+    let orderNotes = data.notes || ""
+    if (!userId && data.customerName && data.customerEmail) {
+      orderNotes = `Customer Info: ${data.customerName} (${data.customerEmail})\n\n${orderNotes}`.trim()
+    }
+
     // Create the order
     const order = await prisma.order.create({
       data: {
         restaurantId: data.restaurantId,
         tableId: data.tableId,
+        userId: userId,
         status: "NEW",
-        total_amount: totalAmount,
-        notes: data.notes,
+        totalAmount: totalAmount,
+        notes: orderNotes,
         orderItems: {
           create: data.items.map((item) => {
             const menuItem = menuItems.find((mi) => mi.id === item.menuItemId)
             return {
-              menu_item_id: item.menuItemId,
+              menuItemId: item.menuItemId,
               quantity: item.quantity,
-              unit_price: menuItem?.price || 0,
+              unitPrice: menuItem?.price || 0,
               notes: item.notes,
+              status: "NEW",
               orderItemChoices: item.choices
                 ? {
                     create: item.choices.map((choice) => ({
-                      option_id: choice.optionId,
-                      choice_id: choice.choiceId,
+                      menuItemOptionId: choice.optionId,
+                      optionChoiceId: choice.choiceId,
                     })),
                   }
                 : undefined,

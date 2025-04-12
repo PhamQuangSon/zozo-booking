@@ -11,21 +11,22 @@ import { createTableOrder } from "@/actions/table-actions"
 import { type CartItem, useCartStore } from "@/store/cartStore"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { useSession } from "next-auth/react"
 
 interface OrderCartProps {
-  restaurantId?: string
-  tableId?: string
+  restaurantId: string
+  tableId: string
 }
 
 export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
   const { currency } = useCurrencyStore()
+  const { data: session } = useSession()
   const { cart, removeItem, markItemsAsSubmitted, getSubmittedItems, getPendingItems } = useCartStore()
 
   // Get pending and submitted items
   const pendingItems = restaurantId && tableId ? getPendingItems(restaurantId, tableId) : []
-
   const submittedItems = restaurantId && tableId ? getSubmittedItems(restaurantId, tableId) : []
 
   const calculateSubtotal = (items: CartItem[]) => {
@@ -79,9 +80,18 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
           : [],
       }))
 
+      // Get customer info from localStorage if user is not authenticated
+      let customerName, customerEmail
+      if (!session?.user) {
+        customerName = localStorage.getItem("customerName") || undefined
+        customerEmail = localStorage.getItem("customerEmail") || undefined
+      }
+
       const result = await createTableOrder({
         restaurantId: Number.parseInt(restaurantId),
         tableId: Number.parseInt(tableId),
+        customerName,
+        customerEmail,
         items: orderItems,
       })
 
@@ -91,10 +101,8 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
           description: "Your order has been sent to the kitchen!",
         })
 
-        // Mark items as submitted with the order ID if available
-        if (result.data && result.data.id) {
-          markItemsAsSubmitted(restaurantId, tableId, result.data.id)
-        }
+        // Mark items as submitted instead of removing them
+        markItemsAsSubmitted(restaurantId, tableId)
       } else {
         toast({
           title: "Error",
@@ -238,4 +246,3 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
     </div>
   )
 }
-

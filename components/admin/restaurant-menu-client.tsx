@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { MenuItemEditModal } from "@/components/admin/menu-item-edit-modal"
 import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal"
 import { deleteMenuItem, updateMenuItemOrder } from "@/actions/menu-item-actions"
-import { deleteItemOption, updateItemOptionDisplayOrder } from "@/actions/item-option-actions"
+import { deleteItemOption } from "@/actions/item-option-actions"
 import { useRouter } from "next/navigation"
 import type { Restaurant, MenuItem, MenuItemOption, Category, OptionChoice } from "@prisma/client"
 import Image from "next/image"
@@ -420,7 +420,7 @@ export function RestaurantMenuClient({
             >
               {item.imageUrl ? (
                 <div className="relative h-10 w-10 rounded-md overflow-hidden">
-                  <Image src={item.imageUrl || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
+                  <Image src={item.imageUrl || "/placeholder.svg"} alt={item.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 100vw" />
                 </div>
               ) : (
                 <div className="h-10 w-10 bg-gray-200 rounded-md flex items-center justify-center">

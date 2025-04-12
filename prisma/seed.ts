@@ -16,6 +16,8 @@ async function main() {
       name: "Admin User",
       email: "admin@example.com",
       password: adminPassword,
+      bio: 'bio',
+      image: '/menuThumb1_1.png',
       role: "ADMIN",
       emailVerified: new Date(),
     },
@@ -33,6 +35,8 @@ async function main() {
       name: "Regular User",
       email: "user@example.com",
       password: userPassword,
+      bio: 'bio',
+      image: '/menuThumb1_1.png',
       role: "CUSTOMER",
       emailVerified: new Date(),
     },
@@ -50,6 +54,7 @@ async function main() {
       address: "123 Main St, Anytown, USA",
       phone: "555-123-4567",
       email: "info@pastaparadise.com",
+      imageUrl: "/restaurant_1.png",
       cuisine: "Italian",
     },
   })
@@ -61,7 +66,7 @@ async function main() {
       address: "456 Oak Ave, Anytown, USA",
       phone: "555-987-6543",
       email: "info@burgerbistro.com",
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/restaurant_2.png",
       cuisine: "American",
     },
   })
@@ -73,7 +78,7 @@ async function main() {
       address: "789 Pine St, Anytown, USA",
       phone: "555-456-7890",
       email: "info@sushisensation.com",
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/restaurant_3.png",
       cuisine: "Japanese",
     },
   })
@@ -411,6 +416,7 @@ async function main() {
       data: {
         tableId: tables1[2].id,
         restaurantId: restaurant1.id,
+        userId: user.id,
         status: "NEW" as OrderStatus,
         totalAmount: 45.99,
         createdAt: new Date(),
@@ -437,6 +443,7 @@ async function main() {
       data: {
         tableId: tables1[0].id,
         restaurantId: restaurant1.id,
+        userId: user.id,
         status: "COMPLETED" as OrderStatus,
         totalAmount: 23.5,
         createdAt: new Date(Date.now() - 3600000), // 1 hour ago
@@ -446,6 +453,7 @@ async function main() {
       data: {
         tableId: tables1[4].id,
         restaurantId: restaurant1.id,
+        userId: user.id,
         status: "PREPARING" as OrderStatus,
         totalAmount: 78.25,
         createdAt: new Date(Date.now() - 7200000), // 2 hours ago

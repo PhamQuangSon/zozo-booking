@@ -58,6 +58,7 @@ export function AdminSidebar() {
             id: session.user.id,
             name: session.user.name,
             image: session.user.image,
+            bio: session.user.bio,
             email: session.user.email,
             role: session.user.role,
           }

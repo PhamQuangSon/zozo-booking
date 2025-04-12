@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
-import { OrderStatus, OrderItemStatus, Prisma, OrderItem } from "@prisma/client"
+import { OrderStatus, OrderItemStatus, type Prisma, type OrderItem } from "@prisma/client"
 
 // Extended type for OrderItem with status
 type OrderItemWithStatus = OrderItem & {
@@ -74,7 +74,7 @@ export async function getRestaurantOrders(restaurantId: string) {
 export async function createOrder(data: {
   restaurantId: number
   tableId?: number
-  userId?: number
+  userId?: string // Make userId optional
   items: Array<{
     menuItemId: number
     quantity: number
@@ -85,6 +85,8 @@ export async function createOrder(data: {
     }>
   }>
   notes?: string
+  customerName?: string // Add optional customer name for non-authenticated users
+  customerEmail?: string // Add optional customer email for non-authenticated users
 }) {
   try {
     // First, calculate the total amount based on menu items and choices
@@ -132,8 +134,8 @@ export async function createOrder(data: {
       if (data.tableId) {
         await prisma.table.update({
           where: { id: data.tableId },
-          data: { status: 'OCCUPIED' }
-        });
+          data: { status: "OCCUPIED" },
+        })
       }
 
       // Create the order
@@ -141,34 +143,40 @@ export async function createOrder(data: {
         data: {
           restaurantId: data.restaurantId,
           tableId: data.tableId,
-          user_id: data.userId !== undefined ? data.userId.toString() : undefined,
+          userId: data.userId, // This can be undefined for non-authenticated users
           status: "NEW",
           total_amount: totalAmount,
           notes: data.notes,
+          // Store customer info in notes if not authenticated
+          ...(!data.userId &&
+            (data.customerName || data.customerEmail) && {
+              notes: `${data.notes ? data.notes + "\n" : ""}Customer: ${data.customerName || "Anonymous"} ${data.customerEmail ? `(${data.customerEmail})` : ""}`,
+            }),
           orderItems: {
             create: data.items.map((item) => {
-              const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
+              const menuItem = menuItems.find((mi) => mi.id === item.menuItemId)
               return {
-                menuItem: { connect: { id: item.menuItemId } }, // Corrected field name
+                menuItemId: item.menuItemId,
                 quantity: item.quantity,
-                unitPrice: menuItem?.price || 0, // Corrected field name (camelCase)
+                unitPrice: menuItem?.price || 0,
                 notes: item.notes,
+                status: "NEW",
                 orderItemChoices: item.choices
                   ? {
                       create: item.choices.map((choice) => ({
-                        menuItemOption: { connect: { id: choice.optionId } },
-                        optionChoice: { connect: { id: choice.choiceId } },
+                        menuItemOptionId: choice.optionId,
+                        optionChoiceId: choice.choiceId,
                       })),
                     }
                   : undefined,
-              };
+              }
             }),
           },
         },
         include: {
           orderItems: {
             include: {
-              menuItem: true, // Corrected field name
+              menuItem: true,
               orderItemChoices: {
                 include: {
                   optionChoice: true,
@@ -178,10 +186,10 @@ export async function createOrder(data: {
             },
           },
         },
-      });
-    });
+      })
+    })
 
-    return { success: true, data: result }
+    return { success: true, data: serializePrismaData(result) }
   } catch (error) {
     console.error("Failed to create order:", error)
     return { success: false, error: "Failed to create order" }
@@ -201,11 +209,11 @@ export async function updateOrderStatus(orderId: number, status: string) {
     })
 
     // If order is completed or cancelled and table exists, check if there are other active orders
-    if ((status === 'COMPLETED' || status === 'CANCELLED') && order.tableId) {
+    if ((status === "COMPLETED" || status === "CANCELLED") && order.tableId) {
       const activeOrders = await prisma.order.findMany({
         where: {
           tableId: order.tableId,
-          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+          status: { notIn: ["COMPLETED", "CANCELLED"] },
           id: { not: orderId }, // Exclude current order
         },
       })
@@ -214,7 +222,7 @@ export async function updateOrderStatus(orderId: number, status: string) {
       if (activeOrders.length === 0) {
         await prisma.table.update({
           where: { id: order.tableId },
-          data: { status: 'AVAILABLE' },
+          data: { status: "AVAILABLE" },
         })
       }
     }
@@ -227,76 +235,68 @@ export async function updateOrderStatus(orderId: number, status: string) {
 }
 
 // Update order item status
-export async function updateOrderItemStatus(
-  orderItemId: number,
-  newStatus: OrderItemStatus
-) {
+export async function updateOrderItemStatus(orderItemId: number, newStatus: OrderItemStatus) {
   try {
     const updatedItem = await prisma.$transaction(async (tx) => {
       // Update the order item status
-      const orderItem = await tx.orderItem.update({
+      const orderItem = (await tx.orderItem.update({
         where: { id: orderItemId },
         data: { status: newStatus },
         include: {
           order: {
             include: {
               orderItems: true,
-              table: true
-            }
-          }
-        }
-      }) as OrderItemWithRelations;
+              table: true,
+            },
+          },
+        },
+      })) as OrderItemWithRelations
 
       // Check if all items in the order have the same status
-      const allItemsSameStatus = orderItem.order.orderItems.every(
-        (item: OrderItem) => item.status === newStatus
-      );
+      const allItemsSameStatus = orderItem.order.orderItems.every((item: OrderItem) => item.status === newStatus)
 
       // If all items have the same status, update order status
       if (allItemsSameStatus) {
         // Map item status to order status
-        const orderStatus = orderItemStatusToOrderStatus[newStatus];
+        const orderStatus = orderItemStatusToOrderStatus[newStatus]
         await tx.order.update({
           where: { id: orderItem.order.id },
           data: { status: orderStatus },
-        });
+        })
 
         // If order is completed/cancelled & has a table, check if table can be freed
-        if (
-          (newStatus === "COMPLETED" || newStatus === "CANCELLED") &&
-          orderItem.order.table
-        ) {
+        if ((newStatus === "COMPLETED" || newStatus === "CANCELLED") && orderItem.order.table) {
           const activeOrders = await tx.order.count({
             where: {
               tableId: orderItem.order.table.id,
               status: { notIn: ["COMPLETED", "CANCELLED"] },
-              id: { not: orderItem.order.id }
-            }
-          });
+              id: { not: orderItem.order.id },
+            },
+          })
 
           // If no other active orders, update table status
           if (activeOrders === 0) {
             await tx.table.update({
               where: { id: orderItem.order.table.id },
-              data: { status: "AVAILABLE" }
-            });
+              data: { status: "AVAILABLE" },
+            })
           }
         }
       }
 
-      return orderItem;
-    });
+      return orderItem
+    })
 
     return {
       success: true,
-      data: serializePrismaData(updatedItem)
-    };
+      data: serializePrismaData(updatedItem),
+    }
   } catch (error) {
-    console.error("Failed to update order item status:", error);
+    console.error("Failed to update order item status:", error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update order item status"
-    };
+      error: error instanceof Error ? error.message : "Failed to update order item status",
+    }
   }
 }
 
@@ -311,31 +311,35 @@ export async function createOptionChoice(data: {
       data: {
         name: data.name,
         priceAdjustment: data.priceAdjustment,
-        menuItemOption: { // Connect to the parent MenuItemOption
-          connect: { id: data.option_id }
-        }
-      }
+        menuItemOption: {
+          // Connect to the parent MenuItemOption
+          connect: { id: data.option_id },
+        },
+      },
     })
     return { success: true, data: choice }
   } catch (error) {
-    console.error('Failed to create option choice:', error)
-    return { success: false, error: 'Failed to create option choice' }
+    console.error("Failed to create option choice:", error)
+    return { success: false, error: "Failed to create option choice" }
   }
 }
 
-export async function updateOptionChoice(id: number, data: {
-  name: string
-  priceAdjustment: number
-}) {
+export async function updateOptionChoice(
+  id: number,
+  data: {
+    name: string
+    priceAdjustment: number
+  },
+) {
   try {
     const choice = await prisma.optionChoice.update({
       where: { id },
-      data
+      data,
     })
     return { success: true, data: choice }
   } catch (error) {
-    console.error('Failed to update option choice:', error)
-    return { success: false, error: 'Failed to update option choice' }
+    console.error("Failed to update option choice:", error)
+    return { success: false, error: "Failed to update option choice" }
   }
 }
 
@@ -344,8 +348,8 @@ export async function deleteOptionChoice(id: number) {
     await prisma.optionChoice.delete({ where: { id } })
     return { success: true }
   } catch (error) {
-    console.error('Failed to delete option choice:', error)
-    return { success: false, error: 'Failed to delete option choice' }
+    console.error("Failed to delete option choice:", error)
+    return { success: false, error: "Failed to delete option choice" }
   }
 }
 
@@ -360,8 +364,8 @@ export async function updateMenuOrder(menuId: number, newOrder: number) {
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to update menu order:', error)
-    return { success: false, error: 'Failed to update menu order' }
+    console.error("Failed to update menu order:", error)
+    return { success: false, error: "Failed to update menu order" }
   }
 }
 
@@ -375,8 +379,8 @@ export async function updateCategoryOrder(categoryId: number, newOrder: number) 
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to update category order:', error)
-    return { success: false, error: 'Failed to update category order' }
+    console.error("Failed to update category order:", error)
+    return { success: false, error: "Failed to update category order" }
   }
 }
 
@@ -386,15 +390,15 @@ export async function updateMenuItemOrder(itemId: number, newOrder: number) {
     await prisma.$transaction(async (prisma) => {
       const menuItem = await prisma.menuItem.findUnique({
         where: { id: itemId },
-        select: { categoryId: true }
+        select: { categoryId: true },
       })
 
-      if (!menuItem) throw new Error('Menu item not found')
+      if (!menuItem) throw new Error("Menu item not found")
 
       // Update the specific item's order
       await prisma.menuItem.update({
         where: { id: itemId },
-        data: { displayOrder: newOrder }
+        data: { displayOrder: newOrder },
       })
 
       // Update other items' orders within the same category
@@ -402,17 +406,17 @@ export async function updateMenuItemOrder(itemId: number, newOrder: number) {
         where: {
           NOT: { id: itemId },
           categoryId: menuItem.categoryId,
-          displayOrder: { gte: newOrder }
+          displayOrder: { gte: newOrder },
         },
         data: {
-          displayOrder: { increment: 1 }
-        }
+          displayOrder: { increment: 1 },
+        },
       })
     })
 
     return { success: true }
   } catch (error) {
-    console.error('Failed to update menu item order:', error)
-    return { success: false, error: 'Failed to update menu item order' }
+    console.error("Failed to update menu item order:", error)
+    return { success: false, error: "Failed to update menu item order" }
   }
 }

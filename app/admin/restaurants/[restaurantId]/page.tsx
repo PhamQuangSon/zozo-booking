@@ -8,8 +8,9 @@ import { Edit, Plus } from "lucide-react"
 import { tableStatusColors } from "@/types/status-colors"
 import { formatCurrency } from "@/lib/i18n";
 import { getCachedRestaurantById } from "@/lib/restaurant-cache"
+import { PageProps } from "@/types/page-props"
 
-export default async function RestaurantDetailPage({ params }: { params: { restaurantId: string } }) {
+export default async function RestaurantDetailPage({ params }: PageProps) {
   const { restaurantId } = params
   // Fetch restaurant details
   const { success, data: restaurant, error } = await getCachedRestaurantById(restaurantId)
