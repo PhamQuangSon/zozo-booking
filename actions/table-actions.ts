@@ -61,10 +61,12 @@ export async function getTablesByRestaurantId(restaurantId: string) {
       },
     })
 
-    return serializePrismaData(tables)
+    const serializedTables = serializePrismaData(tables)
+
+    return { success: true, data: serializedTables}
   } catch (error) {
     console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
-    return []
+    return { success: false, error: "Failed to load tables" }
   }
 }
 

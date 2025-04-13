@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { updateOrderStatus } from "@/actions/order-actions"
+import { updateOrderItemStatus } from "@/actions/order-actions"
 import { OrderStatus } from "@prisma/client"
 import { useRouter } from "next/navigation"
 
@@ -53,7 +53,7 @@ export function OrderActions({ order }: OrderActionsProps) {
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     try {
       setLoading(true)
-      const result = await updateOrderStatus(order.id, newStatus)
+      const result = await updateOrderItemStatus(order.id, newStatus)
       if (result.success) {
         router.refresh()
       }

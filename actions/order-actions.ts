@@ -2,24 +2,8 @@
 
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
-import { OrderWithRelations } from "@/types/menu-builder-types"
-import { OrderStatus, OrderItemStatus, type Prisma, type OrderItem } from "@prisma/client"
-
-// Extended type for OrderItem with status
-type OrderItemWithStatus = OrderItem & {
-  status: OrderItemStatus
-}
-
-type OrderItemWithRelations = Prisma.OrderItemGetPayload<{
-  include: {
-    order: {
-      include: {
-        orderItems: true
-        table: true
-      }
-    }
-  }
-}>
+import { OrderStatus, OrderItemStatus, type Prisma } from "@prisma/client"
+import type { OrderWithRelations } from "@/types/menu-builder-types"
 
 // Map order item status to order status
 const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
@@ -31,12 +15,10 @@ const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
   [OrderItemStatus.CANCELLED]: OrderStatus.CANCELLED,
 }
 
-export type GetRestaurantsOrdersResponse =
-  | { success: true; data: OrderWithRelations[] }
-  | { success: false; error: string }
-
-// Get orders for a restaurant
-export async function getRestaurantOrders(restaurantId: string): Promise<GetRestaurantsOrdersResponse> {
+// Then fix the getRestaurantOrders function to properly handle the type conversion
+export async function getRestaurantOrders(
+  restaurantId: string,
+): Promise<{ success: boolean; data?: OrderWithRelations[]; error?: string }> {
   try {
     const orders = await prisma.order.findMany({
       where: {
@@ -65,10 +47,10 @@ export async function getRestaurantOrders(restaurantId: string): Promise<GetRest
       orderBy: { createdAt: "desc" },
     })
 
-    // Serialize all Decimal values to numbers
-    const serializedOrders = serializePrismaData(orders)
-
-    return { success: true, data: serializedOrders }
+    // Fix the serialization and type casting
+    const serializedData = serializePrismaData(orders)
+    // Use a type assertion that matches the structure from menu-builder-types.ts
+    return { success: true, data: serializedData as unknown as OrderWithRelations[] }
   } catch (error) {
     console.error("Failed to fetch orders:", error)
     return { success: false, error: "Failed to load orders" }
@@ -201,50 +183,12 @@ export async function getRestaurantOrders(restaurantId: string): Promise<GetRest
 //   }
 // }
 
-// Update order and item status
-export async function updateOrderStatus(orderId: number, status: string) {
-  try {
-    const order = await prisma.order.update({
-      where: { id: orderId },
-      data: { status: status as OrderStatus },
-      include: {
-        table: true,
-        orderItems: true,
-      },
-    })
-
-    // If order is completed or cancelled and table exists, check if there are other active orders
-    if ((status === "COMPLETED" || status === "CANCELLED") && order.tableId) {
-      const activeOrders = await prisma.order.findMany({
-        where: {
-          tableId: order.tableId,
-          status: { notIn: ["COMPLETED", "CANCELLED"] },
-          id: { not: orderId }, // Exclude current order
-        },
-      })
-
-      // If no other active orders, update table status to AVAILABLE
-      if (activeOrders.length === 0) {
-        await prisma.table.update({
-          where: { id: order.tableId },
-          data: { status: "AVAILABLE" },
-        })
-      }
-    }
-
-    return { success: true, data: order }
-  } catch (error) {
-    console.error("Failed to update order status:", error)
-    return { success: false, error: "Failed to update order status" }
-  }
-}
-
-// Update order item status
+// Also fix the updateOrderItemStatus function to use the correct OrderItem type
 export async function updateOrderItemStatus(orderItemId: number, newStatus: OrderItemStatus) {
   try {
     const updatedItem = await prisma.$transaction(async (tx) => {
       // Update the order item status
-      const orderItem = (await tx.orderItem.update({
+      const orderItem = await tx.orderItem.update({
         where: { id: orderItemId },
         data: { status: newStatus },
         include: {
@@ -255,10 +199,10 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
             },
           },
         },
-      })) as OrderItemWithRelations
+      })
 
       // Check if all items in the order have the same status
-      const allItemsSameStatus = orderItem.order.orderItems.every((item: OrderItem) => item.status === newStatus)
+      const allItemsSameStatus = orderItem.order.orderItems.every((item) => item.status === newStatus)
 
       // If all items have the same status, update order status
       if (allItemsSameStatus) {
@@ -425,3 +369,14 @@ export async function updateMenuItemOrder(itemId: number, newOrder: number) {
     return { success: false, error: "Failed to update menu item order" }
   }
 }
+
+export type OrderItemWithRelations = Prisma.OrderItemGetPayload<{
+  include: {
+    order: {
+      include: {
+        orderItems: true
+        table: true
+      }
+    }
+  }
+}>
