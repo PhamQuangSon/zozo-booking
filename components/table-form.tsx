@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createTable, updateTable } from "@/actions/table-actions"
 import { useToast } from "@/hooks/use-toast"
 import { ImageUpload } from "@/components/image-upload"
-import { Table as TableType } from "@prisma/client"
+import type { Table as TableType } from "@prisma/client"
 
 interface TableFormProps {
   restaurantId: number
@@ -50,8 +50,8 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
       const tableData = {
         number: formData.number,
         capacity: formData.capacity,
-        status: formData.status && formData.status.toUpperCase() || undefined,
-        imageUrl: formData.imageUrl && formData.imageUrl.trim() || undefined,
+        status: formData.status,
+        imageUrl: formData.imageUrl || null,
         restaurantId: restaurantId,
       }
 
@@ -136,4 +136,3 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
     </form>
   )
 }
-

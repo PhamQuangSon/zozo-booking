@@ -17,18 +17,6 @@ import { PageProps } from "@/types/page-props"
 export default async function RestaurantOrdersPage({ params }: PageProps) {
   const { restaurantId } = params
 
-  // Get restaurant details
-  const restaurantResult = await getRestaurantById(restaurantId)
-  if (!restaurantResult.success) {
-    return (
-      <Alert variant="destructive" className="mt-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{restaurantResult.error || "Failed to load restaurant details"}</AlertDescription>
-      </Alert>
-    )
-  }
-
   // Get restaurant orders
   const ordersResult = await getRestaurantOrders(restaurantId)
   if (!ordersResult.success) {
@@ -45,8 +33,6 @@ export default async function RestaurantOrdersPage({ params }: PageProps) {
       </div>
     )
   }
-
-  const restaurant = restaurantResult.data
   const orders = ordersResult.data
   console.log('type', orders)
 

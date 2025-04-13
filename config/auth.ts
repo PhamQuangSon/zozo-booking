@@ -112,23 +112,6 @@ export const {
       return session
     },
   },
-  events: {
-    async signIn(message) {
-      debugLog("🟢 signIn event", { user: message.user.email })
-    },
-    async signOut(message) {
-      debugLog("🟢 signOut event", { session: message.session })
-    },
-    async createUser(message) {
-      debugLog("🟢 createUser event", { user: message.user.email })
-    },
-    async linkAccount(message) {
-      debugLog("🟢 linkAccount event", { account: message.account.provider })
-    },
-    async session(message) {
-      debugLog("🟢 session event", { session: message.session })
-    },
-  },
   pages: {
     signIn: "/login",
     signOut: "/logout",
