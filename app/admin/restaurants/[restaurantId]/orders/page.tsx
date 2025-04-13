@@ -9,25 +9,10 @@ import { Separator } from "@/components/ui/separator"
 import { AlertCircle, Clock, User } from "lucide-react"
 import { OrderActions } from "./order-actions"
 import { OrderItemActions } from "./order-item-actions"
-import { MenuItem, MenuItemOption, OptionChoice, Table, type Order, type OrderItem, type OrderItemChoice, type OrderStatus } from "@prisma/client"
+import { type OrderStatus } from "@prisma/client"
 import { orderStatusColors } from "@/types/status-colors"
 import { PageProps } from "@/types/page-props"
 
-interface OrderWithRelations extends Order {
-  orderItems: (OrderItem & {
-    menuItem: MenuItem
-    orderItemChoices: (OrderItemChoice & {
-      menuItemOption: MenuItemOption | null
-      optionChoice: OptionChoice | null
-    })[]
-  })[]
-  table?: Table,
-  user?: {
-    name: string | null
-    email: string
-  } | null
-  // userId?: string
-}
 
 export default async function RestaurantOrdersPage({ params }: PageProps) {
   const { restaurantId } = params
@@ -62,8 +47,8 @@ export default async function RestaurantOrdersPage({ params }: PageProps) {
   }
 
   const restaurant = restaurantResult.data
-  const orders = ordersResult.data as OrderWithRelations[]
-  console.log(orders)
+  const orders = ordersResult.data
+  console.log('type', orders)
 
   return (
     <>
@@ -76,7 +61,7 @@ export default async function RestaurantOrdersPage({ params }: PageProps) {
           </Card>
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
-            {orders.map((order: Order) => (
+            {orders.map((order) => (
               <Card key={order.id} className="overflow-hidden">
                 <CardHeader className="bg-muted/50">
                   <div className="flex justify-between items-start">
@@ -115,7 +100,7 @@ export default async function RestaurantOrdersPage({ params }: PageProps) {
                     <div className="space-y-3">
                       <h3 className="font-medium">Order Items</h3>
                       <div className="space-y-2">
-                        {order.orderItems.map((item: OrderWithRelations['orderItems'][0]) => (
+                        {order.orderItems.map((item) => (
                           <div key={item.id} className="flex justify-between text-sm">
                             <div>
                               <div className="flex items-center justify-between gap-4 group relative">

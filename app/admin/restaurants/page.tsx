@@ -1,28 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Edit, Trash2, MoreHorizontal } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { RestaurantForm } from "@/components/restaurant-form"
 import { getRestaurants, deleteRestaurant } from "@/actions/restaurant-actions"
 import { useToast } from "@/hooks/use-toast"
 import { RestaurantsClient } from "@/components/admin/restaurants-client"

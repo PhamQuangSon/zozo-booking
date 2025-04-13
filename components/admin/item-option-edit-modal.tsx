@@ -10,7 +10,7 @@ import { createItemOption, updateItemOption } from "@/actions/item-option-action
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import type { MenuItem, Restaurant } from "@prisma/client" // Keep base types if needed elsewhere
-import type { ItemOptionEditModalProps } from "@/types/menu-buider-types" // Import shared props type
+import type { ItemOptionEditModalProps } from "@/types/menu-builder-types" // Import shared props type
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { itemOptionSchema, type ItemOptionFormValues } from "@/schemas/item-option-schema"

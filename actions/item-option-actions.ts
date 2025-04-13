@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
 import { revalidatePath } from "next/cache"
+import type { ItemOptionWithRelations } from "@/types/menu-builder-types" // Import shared type
 import type { ItemOptionFormValues } from "@/schemas/item-option-schema"
 
 // Get all item options
@@ -25,7 +26,20 @@ export async function getItemOptions() {
       },
     })
 
-    return { success: true, data: serializePrismaData(itemOptions) }
+    // Map the fetched data to the shared type structure
+    const mappedData: ItemOptionWithRelations[] = itemOptions.map((option) => ({
+      ...option,
+      priceAdjustment: option.priceAdjustment.toNumber(), // Ensure price is number if needed by shared type
+      optionChoices: option.optionChoices.map(choice => ({
+        ...choice,
+        priceAdjustment: choice.priceAdjustment.toNumber(), // Ensure price is number if needed by shared type
+      })),
+      menuItemName: option.menuItem?.name ?? "N/A",
+      restaurantName: option.menuItem?.restaurant?.name ?? "N/A",
+      choicesCount: option.optionChoices.length,
+    }))
+
+    return { success: true, data: serializePrismaData(mappedData) } // Serialize the mapped data
   } catch (error) {
     console.error("Failed to fetch item options:", error)
     return {

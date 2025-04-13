@@ -24,7 +24,7 @@ export default function QRCodeGenerator() {
     const fetchRestaurants = async () => {
       try {
         const result = await getRestaurants()
-        if (result.success && result.data) {
+        if (result.success) {
           setRestaurants(result.data.map((r) => ({ id: r.id.toString(), name: r.name })))
         } else {
           toast({

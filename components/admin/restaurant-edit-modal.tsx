@@ -1,22 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
-import { createMenuItem, updateMenuItem } from "@/actions/menu-item-actions"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { Category, MenuItem, Restaurant } from "@prisma/client"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { menuItemSchema, type MenuItemFormValues } from "@/schemas/menu-item-schema"
-import { ImageUpload } from "@/components/ui/image-upload"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import type { Category, MenuItem } from "@prisma/client"
 import { RestaurantForm } from "@/components/restaurant-form"
+import { Restaurant } from "@/actions/restaurant-actions"
 
 // Extended MenuItem type with category and restaurant relations
 type MenuItemWithRelations = MenuItem & {
@@ -25,7 +12,7 @@ type MenuItemWithRelations = MenuItem & {
 }
 
 interface RestaurantEditModalProps {
-  restaurants: Restaurant[]
+  restaurants: Restaurant | null
   open: boolean
   onOpenChange: (refresh: boolean) => void
   mode: "create" | "edit"
@@ -34,7 +21,7 @@ interface RestaurantEditModalProps {
 export function RestaurantEditModal({
   // menuItem,
   // categories,
-  restaurants = [], // Add default empty array to prevent null/undefined errors
+  restaurants = null, // Add default empty array to prevent null/undefined errors
   open,
   onOpenChange,
   mode = "edit",

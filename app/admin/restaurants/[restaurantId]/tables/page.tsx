@@ -218,7 +218,7 @@ export default function TablesPage() {
                     <TableCell className="font-medium">Table {table.number}</TableCell>
                     <TableCell>{table.capacity} people</TableCell>
                     <TableCell>
-                      <Badge className={tableStatusColors[table.status]}>
+                      <Badge className={tableStatusColors[table.status] || "bg-gray-500"}>
                         {table.status}
                       </Badge>
                     </TableCell>

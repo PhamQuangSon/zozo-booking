@@ -28,6 +28,8 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
             c.items?.flatMap((i) =>
               i.menuItemOptions.map(option => ({
                 ...option,
+                // Convert Decimal price to number
+                priceAdjustment: Number(option.priceAdjustment),
                 // Convert Decimal priceAdjustment in choices to number
                 optionChoices: option.optionChoices.map(choice => ({
                   ...choice,

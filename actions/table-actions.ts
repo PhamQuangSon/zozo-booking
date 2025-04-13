@@ -28,8 +28,20 @@ export async function getTableDetails(tableId: string) {
   }
 }
 
+export type Table = {
+  number: number
+  capacity: number
+  status?: string | null
+  imageUrl?: string | null
+  restaurantId: number
+}
+
+export type GetRestaurantTablesResponse =
+  | { success: true; data: Table[] }
+  | { success: false; error: string }
+
 // Get all tables for a restaurant
-export async function getRestaurantTables(restaurantId: string) {
+export async function getRestaurantTables(restaurantId: string){
   try {
     const tables = await prisma.table.findMany({
       where: {
@@ -50,7 +62,7 @@ export async function getRestaurantTables(restaurantId: string) {
 }
 
 // Add this function to get tables by restaurant ID
-export async function getTablesByRestaurantId(restaurantId: string) {
+export async function getTablesByRestaurantId(restaurantId: string){
   try {
     const tables = await prisma.table.findMany({
       where: {
@@ -70,12 +82,12 @@ export async function getTablesByRestaurantId(restaurantId: string) {
 
 // Create a new table
 export async function createTable(data: {
-  restaurantId: number
   number: number
   capacity: number
-  status?: string
-  imageUrl?: string
-}) {
+  status?: string | null
+  imageUrl?: string | null
+  restaurantId: number
+}): Promise<GetRestaurantTablesResponse>  {
   try {
     // Check if table number already exists for this restaurant
     const existingTable = await prisma.table.findFirst({
@@ -114,11 +126,11 @@ export async function updateTable(
   data: {
     number: number
     capacity: number
-    status?: string
+    status?: string | undefined
+    imageUrl?: string | undefined
     restaurantId: number
-    imageUrl?: string
   },
-) {
+): Promise<GetRestaurantTablesResponse> {
   try {
     // Check if table number already exists for this restaurant (excluding this table)
     const existingTable = await prisma.table.findFirst({
@@ -225,7 +237,7 @@ export async function createTableOrder(data: {
   items: Array<{
     menuItemId: number
     quantity: number
-    notes?: string
+    notes?: string | undefined
     choices?: Array<{
       optionId: number
       choiceId: number

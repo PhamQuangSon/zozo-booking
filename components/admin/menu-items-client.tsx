@@ -9,33 +9,23 @@ import { deleteMenuItem } from "@/actions/menu-item-actions"
 import { MenuItemEditModal } from "@/components/admin/menu-item-edit-modal"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { MenuItemWithRelations } from "@/types/menu-builder-types"
 
-type MenuItemWithRelations = {
-  id: number
-  name: string
-  description: string | null
-  price: number
+type MenuItemWithRelationsClient = MenuItemWithRelations & {
   formattedPrice: string // Pre-formatted on server
-  categoryId: number
-  restaurantId: number
-  isAvailable: boolean
-  displayOrder: number
-  imageUrl: string | null
-  category: { id: number; name: string } | null
-  restaurant: { id: number; name: string } | null
   categoryName: string // Pre-formatted on server
   restaurantName: string // Pre-formatted on server
 }
 
 interface MenuItemsClientProps {
-  menuItems: MenuItemWithRelations[]
+  menuItems: MenuItemWithRelationsClient[]
 }
 
 export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemWithRelations | null>(null)
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemWithRelationsClient | null>(null)
   const [categories, setCategories] = useState<any[]>([])
   const [restaurants, setRestaurants] = useState<any[]>([])
 
@@ -74,7 +64,7 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
       (item.restaurantName?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
   )
 
-  const columns: ColumnDef<MenuItemWithRelations>[] = [
+  const columns: ColumnDef<MenuItemWithRelationsClient>[] = [
     {
       id: "name",
       header: "Name",
@@ -127,7 +117,7 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
     setIsModalOpen(true)
   }
 
-  const handleEditMenuItem = (menuItem: MenuItemWithRelations) => {
+  const handleEditMenuItem = (menuItem: MenuItemWithRelationsClient) => {
     setSelectedMenuItem(menuItem)
     setIsModalOpen(true)
   }

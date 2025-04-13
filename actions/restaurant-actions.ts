@@ -13,6 +13,8 @@ export type Restaurant = {
   phone?: string | null
   email?: string | null
   cuisine?: string | null
+  createdAt: Date
+  updatedAt: Date
 }
 
 export type GetRestaurantsResponse =
@@ -32,6 +34,8 @@ export async function getRestaurants(): Promise<GetRestaurantsResponse> {
         phone: true,
         email: true,
         cuisine: true,
+        createdAt: true,
+        updatedAt: true,
       },
     })
 

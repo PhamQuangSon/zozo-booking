@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { serializePrismaData } from "@/lib/prisma-helpers"
+import { OrderWithRelations } from "@/types/menu-builder-types"
 import { OrderStatus, OrderItemStatus, type Prisma, type OrderItem } from "@prisma/client"
 
 // Extended type for OrderItem with status
@@ -30,8 +31,12 @@ const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
   [OrderItemStatus.CANCELLED]: OrderStatus.CANCELLED,
 }
 
+export type GetRestaurantsOrdersResponse =
+  | { success: true; data: OrderWithRelations[] }
+  | { success: false; error: string }
+
 // Get orders for a restaurant
-export async function getRestaurantOrders(restaurantId: string) {
+export async function getRestaurantOrders(restaurantId: string): Promise<GetRestaurantsOrdersResponse> {
   try {
     const orders = await prisma.order.findMany({
       where: {

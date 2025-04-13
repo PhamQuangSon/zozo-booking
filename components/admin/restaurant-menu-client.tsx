@@ -16,7 +16,7 @@ import type {
   MenuItemWithRelations,
   ItemOptionWithRelations,
   RestaurantMenuClientProps, // Import props type
-} from "@/types/menu-buider-types"
+} from "@/types/menu-builder-types"
 import {
   DndContext,
   DragOverlay,

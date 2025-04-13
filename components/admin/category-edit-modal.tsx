@@ -9,12 +9,13 @@ import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import { createCategory, updateCategory } from "@/actions/category-actions"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Category, Restaurant } from "@prisma/client"
+import type { Category } from "@prisma/client"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { categorySchema, type CategoryFormValues } from "@/schemas/category-schema"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Restaurant } from "@/actions/restaurant-actions"
 
 // Extended Category type with restaurant relation
 type CategoryWithRestaurant = Category & {

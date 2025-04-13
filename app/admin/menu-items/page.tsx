@@ -1,12 +1,5 @@
 import { getMenuItems } from "@/actions/menu-item-actions"
 import { MenuItemsClient } from "@/components/admin/menu-items-client"
-import type { MenuItem, Category, Restaurant } from "@prisma/client"
-
-// Define the extended MenuItem type with relations
-type MenuItemWithRelations = MenuItem & {
-  category: Category
-  restaurant: Restaurant
-}
 
 export default async function MenuItemsPage() {
   const { data: menuItems = [], success } = await getMenuItems()

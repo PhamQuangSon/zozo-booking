@@ -5,11 +5,10 @@ import { DataTable, type ColumnDef } from "@/components/admin/data-table"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PlusCircle } from "lucide-react"
-import { deleteRestaurant } from "@/actions/restaurant-actions"
+import { deleteRestaurant, Restaurant } from "@/actions/restaurant-actions"
 import { RestaurantEditModal } from "@/components/admin//restaurant-edit-modal"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Restaurant } from "@prisma/client"
 
 interface RestaurantsClientProps {
   restaurants: Restaurant[]

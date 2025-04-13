@@ -11,20 +11,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createTable, updateTable } from "@/actions/table-actions"
 import { useToast } from "@/hooks/use-toast"
 import { ImageUpload } from "@/components/image-upload"
+import { Table as TableType } from "@prisma/client"
 
 interface TableFormProps {
   restaurantId: number
-  initialData?: any
+  initialData?: TableType | null
   onSuccess: () => void
 }
 
 export function TableForm({ restaurantId, initialData, onSuccess }: TableFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
-    number: initialData?.number || "",
-    capacity: initialData?.capacity || "4",
+    number: initialData?.number || 0,
+    capacity: initialData?.capacity || 4,
     status: initialData?.status || "AVAILABLE",
-    image_url: initialData?.image_url || "",
+    imageUrl: initialData?.imageUrl || "",
   })
   const { toast } = useToast()
 
@@ -38,7 +39,7 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
   }
 
   const handleImageChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, image_url: value }))
+    setFormData((prev) => ({ ...prev, imageUrl: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,11 +48,11 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
 
     try {
       const tableData = {
-        number: Number.parseInt(formData.number),
-        capacity: Number.parseInt(formData.capacity),
-        status: formData.status,
-        restaurant_id: restaurantId,
-        image_url: formData.image_url,
+        number: formData.number,
+        capacity: formData.capacity,
+        status: formData.status && formData.status.toUpperCase() || undefined,
+        imageUrl: formData.imageUrl && formData.imageUrl.trim() || undefined,
+        restaurantId: restaurantId,
       }
 
       const result = initialData ? await updateTable(initialData.id, tableData) : await createTable(tableData)
@@ -97,7 +98,7 @@ export function TableForm({ restaurantId, initialData, onSuccess }: TableFormPro
           />
         </div>
 
-        <ImageUpload value={formData.image_url} onChange={handleImageChange} label="Table Image" />
+        <ImageUpload value={formData.imageUrl} onChange={handleImageChange} label="Table Image" />
 
         <div className="space-y-2">
           <Label htmlFor="capacity">Capacity *</Label>

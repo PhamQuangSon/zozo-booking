@@ -7,36 +7,14 @@ import { Input } from "@/components/ui/input"
 import { PlusCircle } from "lucide-react"
 import { deleteItemOption } from "@/actions/item-option-actions"
 import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal"
+import { ItemOptionWithRelations } from "@/types/menu-builder-types"
 
-type ItemOptionWithRelations = {
-  id: number
-  name: string
-  isRequired: boolean
-  priceAdjustment: number
-  menuItemId: number
-  menuItem: {
-    id: number
-    name: string
-    restaurant: {
-      id: number
-      name: string
-    } | null
-  } | null
-  optionChoices: Array<{
-    id: number
-    name: string
-    priceAdjustment: number
-  }>
-  menuItemName: string // Pre-formatted on server
-  restaurantName: string // Pre-formatted on server
-  choicesCount: number // Pre-calculated on server
-}
-
+// Define props interface
 interface ItemOptionsClientProps {
   itemOptions: ItemOptionWithRelations[]
 }
 
-export function ItemOptionsClient({ itemOptions = [] }: ItemOptionsClientProps) {
+export function ItemOptionsClient({ itemOptions = [] }: ItemOptionsClientProps) { // Use the interface
   const [searchTerm, setSearchTerm] = useState("")
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedItemOption, setSelectedItemOption] = useState<ItemOptionWithRelations | null>(null)

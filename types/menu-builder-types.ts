@@ -1,4 +1,4 @@
-import type { Restaurant, MenuItem, MenuItemOption, Category, OptionChoice } from "@prisma/client"
+import type { Restaurant, MenuItem, MenuItemOption, Category, OptionChoice, Order, OrderItem,OrderItemChoice, Table,  } from "@prisma/client"
 import type { Decimal } from "@prisma/client/runtime/library"
 
 // Base types from Prisma might not include relations automatically
@@ -23,12 +23,18 @@ export type OptionChoiceWithNumericPrice = Omit<OptionChoice, "priceAdjustment">
   priceAdjustment: number
 }
 
-// Define ItemOption ensuring OptionChoices have numeric price and menuItem is optional
-export type ItemOptionWithRelations = Omit<MenuItemOption, "optionChoices"> & {
+// Define ItemOption ensuring OptionChoices AND the option itself have numeric price
+// Also make menuItem optional
+export type ItemOptionWithRelations = Omit<MenuItemOption, "optionChoices" | "priceAdjustment"> & { // Omit original priceAdjustment
+  priceAdjustment: number // Redefine priceAdjustment as number
   optionChoices: OptionChoiceWithNumericPrice[]
   menuItem?: MenuItem & { // Make menuItem optional here
     restaurant: Restaurant
   }
+  // Add fields prepared in the action
+  menuItemName?: string
+  restaurantName?: string
+  choicesCount?: number
 }
 
 // Type for the props of RestaurantMenuClient
@@ -56,4 +62,21 @@ export interface MenuItemEditModalProps {
     open: boolean
     onOpenChange: (refresh: boolean) => void
     mode: "create" | "edit"
+}
+
+export type OrderWithRelations = Order & {
+  orderItems: (OrderItem & {
+    menuItem: MenuItem
+    orderItemChoices: (OptionChoiceWithNumericPrice & {
+      menuItemOption: (Omit<MenuItemOption, "priceAdjustment"> & {
+        priceAdjustment: number
+      }) | null
+      optionChoice: OptionChoiceWithNumericPrice | null
+    })[]
+  })[]
+  table?: Table | null
+  user?: {
+    name: string | null
+    email: string
+  } | null
 }
