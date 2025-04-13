@@ -16,6 +16,7 @@ export default function AuthLayout({ children }: AuthLayoutProps): JSX.Element {
           alt="A skateboarder doing a high drop"
           className="absolute inset-0 object-cover"
           priority
+          fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background to-background/60 md:to-background/40" />
