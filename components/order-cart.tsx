@@ -153,8 +153,8 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
 
     return (
       <div className="space-y-4">
-        {items.map((item) => (
-          <div key={item.id} className="flex justify-between">
+        {items.map((item : CartItem, index: number) => (
+          <div key={`item-${item.id}-${index}`} className="flex justify-between">
             <div>
               <div className="flex items-center">
                 <span className="mr-2 font-medium">{item.quantity}x</span>
