@@ -5,7 +5,7 @@ import { Trash2, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useToast } from "@/hooks/use-toast"
-import { useCurrencyStore } from "@/store/currencyStore"
+import { useCurrencyStore } from "@/store/currency-store"
 import { formatCurrency } from "@/lib/i18n"
 import { createTableOrder } from "@/actions/table-actions"
 import { type CartItem, useCartStore } from "@/store/cartStore"
@@ -69,14 +69,31 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
     try {
       // Format order items for the API
       const orderItems = pendingItems.map((item) => ({
-        menuItemId: Number.parseInt(item.id),
+        menuItemId: Number(item.id),
         quantity: item.quantity,
         notes: item.specialInstructions,
         choices: item.selectedOptions
-          ? Object.entries(item.selectedOptions).map(([optionId, choice]: [string, any]) => ({
-              optionId: Number.parseInt(optionId),
-              choiceId: Number.parseInt(choice.id),
-            }))
+          ? Object.entries(item.selectedOptions).map(([optionId, choice]: [string, any]) => {
+              // Handle both single selection (radio) and multiple selection (checkbox) cases
+              let choiceId
+
+              if (choice.id) {
+                // Single selection case (radio buttons)
+                choiceId = Number(choice.id)
+              } else if (typeof choice === "object") {
+                // Multiple selection case (checkboxes)
+                // Get the first choice ID from the object
+                const firstChoiceId = Object.keys(choice)[0]
+                choiceId = firstChoiceId ? Number(firstChoiceId) : 0
+              } else {
+                choiceId = 0 // Fallback
+              }
+
+              return {
+                optionId: Number(optionId),
+                choiceId: choiceId || 0, // Ensure we have a valid number
+              }
+            })
           : [],
       }))
 

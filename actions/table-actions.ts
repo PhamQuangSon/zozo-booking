@@ -63,7 +63,7 @@ export async function getTablesByRestaurantId(restaurantId: string) {
 
     const serializedTables = serializePrismaData(tables)
 
-    return { success: true, data: serializedTables}
+    return { success: true, data: serializedTables }
   } catch (error) {
     console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
     return { success: false, error: "Failed to load tables" }
@@ -298,7 +298,7 @@ export async function createTableOrder(data: {
       data: {
         restaurantId: data.restaurantId,
         tableId: data.tableId,
-        userId: userId,
+        userId: userId || null, // Ensure userId is null when not logged in
         status: "NEW",
         totalAmount: totalAmount,
         notes: orderNotes,

@@ -4,8 +4,9 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { AuthProvider } from "@/components/providers/auth-provider"
-import { SessionDebug } from "@/components/session-debug"
+import { NextAuthProvider } from "@/components/providers/session-provider"
+import { QueryProvider } from "@/components/providers/query-provider"
+import { auth } from "@/config/auth"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -14,21 +15,25 @@ export const metadata: Metadata = {
   description: "Order food from your table with QR code",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  // Get the session server-side to avoid client-side errors
+  const session = await auth()
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>          
-          <AuthProvider>
-            {children}
-            {process.env.NODE_ENV === "development" && <SessionDebug />}
-            <Toaster />
-          </AuthProvider>
-        </ThemeProvider>
+        <NextAuthProvider session={session}>
+          <QueryProvider>
+            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </QueryProvider>
+        </NextAuthProvider>
       </body>
     </html>
   )

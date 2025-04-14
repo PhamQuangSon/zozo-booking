@@ -1,20 +1,17 @@
 "use client"
 
 import Image from "next/image"
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Star, MapPin, ChevronLeft, Table, ArrowRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getRestaurantTables } from "@/actions/table-actions"
-import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
-import { useCurrencyStore } from "@/store/currencyStore"
-import { formatCurrency } from "@/lib/i18n"
+import { useCurrencyStore } from "@/store/currency-store"
 import { ScrollingBanner } from "@/components/scrolling-banner"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useRestaurantData } from "@/hooks/use-restaurant-data"
 import Loading from "@/app/loading"
 
 export default function RestaurantPage() {
@@ -23,95 +20,58 @@ export default function RestaurantPage() {
   const restaurantId = params.restaurantId as string
   const { currency } = useCurrencyStore()
 
-  const [restaurant, setRestaurant] = useState<any>(null)
-  const [tables, setTables] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [tableLoading, setTableLoading] = useState(false)
-  const [specialItem, setSpecialItem] = useState<any>()
+  const [showTableDialog, setShowTableDialog] = useState(false)
   const [visibleItems, setVisibleItems] = useState<number>(8)
   const [hasMore, setHasMore] = useState(true)
-  const [allMenuItems, setAllMenuItems] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState<string>("all")
-  const [showTableDialog, setShowTableDialog] = useState(true)
 
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
-  const fetchRestaurant = useCallback(async () => {
-    try {
-      setLoading(true)
-      const { success, data: restaurant, error } = await getRestaurantById(restaurantId)
+  // Fetch restaurant data using TanStack Query
+  const { data: restaurant, isLoading: restaurantLoading, error: restaurantError } = useRestaurantData(restaurantId)
 
-      if (success && restaurant) {
-        setRestaurant(restaurant)
+  // Access tables directly from restaurant data
+  const tables = restaurant?.tables || []
 
-        // Flatten all menu items for infinite scroll
-        const items: any[] = []
-        if (restaurant.categories && restaurant.categories.length > 0) {
-          restaurant.categories?.forEach((category: any) => {
-            category.items.forEach((item: any) => {
-              items.push({
-                ...item,
-                categoryName: category.name,
-                categoryId: category.id,
-              })
-            })
-          })
+  // Prepare all menu items for display
+  const allMenuItems =
+    restaurant?.categories?.flatMap((category) =>
+      category.items?.map((item) => ({
+        ...item,
+        categoryName: category.name,
+        categoryId: category.id,
+      })),
+    ) || []
+
+  // Find a random item to feature as special
+  const specialItem =
+    allMenuItems.length > 0
+      ? {
+          ...allMenuItems[Math.floor(Math.random() * allMenuItems.length)],
+          discountPercentage: 45,
         }
-        setAllMenuItems(items)
+      : null
 
-        // Set a random item as special
-        if (items.length > 0) {
-          const randomIndex = Math.floor(Math.random() * items.length)
-          setSpecialItem({
-            ...items[randomIndex],
-            discountPercentage: 45,
-          })
-        }
-      } else {
-        toast({
-          title: "Error",
-          description: error || "Failed to fetch restaurant details",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching restaurant:", error)
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
+  // Filter items by category
+  const filteredItems =
+    activeCategory === "all"
+      ? allMenuItems
+      : allMenuItems.filter((item) => item.categoryName?.toLowerCase() === activeCategory.toLowerCase())
+
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category)
+    setVisibleItems(8)
+    setHasMore(true)
+  }
+
+  const loadMoreItems = useCallback(() => {
+    if (visibleItems >= filteredItems.length) {
+      setHasMore(false)
+      return
     }
-  }, [restaurantId])
-
-  const fetchTables = useCallback(async () => {
-    try {
-      setTableLoading(true)
-      const { success, data, error } = await getRestaurantTables(restaurantId)
-
-      if (success && data) {
-        setTables(data)
-      } else {
-        toast({
-          title: "Error",
-          description: error || "Failed to fetch tables",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Error fetching tables:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load tables",
-        variant: "destructive",
-      })
-    } finally {
-      setTableLoading(false)
-    }
-  }, [restaurantId])
+    setVisibleItems((prev) => prev + 4)
+  }, [filteredItems.length, visibleItems])
 
   // Setup intersection observer for infinite scrolling
   useEffect(() => {
@@ -125,7 +85,6 @@ export default function RestaurantPage() {
         },
         { threshold: 0.1 },
       )
-
       observerRef.current.observe(loadMoreRef.current)
     }
 
@@ -134,32 +93,7 @@ export default function RestaurantPage() {
         observerRef.current.disconnect()
       }
     }
-  }, [hasMore, allMenuItems, visibleItems])
-
-  const loadMoreItems = () => {
-    if (visibleItems >= allMenuItems.length) {
-      setHasMore(false)
-      return
-    }
-
-    setVisibleItems((prev) => prev + 4)
-  }
-
-  useEffect(() => {
-    fetchRestaurant()
-    fetchTables()
-  }, [restaurantId, fetchRestaurant, fetchTables])
-
-  const handleCategoryChange = (category: string) => {
-    setActiveCategory(category)
-    setVisibleItems(8)
-    setHasMore(true)
-  }
-
-  const filteredItems =
-    activeCategory === "all"
-      ? allMenuItems
-      : allMenuItems.filter((item) => item.categoryName.toLowerCase() === activeCategory.toLowerCase())
+  }, [hasMore, loadMoreItems])
 
   const handleTableSelect = (tableId: number) => {
     router.push(`/restaurants/${restaurantId}/${tableId}`)
@@ -169,11 +103,11 @@ export default function RestaurantPage() {
     setShowTableDialog(true)
   }
 
-  if (loading) {
+  if (restaurantLoading) {
     return <Loading />
   }
 
-  if (!restaurant) {
+  if (restaurantError || !restaurant) {
     return (
       <div className="container mx-auto py-10">
         <Card className="glass-card overflow-hidden">
@@ -201,7 +135,7 @@ export default function RestaurantPage() {
             <DialogDescription>Choose a table to view the menu and place your order.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
-            {tableLoading ? (
+            {restaurantLoading ? (
               <div className="col-span-full flex justify-center py-8">
                 <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
               </div>
@@ -248,12 +182,7 @@ export default function RestaurantPage() {
           {/* Special Item Image with Animation */}
           <div className="absolute right-[20%] top-[10%] z-20 animate-float">
             <div className="relative h-[300px] w-[300px]">
-              <Image
-                src={"/ctaThumb1_1.png"}
-                alt={specialItem.name}
-                fill
-                className="object-contain drop-shadow-2xl"
-              />
+              <Image src={"/ctaThumb1_1.png"} alt={specialItem.name} fill className="object-contain drop-shadow-2xl" />
             </div>
           </div>
 
@@ -268,13 +197,6 @@ export default function RestaurantPage() {
               VIEW MENU
             </Button>
           </div>
-
-          {/* Discount Badge with Animation */}
-          {/* <div className="absolute top-10 right-[30%] z-20 animate-pulse bg-amber-500 text-white rounded-full p-3 rotate-12">
-            <div className="text-red-600 rounded-full flex items-center justify-center font-bold">
-              {specialItem.discountPercentage} OFF
-            </div>
-          </div> */}
         </div>
       )}
 
@@ -311,7 +233,7 @@ export default function RestaurantPage() {
           </CardHeader>
           <CardContent className="bg-white/30 backdrop-blur-sm">
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
-              {tableLoading ? (
+              {restaurantLoading ? (
                 <div className="col-span-full flex justify-center py-8">
                   <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
                 </div>
@@ -342,10 +264,10 @@ export default function RestaurantPage() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-center bg-white/20 backdrop-blur-sm">
+          <CardFooter className="flex justify-center">
             <Button
               onClick={() => setShowTableDialog(true)}
-              className="rounded-full glass-button hover:shadow-lg transition-all duration-300"
+              className="rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
             >
               View All Tables
             </Button>

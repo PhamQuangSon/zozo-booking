@@ -9,7 +9,7 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import type { Currency } from "@/lib/i18n"
-import { useCurrencyStore } from "@/store/currencyStore"
+import { useCurrencyStore } from "@/store/currency-store"
 
 const currencies = [
   { value: "USD", label: "USD ($)", icon: DollarSign, description: "United States Dollar" },

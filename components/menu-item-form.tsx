@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ImageUpload } from "@/components/image-upload"
 import { DialogFooter } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { useCurrencyStore } from "@/store/currencyStore"
+import { useCurrencyStore } from "@/store/currency-store"
 import { convertCurrency } from "@/lib/i18n"
 
 interface MenuItemFormProps {

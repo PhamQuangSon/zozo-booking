@@ -22,7 +22,7 @@ model User {
   verificationToken String?   @unique
   resetToken        String?   @unique
   resetTokenExpiry  DateTime?
-  orders            Order[]
+  ordersId          String?
 
   @@index([email])
 }
@@ -138,7 +138,6 @@ model Order {
 
   restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
   table         Table?      @relation(fields: [tableId], references: [id])
-  user          User?       @relation(fields: [userId], references: [id])
 
   @@index([restaurantId])
   @@index([tableId])

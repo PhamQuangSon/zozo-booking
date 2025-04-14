@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useState, use } from "react"
+import React, { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
@@ -8,18 +8,18 @@ import { Button } from "@/components/ui/button"
 import { ArrowRight, ChevronLeft, ShoppingCart } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollingBanner } from "@/components/scrolling-banner"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent } from "@/components/ui/card"
 import { OrderCart } from "@/components/order-cart"
 import { MenuCategory } from "@/components/menu-category"
-import { useCurrencyStore } from "@/store/currencyStore"
+import { useCurrencyStore } from "@/store/currency-store"
 import { useCartStore } from "@/store/cartStore"
-import { getTableFullData } from "@/actions/table-actions"
 import { CustomerInfoForm } from "@/components/customer-info-form"
 import { useSession } from "next-auth/react"
 import { useToast } from "@/hooks/use-toast"
 import Loading from "@/app/loading"
-
+import { useTableFullData } from "@/hooks/use-restaurant-data"
+import { MenuItemDetail } from "@/components/menu-item-detail"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function TableOrderPage() {
   const params = useParams()
@@ -30,72 +30,49 @@ export default function TableOrderPage() {
 
   const restaurantId = params.restaurantId as string
   const tableId = params.tableId as string
+
   const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false)
   const [showCustomerForm, setShowCustomerForm] = useState(false)
-
-  const [tableData, setTableData] = useState<any>({
-    restaurant: { name: "", description: "", imageUrl: "", categories: [] },
-    table: { number: "" },
-    orders: [],
-  })
   const [activeCategory, setActiveCategory] = useState("all")
-  const [allItems, setAllItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { syncServerOrders } = useCartStore()
+  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null)
+  const [showItemDetail, setShowItemDetail] = useState(false)
 
-  // Fetch all data using a single server action
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
+  const { syncServerOrders, addToCart } = useCartStore()
 
-        // Get all data in one call
-        const result = await getTableFullData(restaurantId, tableId)
-        if (!result.success || !result.data) {
-          throw new Error(result.error || "Failed to load data")
-        }
+  // Fetch table data using TanStack Query
+  const { data: tableData, isLoading, error } = useTableFullData(restaurantId, tableId)
 
-        const { table, restaurant, orders } = result.data
+  // Extract data once it's loaded
+  const restaurant = tableData?.restaurant
+  const table = tableData?.table
+  const orders = tableData?.orders
 
-        // Sync server orders with cart state
-        if (orders && Array.isArray(orders)) {
-          syncServerOrders(restaurantId, tableId, orders)
-        }
+  // Prepare all menu items for display
+  const allItems = React.useMemo(() => {
+    if (!restaurant?.categories) return []
 
-        setTableData({
-          restaurant,
-          table,
-          orders,
-        })
-
-        // Flatten all menu items for display
-        const items: any[] = []
-        if (restaurant.categories && Array.isArray(restaurant.categories)) {
-          restaurant.categories.forEach((category: any) => {
-            if (category.items && Array.isArray(category.items)) {
-              category.items.forEach((item: any) => {
-                items.push({
-                  ...item,
-                  categoryName: category.name,
-                  categoryId: category.id,
-                })
-              })
-            }
+    const items: any[] = []
+    restaurant.categories.forEach((category: any) => {
+      if (category.items && Array.isArray(category.items)) {
+        category.items.forEach((item: any) => {
+          items.push({
+            ...item,
+            categoryName: category.name,
+            categoryId: category.id,
           })
-        }
-
-        setAllItems(items)
-      } catch (err: any) {
-        console.error("Error fetching data:", err)
-        setError(err.message || "Failed to load data")
-      } finally {
-        setLoading(false)
+        })
       }
-    }
+    })
 
-    fetchData()
-  }, [restaurantId, tableId, syncServerOrders])
+    return items
+  }, [restaurant])
+
+  // Sync server orders with cart state
+  useEffect(() => {
+    if (orders && Array.isArray(orders) && restaurantId && tableId) {
+      syncServerOrders(restaurantId, tableId, orders)
+    }
+  }, [orders, restaurantId, tableId, syncServerOrders])
 
   // Check if customer info is needed
   useEffect(() => {
@@ -125,20 +102,55 @@ export default function TableOrderPage() {
     setActiveCategory(category)
   }
 
-  const { restaurant, table } = tableData
+  // Filter items by category
+  const filteredItems =
+    activeCategory === "all"
+      ? allItems
+      : allItems.filter((item) => item.categoryName?.toLowerCase() === activeCategory.toLowerCase())
 
-  if (loading) {
+  // Handle menu item selection
+  const handleMenuItemClick = (item: any) => {
+    setSelectedMenuItem(item)
+    setShowItemDetail(true)
+  }
+
+  // Handle adding item to cart
+  const handleAddToCart = (item: any, options: any, quantity: number, specialInstructions: string) => {
+    addToCart({
+      id: item.id.toString(),
+      name: item.name,
+      price: item.price,
+      quantity: quantity,
+      imageUrl: item.imageUrl,
+      restaurantId: restaurantId,
+      tableId: tableId,
+      categoryName: item.categoryName,
+      specialInstructions: specialInstructions,
+      selectedOptions: options,
+    })
+
+    setShowItemDetail(false)
+    toast({
+      title: "Added to cart",
+      description: `${quantity}x ${item.name} added to your order`,
+    })
+  }
+
+  if (isLoading) {
     return <Loading />
   }
 
-  if (error) {
+  if (error || !tableData) {
     return (
       <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-white to-gray-50">
         <Card className="glass-card border-none shadow-lg">
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">Table not found or unavailable</p>
             <div className="flex justify-center mt-4">
-              <Button asChild className="glass-button rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300">
+              <Button
+                asChild
+                className="glass-button rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
+              >
                 <Link href="/">
                   Browse Restaurants
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -166,27 +178,24 @@ export default function TableOrderPage() {
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg">
               <Image
-                src={
-                  restaurant.imageUrl || "/placeholder.svg?height=400&width=400"
-                }
-                alt={restaurant.name}
+                src={restaurant?.imageUrl || "/placeholder.svg?height=400&width=400"}
+                alt={restaurant?.name ?? "Restaurant Image"}
                 fill
                 className="object-cover animate animate-jump-in animate-duration-1000 animate-delay-300"
               />
             </div>
 
             <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold animate animate-fade-up">{restaurant.name ?? ""}</h1>
-              <p className="mt-2 text-muted-foreground max-w-md">
-                {restaurant.description ?? ""}
-              </p>
+              <h1 className="text-3xl font-bold animate animate-fade-up">{restaurant?.name}</h1>
+              <p className="mt-2 text-muted-foreground max-w-md">{restaurant?.description}</p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800 animate animate-fade-right">
-                <span className="font-medium">Table {table.number}</span>
+                <span className="font-medium">Table {table?.number}</span>
               </div>
             </div>
           </div>
         </div>
       </div>
+
       {showCustomerForm && !customerInfoSubmitted ? (
         <div className="container mx-auto my-6 bg-white p-4 md:p-8 rounded-t-3xl shadow-lg w-96 h-[400px]">
           <CustomerInfoForm onSubmit={handleCustomerInfoSubmit} />
@@ -198,19 +207,35 @@ export default function TableOrderPage() {
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6 text-center animate animate-fade-up">
-              {restaurant.name} Menu
-            </h2>
+            <h2 className="text-3xl font-bold mb-6 text-center animate animate-fade-up">{restaurant?.name} Menu</h2>
 
             <MenuCategory
-              items={allItems}
+              items={filteredItems}
               activeCategory={activeCategory}
               onCategoryChange={handleCategoryChange}
-              categories={restaurant.categories || []}
+              categories={restaurant?.categories || []}
+              onItemClick={handleMenuItemClick}
             />
           </div>
         </div>
       )}
+
+      {/* Menu Item Detail Dialog */}
+      <Dialog open={showItemDetail} onOpenChange={setShowItemDetail}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{selectedMenuItem?.name}</DialogTitle>
+          </DialogHeader>
+          {selectedMenuItem && (
+            <MenuItemDetail
+              item={selectedMenuItem}
+              onAddToCart={(options, quantity, specialInstructions) =>
+                handleAddToCart(selectedMenuItem, options, quantity, specialInstructions)
+              }
+            />
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Scrolling Text Banner */}
       <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
@@ -228,7 +253,7 @@ export default function TableOrderPage() {
             <SheetHeader>
               <SheetTitle>Your Order</SheetTitle>
               <SheetDescription>
-                Table {table.number} at {restaurant.name}
+                Table {table?.number} at {restaurant?.name}
               </SheetDescription>
             </SheetHeader>
             <div className="mt-6 h-[calc(100vh-180px)]">
@@ -238,6 +263,5 @@ export default function TableOrderPage() {
         </Sheet>
       </div>
     </main>
-  );
+  )
 }
-

@@ -120,7 +120,7 @@ async function main() {
     data: {
       name: "Appetizers",
       displayOrder: 1,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_1.png",
       restaurantId: restaurant1.id,
     },
   })
@@ -129,7 +129,7 @@ async function main() {
     data: {
       name: "Pasta",
       displayOrder: 2,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_2.png",
       restaurantId: restaurant1.id,
     },
   })
@@ -138,7 +138,7 @@ async function main() {
     data: {
       name: "Desserts",
       displayOrder: 3,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_3.png",
       restaurantId: restaurant1.id,
     },
   })
@@ -215,7 +215,7 @@ async function main() {
     data: {
       name: "Appetizers",
       displayOrder: 1,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_2.png",
       restaurantId: restaurant2.id,
     },
   })
@@ -225,7 +225,7 @@ async function main() {
       name: "Burgers",
       restaurantId: restaurant2.id,
       displayOrder: 2,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_3.png",
     },
   })
 
@@ -288,7 +288,7 @@ async function main() {
     data: {
       name: "Appetizers",
       displayOrder: 1,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_1.png",
       restaurantId: restaurant3.id,
     },
   })
@@ -298,7 +298,7 @@ async function main() {
       name: "Sushi",
       restaurantId: restaurant3.id,
       displayOrder: 2,
-      imageUrl: "/menuThumb1_1.png",
+      imageUrl: "/menuIcon1_4.png",
     },
   })
 

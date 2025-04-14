@@ -6,7 +6,7 @@ export interface CartItem {
   name: string
   price: number
   quantity: number
-  image_url?: string
+  imageUrl?: string
   restaurantId: string
   tableId: string
   categoryName?: string
@@ -82,7 +82,7 @@ export const useCartStore = create<CartState>()(
               menu_item: {
                 id: number;
                 name: string;
-                image_url?: string;
+                imageUrl?: string;
               };
               quantity: number;
               unit_price: number;
@@ -101,7 +101,7 @@ export const useCartStore = create<CartState>()(
               name: item.menu_item.name,
               price: Number(item.unit_price),
               quantity: item.quantity,
-              image_url: item.menu_item.image_url,
+              imageUrl: item.menu_item.imageUrl,
               restaurantId,
               tableId,
               submitted: true,
