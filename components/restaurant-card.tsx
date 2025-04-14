@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Star } from "lucide-react"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 interface RestaurantCardProps {
@@ -14,26 +13,48 @@ interface RestaurantCardProps {
 
 export function RestaurantCard({ id, name, image, cuisine, rating }: RestaurantCardProps) {
   return (
-    <Link href={`/restaurants/${id}`}>
-      <Card className="overflow-hidden transition-all hover:shadow-md">
-        <div className="relative h-48 w-full">
-          <Image src={image || "/placeholder.svg"} alt={name} fill className="object-cover" />
+    <Link href={`/restaurants/${id}`} className="block group">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-white/80 to-white/20 backdrop-blur-sm border border-white/20 shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px]">
+        <div className="relative h-48 w-full overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10" />
+          <Image
+            src={image || "/placeholder.svg"}
+            alt={name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+          <Badge
+            variant="outline"
+            className="absolute top-4 right-4 z-20 bg-white/80 backdrop-blur-sm text-black font-medium"
+          >
+            {cuisine}
+          </Badge>
         </div>
-        <CardContent className="p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-xl font-semibold">{name}</h3>
-            <Badge variant="outline">{cuisine}</Badge>
+
+        <div className="p-5">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-primary transition-colors">{name}</h3>
+            <div className="flex items-center text-sm bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full">
+              <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
+              <span className="font-medium">{rating.toFixed(1)}</span>
+            </div>
           </div>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span>{rating.toFixed(1)}</span>
+
+          <div className="mt-4 flex justify-between items-center">
+            <span className="text-sm font-medium text-gray-600">View Menu</span>
+            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M8.14645 3.14645C8.34171 2.95118 8.65829 2.95118 8.85355 3.14645L12.8536 7.14645C13.0488 7.34171 13.0488 7.65829 12.8536 7.85355L8.85355 11.8536C8.65829 12.0488 8.34171 12.0488 8.14645 11.8536C7.95118 11.6583 7.95118 11.3417 8.14645 11.1464L11.2929 8H2.5C2.22386 8 2 7.77614 2 7.5C2 7.22386 2.22386 7 2.5 7H11.2929L8.14645 3.85355C7.95118 3.65829 7.95118 3.34171 8.14645 3.14645Z"
+                  fill="currentColor"
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                ></path>
+              </svg>
+            </div>
           </div>
-        </CardContent>
-        <CardFooter className="border-t bg-muted/50 p-4">
-          <span className="text-sm font-medium">View Menu</span>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </Link>
   )
 }
-

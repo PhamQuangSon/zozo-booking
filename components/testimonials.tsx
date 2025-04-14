@@ -39,7 +39,7 @@ export function Testimonials() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {testimonials.map((testimonial) => (
-            <div key={testimonial.id} className="bg-white p-6 rounded-lg shadow-sm">
+            <div key={testimonial.id} className="p-5 relative overflow-hidden rounded-3xl bg-gradient-to-b from-white/80 to-white/20 backdrop-blur-sm border border-white/20 shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px]">
               <div className="flex items-center mb-4">
                 <div className="relative h-12 w-12 rounded-full overflow-hidden mr-4">
                   <Image
