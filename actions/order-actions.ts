@@ -26,12 +26,6 @@ export async function getRestaurantOrders(
       },
       include: {
         table: true,
-        user: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
         orderItems: {
           include: {
             menuItem: true,
@@ -47,8 +41,21 @@ export async function getRestaurantOrders(
       orderBy: { createdAt: "desc" },
     })
 
+    const ordersWithUser = await Promise.all(
+      orders.map(async (order) => {
+        if (order.userId) {
+          const user = await prisma.user.findUnique({
+            where: { id: order.userId },
+            select: { name: true, email: true },
+          })
+          return { ...order, user }
+        }
+        return { ...order, user: null }
+      })
+    )
+
     // Fix the serialization and type casting
-    const serializedData = serializePrismaData(orders)
+    const serializedData = serializePrismaData(ordersWithUser)
     // Use a type assertion that matches the structure from menu-builder-types.ts
     return { success: true, data: serializedData as unknown as OrderWithRelations[] }
   } catch (error) {

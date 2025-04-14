@@ -217,7 +217,7 @@ export default function RestaurantPage() {
           </Badge>
           <div className="flex items-center text-sm glass-card px-3 py-1 rounded-full">
             <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-            <span>{restaurant.rating?.toFixed(1) || "0.0"}</span>
+            {/* <span>{restaurant.rating?.toFixed(1) || "0.0"}</span> */}
           </div>
           <div className="flex items-center text-sm text-muted-foreground glass-card px-3 py-1 rounded-full">
             <MapPin className="mr-1 h-4 w-4" />

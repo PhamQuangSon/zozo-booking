@@ -23,7 +23,7 @@ export function NextAuthProvider({
   }, [error])
 
   return (
-    <NextAuthSessionProvider session={session} onError={(error) => setError(error)}>
+    <NextAuthSessionProvider session={session}>
       {children}
     </NextAuthSessionProvider>
   )
