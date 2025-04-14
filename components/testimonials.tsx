@@ -33,7 +33,7 @@ export function Testimonials() {
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-2">What Our Users Say</h2>
+          <h2 className="text-3xl font-bold mb-2 animate animate-fade-up">What Our Users Say</h2>
           <p className="text-muted-foreground">Hear from our satisfied customers and restaurant partners</p>
         </div>
 

@@ -181,16 +181,16 @@ export default function TableOrderPage() {
                 }
                 alt={restaurant.name}
                 fill
-                className="object-cover"
+                className="object-cover animate animate-jump-in animate-duration-1000 animate-delay-300"
               />
             </div>
 
             <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold">{restaurant.name}</h1>
+              <h1 className="text-3xl font-bold animate animate-fade-up">{restaurant.name ?? ""}</h1>
               <p className="mt-2 text-muted-foreground max-w-md">
-                {restaurant.description}
+                {restaurant.description ?? ""}
               </p>
-              <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800">
+              <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800 animate animate-fade-right">
                 <span className="font-medium">Table {table.number}</span>
               </div>
             </div>
@@ -208,7 +208,7 @@ export default function TableOrderPage() {
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6 text-center">
+            <h2 className="text-3xl font-bold mb-6 text-center animate animate-fade-up">
               {restaurant.name} Menu
             </h2>
 

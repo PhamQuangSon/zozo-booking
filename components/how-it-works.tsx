@@ -31,7 +31,7 @@ export function HowItWorks() {
     <section className="py-3">
       <div className="container mx-auto px-4 mb-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-2">How It Works</h2>
+          <h2 className="text-3xl font-bold mb-2 animate animate-fade-up">How It Works</h2>
           <p className="text-muted-foreground">Simple steps to order food with Zozo Booking</p>
         </div>
 
@@ -49,7 +49,7 @@ export function HowItWorks() {
                   <div className="absolute top-4 left-full w-full h-0.5 bg-gray-200 hidden lg:block" />
                 )}
               </div>
-              <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+              <h3 className="text-xl font-semibold mb-2 animate animate-fade-up">{step.title}</h3>
               <p className="text-muted-foreground">{step.description}</p>
             </div>
           ))}

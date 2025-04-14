@@ -4,30 +4,22 @@ import Image from "next/image"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Star, MapPin, ChevronLeft, ShoppingCart, Table } from 'lucide-react'
+import { Star, MapPin, ChevronLeft, Table, ArrowRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { getRestaurantById } from "@/actions/restaurant-actions"
 import { getRestaurantTables } from "@/actions/table-actions"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
 import { useCurrencyStore } from "@/store/currencyStore"
 import { formatCurrency } from "@/lib/i18n"
 import { ScrollingBanner } from "@/components/scrolling-banner"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
 export default function RestaurantPage() {
   const params = useParams()
   const router = useRouter()
-  const restaurantId = params.restaurantId  as string
+  const restaurantId = params.restaurantId as string
   const { currency } = useCurrencyStore()
 
   const [restaurant, setRestaurant] = useState<any>(null)
@@ -40,7 +32,7 @@ export default function RestaurantPage() {
   const [allMenuItems, setAllMenuItems] = useState<any[]>([])
   const [activeCategory, setActiveCategory] = useState<string>("all")
   const [showTableDialog, setShowTableDialog] = useState(true)
-  const { toast } = useToast()
+
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
 
@@ -177,19 +169,21 @@ export default function RestaurantPage() {
   }
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>
+    return <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
   }
 
   if (!restaurant) {
     return (
       <div className="container mx-auto py-10">
-        <Card>
+        <Card className="glass-card overflow-hidden">
           <CardHeader>
             <CardTitle>Restaurant Not Found</CardTitle>
             <CardDescription>The restaurant you're looking for doesn't exist</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button asChild>
+            <Button asChild className="rounded-full glass-button">
               <Link href="/restaurants">Back to Restaurants</Link>
             </Button>
           </CardContent>
@@ -199,20 +193,18 @@ export default function RestaurantPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Table Selection Dialog */}
       <Dialog open={showTableDialog} onOpenChange={setShowTableDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md glass-card border-0">
           <DialogHeader>
             <DialogTitle>Select a Table</DialogTitle>
-            <DialogDescription>
-              Choose a table to view the menu and place your order.
-            </DialogDescription>
+            <DialogDescription>Choose a table to view the menu and place your order.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
             {tableLoading ? (
               <div className="col-span-full flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
               </div>
             ) : tables.length === 0 ? (
               <div className="col-span-full text-center py-4">
@@ -225,7 +217,11 @@ export default function RestaurantPage() {
                   variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                   disabled={table.status !== "AVAILABLE"}
                   onClick={() => handleTableSelect(table.id)}
-                  className="h-auto py-4 flex flex-col items-center gap-2"
+                  className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
+                    table.status === "AVAILABLE"
+                      ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
+                      : "bg-gray-100/50 backdrop-blur-sm"
+                  }`}
                 >
                   <Table className="h-6 w-6" />
                   <span>Table {table.number}</span>
@@ -266,7 +262,10 @@ export default function RestaurantPage() {
             <p className="text-red-500 font-medium mb-2">WELCOME TO {restaurant.name.toUpperCase()}</p>
             <h1 className="text-4xl font-bold mb-2">TODAY SPECIAL FOOD</h1>
             <p className="text-amber-500 mb-4">Limited Time Offer</p>
-            <Button onClick={handleViewMenu} className="bg-red-600 hover:bg-red-700 text-white w-fit">
+            <Button
+              onClick={handleViewMenu}
+              className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white w-fit rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+            >
               VIEW MENU
             </Button>
           </div>
@@ -283,7 +282,7 @@ export default function RestaurantPage() {
       {/* Restaurant Info */}
       <div className="container mx-auto py-6">
         <div className="flex items-center mb-4">
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild className="rounded-full hover:bg-white/20 backdrop-blur-sm">
             <Link href="/">
               <ChevronLeft className="h-4 w-4" />
             </Link>
@@ -292,28 +291,30 @@ export default function RestaurantPage() {
         </div>
 
         <div className="flex items-center gap-4 mb-6">
-          <Badge variant="outline">{restaurant.cuisine}</Badge>
-          <div className="flex items-center text-sm">
+          <Badge variant="outline" className="glass-card px-3 py-1">
+            {restaurant.cuisine}
+          </Badge>
+          <div className="flex items-center text-sm glass-card px-3 py-1 rounded-full">
             <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
             <span>{restaurant.rating?.toFixed(1) || "0.0"}</span>
           </div>
-          <div className="flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center text-sm text-muted-foreground glass-card px-3 py-1 rounded-full">
             <MapPin className="mr-1 h-4 w-4" />
             <span>{restaurant.address}</span>
           </div>
         </div>
 
         {/* Table Selection Card */}
-        <Card className="mb-8">
-          <CardHeader>
+        <Card className="mb-8 glass-card border-0 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-white/80 to-white/40 backdrop-blur-sm">
             <CardTitle>Dining at {restaurant.name}</CardTitle>
             <CardDescription>Select a table to view the menu and place your order</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-white/30 backdrop-blur-sm">
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
               {tableLoading ? (
                 <div className="col-span-full flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
                 </div>
               ) : tables.length === 0 ? (
                 <div className="col-span-full text-center py-4">
@@ -326,7 +327,11 @@ export default function RestaurantPage() {
                     variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                     disabled={table.status !== "AVAILABLE"}
                     onClick={() => handleTableSelect(table.id)}
-                    className="h-auto py-4 flex flex-col items-center gap-2"
+                    className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
+                      table.status === "AVAILABLE"
+                        ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
+                        : "bg-gray-100/50 backdrop-blur-sm"
+                    }`}
                   >
                     <Table className="h-6 w-6" />
                     <span>Table {table.number}</span>
@@ -338,8 +343,11 @@ export default function RestaurantPage() {
               )}
             </div>
           </CardContent>
-          <CardFooter className="flex justify-center">
-            <Button onClick={() => setShowTableDialog(true)}>
+          <CardFooter className="flex justify-center bg-white/20 backdrop-blur-sm">
+            <Button
+              onClick={() => setShowTableDialog(true)}
+              className="rounded-full glass-button hover:shadow-lg transition-all duration-300"
+            >
               View All Tables
             </Button>
           </CardFooter>
@@ -347,21 +355,22 @@ export default function RestaurantPage() {
       </div>
 
       {/* Restaurant Information Section */}
-      <div className="bg-gray-50 flex-grow py-8">
-        <div className="container mx-auto bg-white p-8 rounded-t-3xl shadow-lg">
-          <div className="text-center mb-8 border-b pb-4">
+      <div className="bg-gradient-to-b from-gray-50/50 to-white/80 backdrop-blur-sm flex-grow py-8">
+        <div className="container mx-auto glass-card p-8 rounded-[40px] shadow-lg">
+          <div className="text-center mb-8 border-b border-white/20 pb-4">
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-amber-500">🍔 ABOUT US 🍕</span>
             </div>
             <h2 className="text-3xl font-bold mb-6">Welcome to {restaurant.name}</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              {restaurant.description || `Experience the finest ${restaurant.cuisine} cuisine in town. Our chefs prepare each dish with fresh ingredients and authentic recipes.`}
+              {restaurant.description ||
+                `Experience the finest ${restaurant.cuisine} cuisine in town. Our chefs prepare each dish with fresh ingredients and authentic recipes.`}
             </p>
           </div>
 
           {/* Restaurant Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <Card>
+            <Card className="glass-card border-0 hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="mr-2">🍽️</span> Cuisine
@@ -371,7 +380,7 @@ export default function RestaurantPage() {
                 <p>{restaurant.cuisine}</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="glass-card border-0 hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="mr-2">⏰</span> Hours
@@ -382,7 +391,7 @@ export default function RestaurantPage() {
                 <p>Sat-Sun: 10am - 11pm</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="glass-card border-0 hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <span className="mr-2">📍</span> Location
@@ -398,8 +407,12 @@ export default function RestaurantPage() {
           <div className="text-center py-8">
             <h3 className="text-2xl font-bold mb-4">Ready to Order?</h3>
             <p className="text-muted-foreground mb-6">Select a table to view our menu and place your order</p>
-            <Button size="lg" onClick={() => setShowTableDialog(true)}>
-              Select a Table
+            <Button
+              size="lg"
+              onClick={() => setShowTableDialog(true)}
+              className="rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              Select a Table <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
