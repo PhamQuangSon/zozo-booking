@@ -164,12 +164,28 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
               {/* Display selected options */}
               {item.selectedOptions && Object.entries(item.selectedOptions).length > 0 && (
                 <div className="ml-6 text-sm text-muted-foreground">
-                  {Object.entries(item.selectedOptions).map(([optionId, option]: [string, any]) => (
-                    <div key={optionId}>
-                      {option.name}{" "}
-                      {option.priceAdjustment > 0 && `(+${formatCurrency(option.priceAdjustment, currency)})`}
-                    </div>
-                  ))}
+                {Object.values(item.selectedOptions).map((optionGroup: any) => (
+                  <div key={optionGroup.id} className="mb-2">
+                    <strong>{optionGroup.name}</strong>
+                  
+                    {optionGroup && typeof optionGroup === 'object' && (
+                      <div className="mt-2 space-y-1">
+                        {Object.values(optionGroup).map((subOption: any) => {
+                          if (subOption?.name && subOption?.priceAdjustment !== undefined) {
+                            return (
+                              <div key={subOption.id} className="text-sm pl-4 border-l-2 border-gray-200">
+                                {subOption.name}
+                                {subOption.priceAdjustment > 0 &&
+                                  ` (+${formatCurrency(subOption.priceAdjustment, currency)})`}
+                              </div>
+                            )
+                          }
+                          return null
+                        })}
+                      </div>
+                    )}
+                  </div>
+                ))}
                 </div>
               )}
 

@@ -75,45 +75,46 @@ export const useCartStore = create<CartState>()(
 
       syncServerOrders: (restaurantId, tableId, orders) =>
         set((state) => {
+          console.log('syncServerOrders', orders)
           // Convert server orders to cart items
           const serverItems = orders.flatMap((order) =>
-            order.order_items.map((item: {
+            order.orderItems.map((item: {
               id: number;
-              menu_item: {
+              menuItem: {
                 id: number;
                 name: string;
                 imageUrl?: string;
               };
               quantity: number;
-              unit_price: number;
+              unitPrice: number;
               notes?: string;
-              order_item_choices?: Array<{
-                option_id: number;
-                choice_id: number;
-                option_choice: {
+              orderItemChoices?: Array<{
+                id: number;
+                optionChoiceId: number;
+                optionChoice: {
                   id: number;
                   name: string;
-                  price_adjustment: number;
+                  priceAdjustment: number;
                 }
               }>;
             }) => ({
-              id: String(item.menu_item.id),
-              name: item.menu_item.name,
-              price: Number(item.unit_price),
+              id: String(item.menuItem.id),
+              name: item.menuItem.name,
+              price: Number(item.unitPrice),
               quantity: item.quantity,
-              imageUrl: item.menu_item.imageUrl,
+              imageUrl: item.menuItem.imageUrl,
               restaurantId,
               tableId,
               submitted: true,
               orderId: order.id,
               orderItemId: item.id,
               specialInstructions: item.notes,
-              selectedOptions: item.order_item_choices?.reduce((acc, choice) => ({
+              selectedOptions: item.orderItemChoices?.reduce((acc, choice) => ({
                 ...acc,
-                [choice.option_id]: {
-                  id: String(choice.choice_id),
-                  name: choice.option_choice.name,
-                  priceAdjustment: Number(choice.option_choice.price_adjustment)
+                [choice.id]: {
+                  id: String(choice.id),
+                  name: choice.optionChoice.name,
+                  priceAdjustment: Number(choice.optionChoice.priceAdjustment)
                 }
               }), {})
             }))

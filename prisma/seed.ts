@@ -380,6 +380,22 @@ async function main() {
         name: "Toppings",
         isRequired: false,
         priceAdjustment: 0, // Using camelCase
+        menuItemId: menuItems1[0].id, // Connect to Calamari
+        optionChoices: {
+          create: [
+            { name: "Cheese", priceAdjustment: 1.0 }, // Using camelCase
+            { name: "Pepperoni", priceAdjustment: 1.5 }, // Using camelCase
+            { name: "Mushrooms", priceAdjustment: 1.0 }, // Using camelCase
+            { name: "Olives", priceAdjustment: 0.75 }, // Using camelCase
+          ],
+        },
+      },
+    }),    
+    prisma.menuItemOption.create({
+      data: {
+        name: "Toppings",
+        isRequired: false,
+        priceAdjustment: 0, // Using camelCase
         menuItemId: menuItems1[1].id, // Connect to Calamari
         optionChoices: {
           create: [
