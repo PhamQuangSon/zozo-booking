@@ -59,7 +59,6 @@ export default async function Home() {
     const result = await getRestaurants();
     if (result.success) {
       restaurants = result.data || [];
-      console.log(restaurants);
     } else {
       error = result.error;
       console.error("Error fetching restaurants:", error);

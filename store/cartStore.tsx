@@ -36,9 +36,13 @@ export const useCartStore = create<CartState>()(
       addToCart: (item) =>
         set((state) => {
           // Check if item already exists in cart
-          const existingItemIndex = state.cart.findIndex(
-            (i) => i.id === item.id && i.restaurantId === item.restaurantId && i.tableId === item.tableId,
-          )
+          const isSameItem = (i: any) =>
+            i.id === item.id &&
+            i.restaurantId === item.restaurantId &&
+            i.tableId === item.tableId &&
+            JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions)
+      
+          const existingItemIndex = state.cart.findIndex(isSameItem)
 
           if (existingItemIndex >= 0) {
             // Update existing item
@@ -75,7 +79,6 @@ export const useCartStore = create<CartState>()(
 
       syncServerOrders: (restaurantId, tableId, orders) =>
         set((state) => {
-          console.log('syncServerOrders', orders)
           // Convert server orders to cart items
           const serverItems = orders.flatMap((order) =>
             order.orderItems.map((item: {
