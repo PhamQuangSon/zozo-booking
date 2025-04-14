@@ -8,6 +8,7 @@ import { Loader2 } from "lucide-react"
 
 import { ProfileUpdateForm } from "@/components/profile/ProfileUpdateForm"
 import { PasswordUpdateForm } from "@/components/profile/PasswordUpdateForm"
+import Loading from "@/app/loading"
 
 export default function ProfilePage() {
   const { status } = useSession() // Only need status here for redirect/loading
@@ -21,11 +22,7 @@ export default function ProfilePage() {
   }, [status, router])
 
   if (status === "loading") {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
+    return <Loading />
   }
 
   // Render the page only if authenticated

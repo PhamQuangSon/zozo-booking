@@ -15,6 +15,7 @@ import { useCurrencyStore } from "@/store/currencyStore"
 import { formatCurrency } from "@/lib/i18n"
 import { ScrollingBanner } from "@/components/scrolling-banner"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import Loading from "@/app/loading"
 
 export default function RestaurantPage() {
   const params = useParams()
@@ -169,9 +170,7 @@ export default function RestaurantPage() {
   }
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
+    return <Loading />
   }
 
   if (!restaurant) {

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { getRestaurants, deleteRestaurant } from "@/actions/restaurant-actions"
 import { useToast } from "@/hooks/use-toast"
 import { RestaurantsClient } from "@/components/admin/restaurants-client"
+import Loading from "@/app/loading"
 
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<any[]>([])
@@ -84,6 +85,10 @@ export default function RestaurantsPage() {
   const handleEditRestaurant = (restaurant: any) => {
     setEditingRestaurant(restaurant)
     setIsAddDialogOpen(true)
+  }
+
+  if (isLoading) {
+    return <Loading />
   }
 
   return (

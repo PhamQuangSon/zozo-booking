@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ShoppingCart } from "lucide-react"
+import { ArrowRight, ChevronLeft, ShoppingCart } from "lucide-react"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollingBanner } from "@/components/scrolling-banner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,6 +18,7 @@ import { getTableFullData } from "@/actions/table-actions"
 import { CustomerInfoForm } from "@/components/customer-info-form"
 import { useSession } from "next-auth/react"
 import { useToast } from "@/hooks/use-toast"
+import Loading from "@/app/loading"
 
 
 export default function TableOrderPage() {
@@ -127,36 +128,25 @@ export default function TableOrderPage() {
   const { restaurant, table } = tableData
 
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="h-screen flex items-center justify-center">
-          <div className="animate-pulse space-y-8 w-full max-w-3xl">
-            <div className="h-48 bg-gray-200 rounded-lg"></div>
-            <div className="h-8 bg-gray-200 rounded-md w-1/3 mx-auto"></div>
-            <div className="h-4 bg-gray-200 rounded-md w-2/3 mx-auto"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded-lg"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
+    return <Loading />
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="h-screen flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-red-500">Error</h2>
-            <p className="mt-2">{error}</p>
-            <Button asChild className="mt-4">
-              <Link href="/restaurants">Go Back</Link>
-            </Button>
-          </div>
-        </div>
+      <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-white to-gray-50">
+        <Card className="glass-card border-none shadow-lg">
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">Table not found or unavailable</p>
+            <div className="flex justify-center mt-4">
+              <Button asChild className="glass-button rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300">
+                <Link href="/">
+                  Browse Restaurants
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -204,7 +194,7 @@ export default function TableOrderPage() {
       ) : (
         <div className="bg-gray-50 flex-grow py-8">
           {/* Food Menu Section */}
-          <div className="container mx-auto bg-white p-4 md:p-8 rounded-t-3xl shadow-lg">
+          <div className="container mx-auto bg-white p-4 md:p-8 glass-card border-none shadow-lg">
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
             </div>

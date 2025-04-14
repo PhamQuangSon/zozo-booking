@@ -16,7 +16,7 @@ interface RestaurantsClientProps {
 
 export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) {
   const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -93,8 +93,8 @@ export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) 
       <div className="flex justify-between items-center">
         <Input
           placeholder="Search restaurant..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="max-w-sm"
         />
         <Button onClick={handleAddRestaurant}>
