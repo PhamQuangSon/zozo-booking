@@ -222,7 +222,7 @@ export default function TableOrderPage() {
 
       {/* Menu Item Detail Dialog */}
       <Dialog open={showItemDetail} onOpenChange={setShowItemDetail}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-full max-w-[90vw] max-h-[80vh] overflow-auto sm:max-w-md glass-card border-0 p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{selectedMenuItem?.name}</DialogTitle>
           </DialogHeader>

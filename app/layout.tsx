@@ -21,7 +21,7 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   // Get the session server-side to avoid client-side errors
-  const session = await auth()
+  const session = await auth() ?? null;
 
   return (
     <html lang="en" suppressHydrationWarning>

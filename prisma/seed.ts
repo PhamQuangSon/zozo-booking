@@ -167,7 +167,7 @@ async function main() {
         restaurantId: restaurant1.id,
         isAvailable: true,
         displayOrder: 2,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_2.png",
       },
     }),
     // Pasta
@@ -180,7 +180,7 @@ async function main() {
         restaurantId: restaurant1.id,
         isAvailable: true,
         displayOrder: 1,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_3.png",
       },
     }),
     await prisma.menuItem.create({
@@ -192,7 +192,7 @@ async function main() {
         restaurantId: restaurant1.id,
         isAvailable: true,
         displayOrder: 2,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_4.png",
       },
     }),
     // Desserts
@@ -205,7 +205,7 @@ async function main() {
         restaurantId: restaurant1.id,
         isAvailable: true,
         displayOrder: 1,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_5.png",
       },
     }),
   ]
@@ -241,7 +241,7 @@ async function main() {
         restaurantId: restaurant2.id,
         isAvailable: true,
         displayOrder: 1,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_6.png",
       },
     }),
     await prisma.menuItem.create({
@@ -253,7 +253,7 @@ async function main() {
         restaurantId: restaurant2.id,
         isAvailable: true,
         displayOrder: 2,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_7.png",
       },
     }),
     // Burgers
@@ -266,7 +266,7 @@ async function main() {
         restaurantId: restaurant2.id,
         isAvailable: true,
         displayOrder: 1,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_8.png",
       },
     }),
     await prisma.menuItem.create({
@@ -278,7 +278,7 @@ async function main() {
         restaurantId: restaurant2.id,
         isAvailable: true,
         displayOrder: 2,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_9.png",
       },
     }),
   ]
@@ -314,7 +314,7 @@ async function main() {
         restaurantId: restaurant3.id,
         isAvailable: true,
         displayOrder: 1,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_2.png",
       },
     }),
     await prisma.menuItem.create({
@@ -326,7 +326,7 @@ async function main() {
         restaurantId: restaurant3.id,
         isAvailable: true,
         displayOrder: 2,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_3.png",
       },
     }),
     // Sushi
@@ -339,7 +339,7 @@ async function main() {
         restaurantId: restaurant3.id,
         isAvailable: true,
         displayOrder: 1,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_4.png",
       },
     }),
     await prisma.menuItem.create({
@@ -351,7 +351,7 @@ async function main() {
         restaurantId: restaurant3.id,
         isAvailable: true,
         displayOrder: 2,
-        imageUrl: "/menuThumb1_1.png",
+        imageUrl: "/menuThumb1_5.png",
       },
     }),
   ]

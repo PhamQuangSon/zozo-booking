@@ -140,8 +140,8 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="relative h-24 w-full overflow-hidden rounded-md">
+    <div className="space-y-4 overflow-auto">
+      <div className="relative min-h-[96px] h-24 w-full overflow-hidden rounded-md">
         <Image src={item.imageUrl || "/placeholder.svg"} alt={item.name} fill className="object-cover" />
       </div>
 
