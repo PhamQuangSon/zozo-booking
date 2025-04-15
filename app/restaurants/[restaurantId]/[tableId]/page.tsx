@@ -241,7 +241,7 @@ export default function TableOrderPage() {
       <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
 
       {/* View Order Sheet */}
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50 overflow-auto">
         <Sheet>
           <SheetTrigger asChild>
             <Button size="lg" className="rounded-full shadow-lg">
@@ -249,14 +249,14 @@ export default function TableOrderPage() {
               View Order
             </Button>
           </SheetTrigger>
-          <SheetContent className="w-full sm:max-w-md">
+          <SheetContent className="w-full max-w-[90vw] max-h-[80vh] overflow-auto sm:max-w-md glass-card border-0 p-4 sm:p-6 m-6">
             <SheetHeader>
               <SheetTitle>Your Order</SheetTitle>
               <SheetDescription>
                 Table {table?.number} at {restaurant?.name}
               </SheetDescription>
             </SheetHeader>
-            <div className="mt-6 h-[calc(100vh-180px)]">
+            <div className="mt-6">
               <OrderCart restaurantId={restaurantId} tableId={tableId} />
             </div>
           </SheetContent>

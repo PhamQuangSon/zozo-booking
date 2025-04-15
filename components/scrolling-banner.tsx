@@ -36,7 +36,7 @@ export function ScrollingBanner({
   const animationDuration = containerWidth / speed
 
   return (
-    <div ref={containerRef} className={`bg-gray-100 py-4 overflow-hidden whitespace-nowrap ${className}`}>
+    <div ref={containerRef} className={`hidden md:block bg-gray-100 py-4 overflow-hidden whitespace-nowrap ${className}`}>
       <div
         className="inline-block"
         style={{
