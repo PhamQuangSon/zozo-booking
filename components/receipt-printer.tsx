@@ -2,39 +2,12 @@
 
 import { formatCurrency } from "@/lib/i18n"
 import { useToast } from "@/hooks/use-toast"
-
-interface OrderItem {
-  quantity: number
-  unitPrice: number
-  menuItem: {
-    name: string
-  } | null
-  orderItemChoices?:
-    | {
-        menuItemOption: {
-          name: string
-        } | null
-        optionChoice: {
-          name: string
-        } | null
-      }[]
-    | null
-  notes?: string | null
-}
-
-interface ReceiptData {
-  orderId: number
-  createdAt: Date | string
-  tableNumber: number | string
-  status: string
-  items: OrderItem[]
-  totalAmount: number
-}
+import { OrderWithRelations } from "@/types/menu-builder-types"
 
 export function useReceiptPrinter() {
   const { toast } = useToast()
 
-  const printReceipt = (data: ReceiptData) => {
+  const printReceipt = (order : OrderWithRelations) => {
     // Create a new window for the receipt
     const printWindow = window.open("", "_blank")
     if (!printWindow) {
@@ -48,18 +21,18 @@ export function useReceiptPrinter() {
 
     // Format the table number properly (ensure it's displayed as a base-10 number)
     const tableNumber =
-      typeof data.tableNumber === "number" ? Number.parseInt(data.tableNumber.toString(), 10) : data.tableNumber
+      typeof order.table?.number === "number" ? Number.parseInt(order.table?.number.toString(), 10) : order.table?.number
 
     // Get formatted date
     const orderDate =
-      data.createdAt instanceof Date ? data.createdAt.toLocaleString() : new Date(data.createdAt).toLocaleString()
+      order.createdAt instanceof Date ? order.createdAt.toLocaleString() : new Date(order.createdAt).toLocaleString()
 
     // Build the receipt HTML
     const receiptHTML = `
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Receipt - Order #${data.orderId}</title>
+        <title>Receipt - Order #${order.id}</title>
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -125,14 +98,14 @@ export function useReceiptPrinter() {
       <body>
         <div class="receipt-header">
           <h1>Order Receipt</h1>
-          <p>Order #${data.orderId}</p>
+          <p>Order #${order.id}</p>
           <p>Date: ${orderDate}</p>
           <p>Table: ${tableNumber}</p>
-          <p>Status: ${data.status}</p>
+          <p>Status: ${order.status}</p>
         </div>
         
         <div class="receipt-items">
-          ${data.items
+          ${order.orderItems
             .map(
               (item) => `
             <div class="item">
@@ -161,15 +134,15 @@ export function useReceiptPrinter() {
         <div class="totals">
           <div class="total-row">
             <span>Subtotal:</span>
-            <span>${formatCurrency(Number(data.totalAmount) * 0.92)}</span>
+            <span>${formatCurrency(Number(order.totalAmount) * 0.92)}</span>
           </div>
           <div class="total-row">
             <span>Tax (8%):</span>
-            <span>${formatCurrency(Number(data.totalAmount) * 0.08)}</span>
+            <span>${formatCurrency(Number(order.totalAmount) * 0.08)}</span>
           </div>
           <div class="total-row grand-total">
             <span>Total:</span>
-            <span>${formatCurrency(Number(data.totalAmount))}</span>
+            <span>${formatCurrency(Number(order.totalAmount))}</span>
           </div>
         </div>
         
