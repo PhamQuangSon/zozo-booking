@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login/register pages
-  if (isPublicPath && session) {
+  if (isPublicPath && session && session.user.role !== "ADMIN" && session.user.role !== "STAFF") {
     console.log("Authenticated user trying to access public path:", path)
     return NextResponse.redirect(new URL("/admin/dashboard", request.url))
   }

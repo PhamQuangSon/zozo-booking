@@ -46,6 +46,7 @@ export function Testimonials() {
                     src={testimonial.image || "/placeholder.svg"}
                     alt={testimonial.name}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
                   />
                 </div>

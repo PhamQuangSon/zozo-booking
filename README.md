@@ -87,3 +87,6 @@ Not use: npx prisma db drop --force
 <div align="center">
     <img src="./public/ui-screenshot-12.png" alt="UI Screenshot">
 </div>
+<div align="center">
+    <img src="./public/ui-screenshot-13.png" alt="UI Screenshot">
+</div>

@@ -65,6 +65,7 @@ export function MenuCategory({
                   src={category.imageUrl || "/placeholder.svg?height=100&width=100"}
                   alt={category.name}
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                 />
               </div>              

@@ -81,6 +81,7 @@ export function Carousel({
                 src={"/bannerBG1_1.jpg"}
                 alt="Carousel food background"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover opacity-90"
                 priority={index === 0}
               />
@@ -117,6 +118,7 @@ export function Carousel({
                         src={item.image}
                         alt={item.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-contain drop-shadow-2xl"
                       />
                     </div>

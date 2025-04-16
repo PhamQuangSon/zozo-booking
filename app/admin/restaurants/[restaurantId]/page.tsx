@@ -50,6 +50,7 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
                       src={restaurant.imageUrl || "/placeholder.svg"}
                       alt={restaurant.name}
                       fill
+                      priority
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover"
                     />
