@@ -21,11 +21,32 @@ import {
 import { updateOrderItemStatus } from "@/actions/order-actions"
 import { OrderStatus } from "@prisma/client"
 import { useRouter } from "next/navigation"
-
+import { useReceiptPrinter } from "@/components/receipt-printer"
 interface OrderActionsProps {
   order: {
     id: number
     status: OrderStatus
+    table: {
+      number: number
+    } | null
+    createdAt: Date
+    orderItems: {
+      quantity: number
+      unitPrice: number
+      menuItem: {
+        name: string
+      } | null
+      orderItemChoices: {
+        menuItemOption: {
+          name: string
+        } | null
+        optionChoice: {
+          name: string
+        } | null
+      }[] | null
+      notes: string | null
+    }[]
+    totalAmount: number
   }
 }
 
@@ -33,6 +54,7 @@ export function OrderActions({ order }: OrderActionsProps) {
   const router = useRouter()
   const [showStatusDialog, setShowStatusDialog] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { printReceipt } = useReceiptPrinter()
 
   // Status options based on current status
   const getAvailableStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
@@ -64,7 +86,14 @@ export function OrderActions({ order }: OrderActionsProps) {
   }
 
   const handlePrintReceipt = () => {
-    window.print()
+    printReceipt({
+      orderId: order.id,
+      createdAt: order.createdAt,
+      tableNumber: order.table?.number || "N/A",
+      status: order.status,
+      items: order.orderItems,
+      totalAmount: order.totalAmount,
+    })
   }
 
   return (

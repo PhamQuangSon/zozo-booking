@@ -179,7 +179,7 @@ export function AdminSidebar() {
   }
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-muted/40">
+    <div className="flex h-screen w-50 flex-col border-r bg-muted/40">
       <div className="flex h-14 items-center border-b px-4">
         <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
           <Store className="h-5 w-5" />
