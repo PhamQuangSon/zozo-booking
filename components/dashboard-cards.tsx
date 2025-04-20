@@ -1,18 +1,23 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useCurrencyStore } from "@/store/currency-store"
-import { formatCurrency } from "@/lib/i18n"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/i18n";
+import { useCurrencyStore } from "@/store/currency-store";
 
 interface DashboardCardsProps {
-  revenue: number
-  orders: number
-  activeTables: number
-  popularItem: string
+  revenue: number;
+  orders: number;
+  activeTables: number;
+  popularItem: string;
 }
 
-export function DashboardCards({ revenue, orders, activeTables, popularItem }: DashboardCardsProps) {
-  const { currency } = useCurrencyStore()
+export function DashboardCards({
+  revenue,
+  orders,
+  activeTables,
+  popularItem,
+}: DashboardCardsProps) {
+  const { currency } = useCurrencyStore();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -21,8 +26,12 @@ export function DashboardCards({ revenue, orders, activeTables, popularItem }: D
           <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(revenue, currency)}</div>
-          <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+          <div className="text-2xl font-bold">
+            {formatCurrency(revenue, currency)}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            +20.1% from last month
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -31,7 +40,9 @@ export function DashboardCards({ revenue, orders, activeTables, popularItem }: D
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">+{orders}</div>
-          <p className="text-xs text-muted-foreground">+12.2% from last month</p>
+          <p className="text-xs text-muted-foreground">
+            +12.2% from last month
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -53,6 +64,5 @@ export function DashboardCards({ revenue, orders, activeTables, popularItem }: D
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

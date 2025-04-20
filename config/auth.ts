@@ -1,15 +1,16 @@
-import NextAuth from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import prisma from "@/lib/prisma"
-import bcrypt from "bcrypt"
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+
+import prisma from "@/lib/prisma";
 
 // Enable more verbose logging
-const DEBUG = process.env.NODE_ENV === "development"
+const DEBUG = process.env.NODE_ENV === "development";
 
 // Helper function for consistent logging
 function debugLog(message: string, data?: any) {
   if (DEBUG) {
-    console.log(`🔍 NextAuth Debug: ${message}`, data || "")
+    console.log(`🔍 NextAuth Debug: ${message}`, data || "");
   }
 }
 
@@ -28,30 +29,39 @@ export const {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        debugLog("🟢 authorize() called with credentials", credentials ? "provided" : "missing")
+        debugLog(
+          "🟢 authorize() called with credentials",
+          credentials ? "provided" : "missing"
+        );
         try {
-          const typedCredentials = credentials as Record<"email" | "password", string>
+          const typedCredentials = credentials as Record<
+            "email" | "password",
+            string
+          >;
           if (!typedCredentials?.email || !typedCredentials?.password) {
-            debugLog("🟢 Missing credentials")
-            return null
+            debugLog("🟢 Missing credentials");
+            return null;
           }
 
           const foundUser = await prisma.user.findUnique({
             where: {
               email: typedCredentials.email,
             },
-          })
+          });
 
           if (!foundUser || !foundUser.password) {
-            debugLog("🟢 User not found or no password")
-            return null
+            debugLog("🟢 User not found or no password");
+            return null;
           }
 
           // Hash the provided password
-          const isCorrectPassword = await bcrypt.compare(typedCredentials.password, foundUser.password)
+          const isCorrectPassword = await bcrypt.compare(
+            typedCredentials.password,
+            foundUser.password
+          );
           if (!isCorrectPassword) {
-            debugLog("🟢 Password mismatch")
-            return null
+            debugLog("🟢 Password mismatch");
+            return null;
           }
 
           const userData = {
@@ -61,13 +71,13 @@ export const {
             bio: foundUser.bio,
             name: foundUser.name,
             role: foundUser.role,
-          }
-          debugLog("🟢 Auth foundUser", foundUser)
-          debugLog("🟢 Auth successful", userData)
-          return userData
+          };
+          debugLog("🟢 Auth foundUser", foundUser);
+          debugLog("🟢 Auth successful", userData);
+          return userData;
         } catch (error) {
-          console.error("Auth error:", error)
-          return null
+          console.error("Auth error:", error);
+          return null;
         }
       },
     }),
@@ -78,38 +88,41 @@ export const {
         tokenExists: !!token,
         userExists: !!user,
         accountExists: !!account,
-      })
+      });
 
       // Add user data to the token when signing in
       if (user) {
-        debugLog("🟢 Adding user data to token", user)
-        token.id = user.id
-        token.email = user.email
-        token.image = user.image
-        token.bio = user.bio
-        token.name = user.name
-        token.role = user.role
+        debugLog("🟢 Adding user data to token", user);
+        token.id = user.id;
+        token.email = user.email;
+        token.image = user.image;
+        token.bio = user.bio;
+        token.name = user.name;
+        token.role = user.role;
       }
 
-      debugLog("🟢 JWT token created/updated", token)
-      return token
+      debugLog("🟢 JWT token created/updated", token);
+      return token;
     },
     async session({ session, token, trigger }) {
-      debugLog(`Session callback triggered by ${trigger}`, { sessionExists: !!session, tokenExists: !!token })
+      debugLog(`Session callback triggered by ${trigger}`, {
+        sessionExists: !!session,
+        tokenExists: !!token,
+      });
 
       // Add token data to the session
       if (token && session.user) {
-        debugLog("🟢 Adding token data to session", token)
-        session.user.id = token.id as string
-        session.user.email = token.email as string
-        session.user.image = token.image as string
-        session.user.bio = token.bio as string
-        session.user.name = token.name as string
-        session.user.role = token.role as string
+        debugLog("🟢 Adding token data to session", token);
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.image = token.image as string;
+        session.user.bio = token.bio as string;
+        session.user.name = token.name as string;
+        session.user.role = token.role as string;
       }
 
-      debugLog("🟢 Session created/updated", session)
-      return session
+      debugLog("🟢 Session created/updated", session);
+      return session;
     },
   },
   pages: {
@@ -124,7 +137,7 @@ export const {
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: "next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
@@ -134,4 +147,4 @@ export const {
     },
   },
   debug: DEBUG,
-})
+});

@@ -1,12 +1,18 @@
-import { type OrderStatus, PrismaClient, type TableStatus } from "@prisma/client"
-import bcrypt from "bcrypt"
-const prisma = new PrismaClient()
+import bcrypt from "bcryptjs";
+
+import {
+  type OrderStatus,
+  PrismaClient,
+  type TableStatus,
+} from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Starting to seed database...")
+  console.log("Starting to seed database...");
 
   // Create admin user
-  const adminPassword = await bcrypt.hash("admin123", 10)
+  const adminPassword = await bcrypt.hash("admin123", 10);
 
   // Upsert to avoid duplicates
   const admin = await prisma.user.upsert({
@@ -16,17 +22,17 @@ async function main() {
       name: "Admin User",
       email: "admin@example.com",
       password: adminPassword,
-      bio: 'bio',
-      image: '/menuThumb1_1.png',
+      bio: "bio",
+      image: "/menuThumb1_1.png",
       role: "ADMIN",
       emailVerified: new Date(),
     },
-  })
+  });
 
-  console.log({ admin })
+  console.log({ admin });
 
   // Create a regular user
-  const userPassword = await bcrypt.hash("user123", 10)
+  const userPassword = await bcrypt.hash("user123", 10);
 
   const user = await prisma.user.upsert({
     where: { email: "user@example.com" },
@@ -35,14 +41,14 @@ async function main() {
       name: "Regular User",
       email: "user@example.com",
       password: userPassword,
-      bio: 'bio',
-      image: '/menuThumb1_1.png',
+      bio: "bio",
+      image: "/menuThumb1_1.png",
       role: "CUSTOMER",
       emailVerified: new Date(),
     },
-  })
+  });
 
-  console.log({ user })
+  console.log({ user });
 
   // Add restaurants for testing
   const restaurant1 = await prisma.restaurant.upsert({
@@ -57,7 +63,7 @@ async function main() {
       imageUrl: "/restaurant_1.png",
       cuisine: "Italian",
     },
-  })
+  });
 
   const restaurant2 = await prisma.restaurant.create({
     data: {
@@ -69,7 +75,7 @@ async function main() {
       imageUrl: "/restaurant_2.png",
       cuisine: "American",
     },
-  })
+  });
 
   const restaurant3 = await prisma.restaurant.create({
     data: {
@@ -81,9 +87,9 @@ async function main() {
       imageUrl: "/restaurant_3.png",
       cuisine: "Japanese",
     },
-  })
+  });
 
-  console.log("Created restaurants")
+  console.log("Created restaurants");
 
   // Create tables for restaurant 1
   const tables1 = await Promise.all(
@@ -95,9 +101,9 @@ async function main() {
           capacity: num === 5 ? 8 : 4,
           status: "AVAILABLE" as TableStatus,
         },
-      }),
-    ),
-  )
+      })
+    )
+  );
 
   // Create tables for restaurant 2
   const tables2 = await Promise.all(
@@ -109,11 +115,11 @@ async function main() {
           capacity: 4,
           status: "AVAILABLE" as TableStatus,
         },
-      }),
-    ),
-  )
+      })
+    )
+  );
 
-  console.log("Created tables")
+  console.log("Created tables");
 
   // Create menu categories for restaurant 1
   const appetizers1 = await prisma.category.create({
@@ -123,7 +129,7 @@ async function main() {
       imageUrl: "/menuIcon1_1.png",
       restaurantId: restaurant1.id,
     },
-  })
+  });
 
   const pasta1 = await prisma.category.create({
     data: {
@@ -132,7 +138,7 @@ async function main() {
       imageUrl: "/menuIcon1_2.png",
       restaurantId: restaurant1.id,
     },
-  })
+  });
 
   const desserts1 = await prisma.category.create({
     data: {
@@ -141,7 +147,7 @@ async function main() {
       imageUrl: "/menuIcon1_3.png",
       restaurantId: restaurant1.id,
     },
-  })
+  });
 
   // Create menu items for restaurant 1
   const menuItems1 = [
@@ -174,7 +180,8 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Spaghetti Carbonara",
-        description: "Spaghetti with pancetta, eggs, Parmesan, and black pepper",
+        description:
+          "Spaghetti with pancetta, eggs, Parmesan, and black pepper",
         price: 15.99,
         categoryId: pasta1.id,
         restaurantId: restaurant1.id,
@@ -199,7 +206,8 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Tiramisu",
-        description: "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone",
+        description:
+          "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone",
         price: 7.99,
         categoryId: desserts1.id,
         restaurantId: restaurant1.id,
@@ -208,7 +216,7 @@ async function main() {
         imageUrl: "/menuThumb1_5.png",
       },
     }),
-  ]
+  ];
 
   // Create menu categories for restaurant 2
   const appetizers2 = await prisma.category.create({
@@ -218,7 +226,7 @@ async function main() {
       imageUrl: "/menuIcon1_2.png",
       restaurantId: restaurant2.id,
     },
-  })
+  });
 
   const burgers2 = await prisma.category.create({
     data: {
@@ -227,7 +235,7 @@ async function main() {
       displayOrder: 2,
       imageUrl: "/menuIcon1_3.png",
     },
-  })
+  });
 
   // Create menu items for restaurant 2
   const menuItems2 = [
@@ -260,7 +268,8 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Classic Burger",
-        description: "Beef patty with lettuce, tomato, onion, and special sauce",
+        description:
+          "Beef patty with lettuce, tomato, onion, and special sauce",
         price: 12.99,
         categoryId: burgers2.id,
         restaurantId: restaurant2.id,
@@ -272,7 +281,8 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Cheese Burger",
-        description: "Beef patty with cheddar cheese, lettuce, tomato, and onion",
+        description:
+          "Beef patty with cheddar cheese, lettuce, tomato, and onion",
         price: 13.99,
         categoryId: burgers2.id,
         restaurantId: restaurant2.id,
@@ -281,7 +291,7 @@ async function main() {
         imageUrl: "/menuThumb1_9.png",
       },
     }),
-  ]
+  ];
 
   // Create menu categories for restaurant 3
   const appetizers3 = await prisma.category.create({
@@ -291,7 +301,7 @@ async function main() {
       imageUrl: "/menuIcon1_1.png",
       restaurantId: restaurant3.id,
     },
-  })
+  });
 
   const sushi3 = await prisma.category.create({
     data: {
@@ -300,7 +310,7 @@ async function main() {
       displayOrder: 2,
       imageUrl: "/menuIcon1_4.png",
     },
-  })
+  });
 
   // Create menu items for restaurant 3
   const menuItems3 = [
@@ -354,9 +364,9 @@ async function main() {
         imageUrl: "/menuThumb1_5.png",
       },
     }),
-  ]
+  ];
 
-  console.log("Created menu categories and items")
+  console.log("Created menu categories and items");
 
   // Create menu item options
   const menuOptions = await Promise.all([
@@ -390,7 +400,7 @@ async function main() {
           ],
         },
       },
-    }),    
+    }),
     prisma.menuItemOption.create({
       data: {
         name: "Toppings",
@@ -422,9 +432,9 @@ async function main() {
         },
       },
     }),
-  ])
+  ]);
 
-  console.log("Created menu item options")
+  console.log("Created menu item options");
 
   // Create Orders
   await Promise.all([
@@ -492,18 +502,17 @@ async function main() {
         },
       },
     }),
-  ])
+  ]);
 
-  console.log("Created orders")
-  console.log("Database seeded successfully!")
+  console.log("Created orders");
+  console.log("Database seeded successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error(e)
-    process.exit(1)
+    console.error(e);
+    process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect()
-  })
-
+    await prisma.$disconnect();
+  });

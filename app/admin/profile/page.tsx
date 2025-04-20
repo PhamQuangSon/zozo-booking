@@ -1,28 +1,27 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2 } from "lucide-react"
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
-import { ProfileUpdateForm } from "@/components/profile/ProfileUpdateForm"
-import { PasswordUpdateForm } from "@/components/profile/PasswordUpdateForm"
-import Loading from "@/app/loading"
+import Loading from "@/app/loading";
+import { PasswordUpdateForm } from "@/components/profile/PasswordUpdateForm";
+import { ProfileUpdateForm } from "@/components/profile/ProfileUpdateForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function ProfilePage() {
-  const { status } = useSession() // Only need status here for redirect/loading
-  const router = useRouter()
+  const { status } = useSession(); // Only need status here for redirect/loading
+  const router = useRouter();
 
   // Redirect if not authenticated
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/login")
+      router.push("/login");
     }
-  }, [status, router])
+  }, [status, router]);
 
   if (status === "loading") {
-    return <Loading />
+    return <Loading />;
   }
 
   // Render the page only if authenticated
@@ -31,7 +30,9 @@ export default function ProfilePage() {
       <div className="container max-w-4xl py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold">My Profile</h1>
-          <p className="text-muted-foreground">Manage your account settings and preferences</p>
+          <p className="text-muted-foreground">
+            Manage your account settings and preferences
+          </p>
         </div>
 
         <Tabs defaultValue="profile" className="space-y-6">
@@ -51,11 +52,10 @@ export default function ProfilePage() {
           </TabsContent>
         </Tabs>
       </div>
-    )
+    );
   }
 
   // Return null or a placeholder if status is neither loading nor authenticated
   // (though the redirect should handle unauthenticated)
-  return null
+  return null;
 }
-

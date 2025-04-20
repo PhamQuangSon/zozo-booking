@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -92,10 +93,11 @@ export function Carousel({
                   {/* Left side content */}
                   <div className="flex flex-col justify-center text-white p-8">
                     <p className="text-amber-500 font-medium mb-2">
-                        {item.welcomeText || "WELCOME FRESHEAT"}
+                      {item.welcomeText || "WELCOME FRESHEAT"}
                     </p>
                     <h2 className="text-5xl font-bold mb-4 leading-tight">
-                      {item.title}<br/>
+                      {item.title}
+                      <br />
                       {item.subtitle}
                     </h2>
                     {item.description && (

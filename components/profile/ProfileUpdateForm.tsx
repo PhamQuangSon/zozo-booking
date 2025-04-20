@@ -1,21 +1,29 @@
 // components/profile/ProfileUpdateForm.tsx
 "use client";
 
-import type React from "react";
-import { useState, useEffect, useActionState } from "react";
-import { useFormStatus } from "react-dom";
+import { useActionState, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, Camera, Check, Loader2 } from "lucide-react";
+import type React from "react";
+import { useFormStatus } from "react-dom";
+
+import { type ProfileState, updateProfile } from "@/actions/user-actions";
+import { ZodErrors } from "@/components/custom/zod-errors";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, Camera, Check, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { updateProfile, type ProfileState } from "@/actions/user-actions";
 import { Textarea } from "@/components/ui/textarea";
-import { ZodErrors } from "@/components/custom/zod-errors";
 
 // Initial state
 const initialProfileState: ProfileState = {
@@ -53,7 +61,10 @@ export function ProfileUpdateForm() {
   const [bio, setBio] = useState<string>(""); // Keep for controlled input
 
   // Use useActionState for the profile form
-  const [profileState, profileAction] = useActionState(updateProfile, initialProfileState);
+  const [profileState, profileAction] = useActionState(
+    updateProfile,
+    initialProfileState
+  );
 
   // Initialize form fields from session
   useEffect(() => {
@@ -62,7 +73,9 @@ export function ProfileUpdateForm() {
         setAvatarUrl(session.user.image);
       } else if (session.user?.name) {
         // Generate fallback avatar URL only if no image exists
-        setAvatarUrl(`https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`);
+        setAvatarUrl(
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`
+        );
       } else {
         setAvatarUrl(null); // Ensure null if no image or name
       }
@@ -73,7 +86,9 @@ export function ProfileUpdateForm() {
   // Handle session update after successful profile change
   useEffect(() => {
     if (profileState.success) {
-      console.log("Profile update successful, triggering client session update...");
+      console.log(
+        "Profile update successful, triggering client session update..."
+      );
       updateSession(); // Trigger client-side session refresh
       // Optionally show a success message that disappears or reset form state if needed
     }
@@ -105,15 +120,23 @@ export function ProfileUpdateForm() {
             <div className="relative group">
               <Avatar className="h-24 w-24">
                 {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
+                  <AvatarImage
+                    src={avatarUrl}
+                    alt={session?.user?.name || "User"}
+                  />
                 ) : (
                   <AvatarFallback>
-                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || "U"}
+                    {session?.user?.name?.charAt(0) ||
+                      session?.user?.email?.charAt(0) ||
+                      "U"}
                   </AvatarFallback>
                 )}
               </Avatar>
               <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <label htmlFor="avatar-upload" className="cursor-pointer w-full h-full flex items-center justify-center">
+                <label
+                  htmlFor="avatar-upload"
+                  className="cursor-pointer w-full h-full flex items-center justify-center"
+                >
                   <Camera className="h-5 w-5 text-white" />
                   <span className="sr-only">Upload avatar</span>
                   {/* IMPORTANT: Add name="avatar" to the file input */}
@@ -130,8 +153,12 @@ export function ProfileUpdateForm() {
             </div>
             <div className="space-y-1 text-center sm:text-left">
               <h3 className="text-lg font-medium">{session?.user?.name}</h3>
-              <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
-              <p className="text-xs text-muted-foreground">Role: {session?.user?.role || "User"}</p>
+              <p className="text-sm text-muted-foreground">
+                {session?.user?.email}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Role: {session?.user?.role || "User"}
+              </p>
             </div>
           </div>
           {/* Display Zod error for avatar if any */}
@@ -142,7 +169,9 @@ export function ProfileUpdateForm() {
           {profileState.success && profileState.message && (
             <Alert className="bg-green-50 border-green-200">
               <Check className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-600">{profileState.message}</AlertDescription>
+              <AlertDescription className="text-green-600">
+                {profileState.message}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -157,7 +186,12 @@ export function ProfileUpdateForm() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" name="name" defaultValue={session?.user?.name || ""} placeholder="Your name" />
+              <Input
+                id="name"
+                name="name"
+                defaultValue={session?.user?.name || ""}
+                placeholder="Your name"
+              />
               <ZodErrors error={profileState?.zodErrors?.name ?? []} />
             </div>
             <div className="space-y-2">
@@ -170,7 +204,9 @@ export function ProfileUpdateForm() {
                 placeholder="Your email"
                 disabled // Keep disabled
               />
-              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+              <p className="text-xs text-muted-foreground">
+                Email cannot be changed
+              </p>
             </div>
           </div>
 

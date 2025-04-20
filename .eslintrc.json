@@ -1,6 +1,80 @@
 {
+  "plugins": ["simple-import-sort", "import"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": "latest",
+    "project": "./tsconfig.json"
+  },
   "extends": [
     "next/core-web-vitals",
-    "next/typescript"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "rules": {
+    "eqeqeq": "error",
+    "no-var": "error",
+    "semi": [2, "always"],
+    "quotes": [2, "double"],
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto",
+        "trailingComma": "es5"
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          "lodash"
+        ]
+      }
+    ],
+    "@typescript-eslint/indent": 0,
+    "@typescript-eslint/no-explicit-any": 2,
+    "@typescript-eslint/explicit-module-boundary-types": 0,
+    "no-return-await": "off",
+    "@typescript-eslint/return-await": "error",
+    "no-use-before-define": "off",
+    "@typescript-eslint/no-use-before-define": "off",
+    "react/display-name": "off",
+    "react/jsx-filename-extension": "off",
+    "import/extensions": "off",
+    "import/no-extraneous-dependencies": "off",
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "dot-notation": "off",
+    "@typescript-eslint/dot-notation": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error",
+    "import/first": "error",
+    "import/newline-after-import": "error",
+    "import/no-duplicates": "error",
+    "react/react-in-jsx-scope": "off",
+    "jsx-a11y/anchor-is-valid": "off",
+     "@typescript-eslint/no-unused-vars": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["components/ui/**", "**/*.js", "**/*.ts", "**/*.tsx"],
+      "rules": {
+        "simple-import-sort/imports": [
+          "error",
+          {
+            "groups": [
+              ["^react$", "^next", "^[a-z]"],
+              ["^@"],
+              ["^~", "^config/", "^lib/", "^components/", "^hooks/", "^store/", "^schemas/", "^types/"],
+              ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+              ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+              ["^.+\\.s?css$"],
+              ["^\\u0000"]
+            ]
+          }
+        ]
+      }
+    }
   ]
 }

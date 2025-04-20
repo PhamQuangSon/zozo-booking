@@ -1,10 +1,11 @@
-"use server"
+"use server";
 
-import prisma from "@/lib/prisma"
-import { serializePrismaData } from "@/lib/prisma-helpers"
-import { revalidatePath } from "next/cache"
-import type { ItemOptionWithRelations } from "@/types/menu-builder-types" // Import shared type
-import type { ItemOptionFormValues } from "@/schemas/item-option-schema"
+import { revalidatePath } from "next/cache";
+
+import prisma from "@/lib/prisma";
+import { serializePrismaData } from "@/lib/prisma-helpers";
+import type { ItemOptionFormValues } from "@/schemas/item-option-schema";
+import type { ItemOptionWithRelations } from "@/types/menu-builder-types"; // Import shared type
 
 // Get all item options
 export async function getItemOptions() {
@@ -24,29 +25,30 @@ export async function getItemOptions() {
           name: "asc",
         },
       },
-    })
+    });
 
     // Map the fetched data to the shared type structure
     const mappedData: ItemOptionWithRelations[] = itemOptions.map((option) => ({
       ...option,
       priceAdjustment: option.priceAdjustment.toNumber(), // Ensure price is number if needed by shared type
-      optionChoices: option.optionChoices.map(choice => ({
+      optionChoices: option.optionChoices.map((choice) => ({
         ...choice,
         priceAdjustment: choice.priceAdjustment.toNumber(), // Ensure price is number if needed by shared type
       })),
       menuItemName: option.menuItem?.name ?? "N/A",
       restaurantName: option.menuItem?.restaurant?.name ?? "N/A",
       choicesCount: option.optionChoices.length,
-    }))
+    }));
 
-    return { success: true, data: serializePrismaData(mappedData) } // Serialize the mapped data
+    return { success: true, data: serializePrismaData(mappedData) }; // Serialize the mapped data
   } catch (error) {
-    console.error("Failed to fetch item options:", error)
+    console.error("Failed to fetch item options:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to load item options",
+      error:
+        error instanceof Error ? error.message : "Failed to load item options",
       data: [],
-    }
+    };
   }
 }
 
@@ -62,16 +64,17 @@ export async function getMenuItemsForOptions() {
           name: "asc",
         },
       },
-    })
+    });
 
-    return { success: true, data: serializePrismaData(menuItems) }
+    return { success: true, data: serializePrismaData(menuItems) };
   } catch (error) {
-    console.error("Failed to fetch menu items:", error)
+    console.error("Failed to fetch menu items:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to load menu items",
+      error:
+        error instanceof Error ? error.message : "Failed to load menu items",
       data: [],
-    }
+    };
   }
 }
 
@@ -87,7 +90,7 @@ export async function createItemOption(data: ItemOptionFormValues) {
         menuItemId: data.menuItemId,
         // We'll create the option choices separately
       },
-    })
+    });
 
     // Create the option choices
     if (Array.isArray(data.optionChoices)) {
@@ -97,19 +100,20 @@ export async function createItemOption(data: ItemOptionFormValues) {
           await prisma.optionChoice.create({
             data: {
               name: choice.name,
-              priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+              priceAdjustment:
+                parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
               menuItemOptionId: itemOption.id,
             },
-          })
+          });
         }
       }
     }
 
-    revalidatePath("/admin/item-options")
-    return { success: true, data: itemOption }
+    revalidatePath("/admin/item-options");
+    return { success: true, data: itemOption };
   } catch (error) {
-    console.error("Failed to create item option:", error)
-    return { success: false, error: "Failed to create item option" }
+    console.error("Failed to create item option:", error);
+    return { success: false, error: "Failed to create item option" };
   }
 }
 
@@ -123,15 +127,17 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
         isRequired: data.isRequired,
         menuItemId: data.menuItemId,
       },
-    })
+    });
 
     // Get existing option choices
     const existingChoices = await prisma.optionChoice.findMany({
       where: { menuItemOptionId: id },
-    })
+    });
 
     // Create a map of existing choices by ID for quick lookup
-    const existingChoicesMap = new Map(existingChoices.map((choice) => [choice.id, choice]))
+    const existingChoicesMap = new Map(
+      existingChoices.map((choice) => [choice.id, choice])
+    );
 
     // Process each option choice
     if (Array.isArray(data.optionChoices)) {
@@ -142,20 +148,22 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
             where: { id: choice.id },
             data: {
               name: choice.name,
-              priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+              priceAdjustment:
+                parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
             },
-          })
+          });
           // Remove from map to track which ones were processed
-          existingChoicesMap.delete(choice.id)
+          existingChoicesMap.delete(choice.id);
         } else if (choice.name) {
           // Create new choice (only if it has a name)
           await prisma.optionChoice.create({
             data: {
               name: choice.name,
-              priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+              priceAdjustment:
+                parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
               menuItemOptionId: id,
             },
-          })
+          });
         }
       }
     }
@@ -164,14 +172,14 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
     for (const [choiceId] of existingChoicesMap) {
       await prisma.optionChoice.delete({
         where: { id: choiceId },
-      })
+      });
     }
 
-    revalidatePath("/admin/item-options")
-    return { success: true, data: itemOption }
+    revalidatePath("/admin/item-options");
+    return { success: true, data: itemOption };
   } catch (error) {
-    console.error("Failed to update item option:", error)
-    return { success: false, error: "Failed to update item option" }
+    console.error("Failed to update item option:", error);
+    return { success: false, error: "Failed to update item option" };
   }
 }
 
@@ -180,17 +188,17 @@ export async function deleteItemOption(id: number) {
     // Delete all associated option choices first
     await prisma.optionChoice.deleteMany({
       where: { menuItemOptionId: id },
-    })
+    });
 
     // Then delete the menu item option
     await prisma.menuItemOption.delete({
       where: { id },
-    })
+    });
 
-    revalidatePath("/admin/item-options")
-    return { success: true }
+    revalidatePath("/admin/item-options");
+    return { success: true };
   } catch (error) {
-    console.error("Failed to delete item option:", error)
-    return { success: false, error: "Failed to delete item option" }
+    console.error("Failed to delete item option:", error);
+    return { success: false, error: "Failed to delete item option" };
   }
 }

@@ -1,30 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState } from "react";
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ImageUpload } from "@/components/image-upload"
-import { DialogFooter } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
-import { useCurrencyStore } from "@/store/currency-store"
-import { convertCurrency } from "@/lib/i18n"
+import { ImageUpload } from "@/components/image-upload";
+import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { convertCurrency } from "@/lib/i18n";
+import { useCurrencyStore } from "@/store/currency-store";
 
 interface MenuItemFormProps {
-  restaurantId: string
-  menus: Array<{ id: number; name: string; menu_categories: any[] }>
-  initialData?: any
-  onSuccess: () => void
+  restaurantId: string;
+  menus: Array<{ id: number; name: string; menu_categories: any[] }>;
+  initialData?: any;
+  onSuccess: () => void;
 }
 
-export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: MenuItemFormProps) {
-  const { toast } = useToast()
-  const { currency } = useCurrencyStore()
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function MenuItemForm({
+  restaurantId,
+  menus,
+  initialData,
+  onSuccess,
+}: MenuItemFormProps) {
+  const { toast } = useToast();
+  const { currency } = useCurrencyStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
@@ -34,40 +45,42 @@ export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: Me
     menuId: initialData?.menuId?.toString() || "",
     categoryId: initialData?.categoryId?.toString() || "",
     is_available: initialData?.is_available ?? true,
-  })
+  });
 
-  const [selectedCategories, setSelectedCategories] = useState<any[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<any[]>([]);
 
   // Update available categories when menu changes
   const handleMenuChange = (menuId: string) => {
-    const menu = menus.find((m) => m.id.toString() === menuId)
-    setSelectedCategories(menu?.menu_categories || [])
+    const menu = menus.find((m) => m.id.toString() === menuId);
+    setSelectedCategories(menu?.menu_categories || []);
     setFormData((prev) => ({
       ...prev,
       menuId,
       categoryId: "", // Reset category when menu changes
-    }))
-  }
+    }));
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleImageChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, image_url: value }))
-  }
+    setFormData((prev) => ({ ...prev, image_url: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       // Convert price to USD for storage if not already in USD
       const priceInUSD =
         currency === "USD"
           ? Number.parseFloat(formData.price)
-          : convertCurrency(Number.parseFloat(formData.price), currency, "USD")
+          : convertCurrency(Number.parseFloat(formData.price), currency, "USD");
 
       // In a real app, you would call your API here
       console.log({
@@ -77,28 +90,30 @@ export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: Me
         image_url: formData.image_url,
         category_id: Number.parseInt(formData.categoryId),
         is_available: formData.is_available,
-      })
+      });
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast({
         title: "Success",
-        description: initialData ? "Menu item updated successfully" : "Menu item created successfully",
-      })
+        description: initialData
+          ? "Menu item updated successfully"
+          : "Menu item created successfully",
+      });
 
-      onSuccess()
+      onSuccess();
     } catch (error) {
-      console.error("Error saving menu item:", error)
+      console.error("Error saving menu item:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -106,7 +121,11 @@ export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: Me
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="menuId">Menu *</Label>
-            <Select value={formData.menuId} onValueChange={handleMenuChange} required>
+            <Select
+              value={formData.menuId}
+              onValueChange={handleMenuChange}
+              required
+            >
               <SelectTrigger id="menuId">
                 <SelectValue placeholder="Select menu" />
               </SelectTrigger>
@@ -124,7 +143,9 @@ export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: Me
             <Label htmlFor="categoryId">Category *</Label>
             <Select
               value={formData.categoryId}
-              onValueChange={(value) => setFormData((prev) => ({ ...prev, categoryId: value }))}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, categoryId: value }))
+              }
               disabled={!formData.menuId || selectedCategories.length === 0}
               required
             >
@@ -144,14 +165,30 @@ export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: Me
 
         <div className="space-y-2">
           <Label htmlFor="name">Item Name *</Label>
-          <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
+          <Input
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+          />
         </div>
 
-        <ImageUpload value={formData.image_url} onChange={handleImageChange} label="Item Image" />
+        <ImageUpload
+          value={formData.image_url}
+          onChange={handleImageChange}
+          label="Item Image"
+        />
 
         <div className="space-y-2">
           <Label htmlFor="description">Description</Label>
-          <Textarea id="description" name="description" value={formData.description} onChange={handleChange} rows={3} />
+          <Textarea
+            id="description"
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            rows={3}
+          />
         </div>
 
         <div className="space-y-2">
@@ -171,10 +208,13 @@ export function MenuItemForm({ restaurantId, menus, initialData, onSuccess }: Me
 
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : initialData ? "Update Item" : "Create Item"}
+          {isSubmitting
+            ? "Saving..."
+            : initialData
+              ? "Update Item"
+              : "Create Item"}
         </Button>
       </DialogFooter>
     </form>
-  )
+  );
 }
-

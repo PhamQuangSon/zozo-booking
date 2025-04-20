@@ -1,11 +1,11 @@
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-type Currency = "USD" | "VND"
+type Currency = "USD" | "VND";
 
 interface CurrencyState {
-  currency: Currency
-  setCurrency: (currency: Currency) => void
+  currency: Currency;
+  setCurrency: (currency: Currency) => void;
 }
 
 export const useCurrencyStore = create<CurrencyState>()(
@@ -16,7 +16,6 @@ export const useCurrencyStore = create<CurrencyState>()(
     }),
     {
       name: "currency-store",
-    },
-  ),
-)
-
+    }
+  )
+);

@@ -1,36 +1,36 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { ImageIcon, X } from "lucide-react";
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ImageIcon, X } from "lucide-react"
-import Image from "next/image"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ImageUploadProps {
-  value: string | null
-  onChange: (url: string | null) => void
-  disabled?: boolean
+  value: string | null;
+  onChange: (url: string | null) => void;
+  disabled?: boolean;
 }
 
 export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
-  const [preview, setPreview] = useState<string | null>(value)
+  const [preview, setPreview] = useState<string | null>(value);
 
   useEffect(() => {
-    setPreview(value)
-  }, [value])
+    setPreview(value);
+  }, [value]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     // In a real app, you would upload the file to a storage service
     // For now, we'll just create a local object URL for preview
-    const objectUrl = URL.createObjectURL(file)
-    setPreview(objectUrl)
-    onChange(objectUrl)
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    onChange(objectUrl);
 
     // In a real implementation, you would do something like:
     // const formData = new FormData()
@@ -38,12 +38,12 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
     // const response = await fetch('/api/upload', { method: 'POST', body: formData })
     // const data = await response.json()
     // onChange(data.url)
-  }
+  };
 
   const handleRemove = () => {
-    setPreview(null)
-    onChange(null)
-  }
+    setPreview(null);
+    onChange(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -51,7 +51,12 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
         <Label htmlFor="image" className="cursor-pointer">
           {preview ? (
             <div className="relative h-40 w-40 rounded-md overflow-hidden border">
-              <Image src={preview || "/placeholder.svg"} alt="Preview" fill className="object-cover" />
+              <Image
+                src={preview || "/placeholder.svg"}
+                alt="Preview"
+                fill
+                className="object-cover"
+              />
               <Button
                 type="button"
                 variant="destructive"
@@ -88,6 +93,5 @@ export function ImageUpload({ value, onChange, disabled }: ImageUploadProps) {
         {preview ? "Change Image" : "Upload Image"}
       </Button>
     </div>
-  )
+  );
 }
-

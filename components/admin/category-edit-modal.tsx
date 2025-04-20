@@ -1,36 +1,59 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
-import { createCategory, updateCategory } from "@/actions/category-actions"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Category } from "@prisma/client"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { categorySchema, type CategoryFormValues } from "@/schemas/category-schema"
-import { ImageUpload } from "@/components/ui/image-upload"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Restaurant } from "@/actions/restaurant-actions"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+
+import { createCategory, updateCategory } from "@/actions/category-actions";
+import type { Restaurant } from "@/actions/restaurant-actions";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
+import {
+  type CategoryFormValues,
+  categorySchema,
+} from "@/schemas/category-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Category } from "@prisma/client";
 
 // Extended Category type with restaurant relation
 type CategoryWithRestaurant = Category & {
   restaurant: {
-    id: number
-    name: string
-  }
-}
+    id: number;
+    name: string;
+  };
+};
 
 interface CategoryEditModalProps {
-  category?: CategoryWithRestaurant | null
-  restaurants: Restaurant[]
-  open: boolean
-  onOpenChange: (refresh: boolean) => void
-  mode: "create" | "edit"
+  category?: CategoryWithRestaurant | null;
+  restaurants: Restaurant[];
+  open: boolean;
+  onOpenChange: (refresh: boolean) => void;
+  mode: "create" | "edit";
 }
 
 export function CategoryEditModal({
@@ -40,12 +63,12 @@ export function CategoryEditModal({
   onOpenChange,
   mode = "edit",
 }: CategoryEditModalProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const isCreating = mode === "create"
-  const title = isCreating ? "Add Category" : "Edit Category"
-  const buttonText = isCreating ? "Create" : "Save changes"
+  const isCreating = mode === "create";
+  const title = isCreating ? "Add Category" : "Edit Category";
+  const buttonText = isCreating ? "Create" : "Save changes";
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -56,7 +79,7 @@ export function CategoryEditModal({
       displayOrder: 0,
       imageUrl: null,
     },
-  })
+  });
 
   // Update form data when category changes
   useEffect(() => {
@@ -67,7 +90,7 @@ export function CategoryEditModal({
         restaurantId: category.restaurantId,
         displayOrder: category.displayOrder,
         imageUrl: category.imageUrl,
-      })
+      });
     } else if (mode === "create") {
       form.reset({
         name: "",
@@ -75,14 +98,14 @@ export function CategoryEditModal({
         restaurantId: restaurants[0]?.id || 0,
         displayOrder: 0,
         imageUrl: null,
-      })
+      });
     }
-  }, [category, mode, form, restaurants])
+  }, [category, mode, form, restaurants]);
 
   const onSubmit = async (data: CategoryFormValues) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      let result
+      let result;
 
       if (isCreating) {
         result = await createCategory({
@@ -91,7 +114,7 @@ export function CategoryEditModal({
           restaurantId: data.restaurantId,
           displayOrder: data.displayOrder || 0,
           imageUrl: data.imageUrl,
-        })
+        });
       } else if (category) {
         result = await updateCategory(category.id, {
           name: data.name,
@@ -99,7 +122,7 @@ export function CategoryEditModal({
           restaurantId: data.restaurantId,
           displayOrder: data.displayOrder || 0,
           imageUrl: data.imageUrl,
-        })
+        });
       }
 
       if (result?.success) {
@@ -108,25 +131,29 @@ export function CategoryEditModal({
           description: isCreating
             ? "The category has been created successfully."
             : "The category has been updated successfully.",
-        })
-        onOpenChange(true) // Close modal and refresh data
+        });
+        onOpenChange(true); // Close modal and refresh data
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: result?.error || (isCreating ? "Failed to create category" : "Failed to update category"),
-        })
+          description:
+            result?.error ||
+            (isCreating
+              ? "Failed to create category"
+              : "Failed to update category"),
+        });
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "An unexpected error occurred",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onOpenChange(false)}>
@@ -145,7 +172,11 @@ export function CategoryEditModal({
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Category name" disabled={isLoading} />
+                        <Input
+                          {...field}
+                          placeholder="Category name"
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -180,7 +211,9 @@ export function CategoryEditModal({
                       <FormLabel>Restaurant</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                        onValueChange={(value) =>
+                          field.onChange(Number.parseInt(value))
+                        }
                         disabled={isLoading}
                       >
                         <FormControl>
@@ -190,7 +223,10 @@ export function CategoryEditModal({
                         </FormControl>
                         <SelectContent>
                           {restaurants.map((restaurant) => (
-                            <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                            <SelectItem
+                              key={restaurant.id}
+                              value={restaurant.id.toString()}
+                            >
                               {restaurant.name}
                             </SelectItem>
                           ))}
@@ -211,7 +247,9 @@ export function CategoryEditModal({
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            field.onChange(Number.parseInt(e.target.value) || 0)
+                          }
                           min={0}
                           disabled={isLoading}
                         />
@@ -230,7 +268,11 @@ export function CategoryEditModal({
                     <FormItem>
                       <FormLabel>Image</FormLabel>
                       <FormControl>
-                        <ImageUpload value={field.value || null} onChange={field.onChange} disabled={isLoading} />
+                        <ImageUpload
+                          value={field.value || null}
+                          onChange={field.onChange}
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -240,7 +282,12 @@ export function CategoryEditModal({
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
@@ -251,6 +298,5 @@ export function CategoryEditModal({
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

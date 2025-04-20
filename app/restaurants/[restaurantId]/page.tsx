@@ -1,38 +1,48 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { useState, useCallback, useRef, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Star, MapPin, ChevronLeft, Table, ArrowRight } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import Link from "next/link"
-import { useCurrencyStore } from "@/store/currency-store"
-import { ScrollingBanner } from "@/components/scrolling-banner"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useRestaurantData } from "@/hooks/use-restaurant-data"
-import Loading from "@/app/loading"
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowRight, ChevronLeft, MapPin, Star, Table } from "lucide-react";
+
+import Loading from "@/app/loading";
+import { ScrollingBanner } from "@/components/scrolling-banner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useRestaurantData } from "@/hooks/use-restaurant-data";
 
 export default function RestaurantPage() {
-  const params = useParams()
-  const router = useRouter()
-  const restaurantId = params.restaurantId as string
-  const { currency } = useCurrencyStore()
+  const params = useParams();
+  const router = useRouter();
+  const restaurantId = params.restaurantId as string;
 
-  const [showTableDialog, setShowTableDialog] = useState(false)
-  const [visibleItems, setVisibleItems] = useState<number>(8)
-  const [hasMore, setHasMore] = useState(true)
-  const [activeCategory, setActiveCategory] = useState<string>("all")
-
-  const observerRef = useRef<IntersectionObserver | null>(null)
-  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const [showTableDialog, setShowTableDialog] = useState(false);
 
   // Fetch restaurant data using TanStack Query
-  const { data: restaurant, isLoading: restaurantLoading, error: restaurantError } = useRestaurantData(restaurantId)
+  const {
+    data: restaurant,
+    isLoading: restaurantLoading,
+    error: restaurantError,
+  } = useRestaurantData(restaurantId);
 
   // Access tables directly from restaurant data
-  const tables = restaurant?.tables || []
+  const tables = restaurant?.tables || [];
 
   // Prepare all menu items for display
   const allMenuItems =
@@ -41,8 +51,8 @@ export default function RestaurantPage() {
         ...item,
         categoryName: category.name,
         categoryId: category.id,
-      })),
-    ) || []
+      }))
+    ) || [];
 
   // Find a random item to feature as special
   const specialItem =
@@ -51,60 +61,18 @@ export default function RestaurantPage() {
           ...allMenuItems[Math.floor(Math.random() * allMenuItems.length)],
           discountPercentage: 45,
         }
-      : null
-
-  // Filter items by category
-  const filteredItems =
-    activeCategory === "all"
-      ? allMenuItems
-      : allMenuItems.filter((item) => item.categoryName?.toLowerCase() === activeCategory.toLowerCase())
-
-  const handleCategoryChange = (category: string) => {
-    setActiveCategory(category)
-    setVisibleItems(8)
-    setHasMore(true)
-  }
-
-  const loadMoreItems = useCallback(() => {
-    if (visibleItems >= filteredItems.length) {
-      setHasMore(false)
-      return
-    }
-    setVisibleItems((prev) => prev + 4)
-  }, [filteredItems.length, visibleItems])
-
-  // Setup intersection observer for infinite scrolling
-  useEffect(() => {
-    if (loadMoreRef.current && !observerRef.current) {
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          const [entry] = entries
-          if (entry.isIntersecting && hasMore) {
-            loadMoreItems()
-          }
-        },
-        { threshold: 0.1 },
-      )
-      observerRef.current.observe(loadMoreRef.current)
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-    }
-  }, [hasMore, loadMoreItems])
+      : null;
 
   const handleTableSelect = (tableId: number) => {
-    router.push(`/restaurants/${restaurantId}/${tableId}`)
-  }
+    router.push(`/restaurants/${restaurantId}/${tableId}`);
+  };
 
   const handleViewMenu = () => {
-    setShowTableDialog(true)
-  }
+    setShowTableDialog(true);
+  };
 
   if (restaurantLoading) {
-    return <Loading />
+    return <Loading />;
   }
 
   if (restaurantError || !restaurant) {
@@ -113,7 +81,9 @@ export default function RestaurantPage() {
         <Card className="glass-card overflow-hidden">
           <CardHeader>
             <CardTitle>Restaurant Not Found</CardTitle>
-            <CardDescription>The restaurant you're looking for doesn't exist</CardDescription>
+            <CardDescription>
+              The restaurant you&apos;re looking for doesn&apos;t exist
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="rounded-full glass-button">
@@ -122,7 +92,7 @@ export default function RestaurantPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -132,7 +102,9 @@ export default function RestaurantPage() {
         <DialogContent className="sm:max-w-md glass-card border-0">
           <DialogHeader>
             <DialogTitle>Select a Table</DialogTitle>
-            <DialogDescription>Choose a table to view the menu and place your order.</DialogDescription>
+            <DialogDescription>
+              Choose a table to view the menu and place your order.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
             {restaurantLoading ? (
@@ -147,7 +119,9 @@ export default function RestaurantPage() {
               tables.map((table) => (
                 <Button
                   key={table.id}
-                  variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
+                  variant={
+                    table.status === "AVAILABLE" ? "outline" : "secondary"
+                  }
                   disabled={table.status !== "AVAILABLE"}
                   onClick={() => handleTableSelect(table.id)}
                   className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
@@ -182,12 +156,19 @@ export default function RestaurantPage() {
           {/* Special Item Image with Animation */}
           <div className="absolute right-[20%] top-[10%] z-20 animate-float">
             <div className="relative h-[300px] w-[300px]">
-              <Image src={"/ctaThumb1_1.png"} alt={specialItem.name} fill className="object-contain drop-shadow-2xl" />
+              <Image
+                src={"/ctaThumb1_1.png"}
+                alt={specialItem.name}
+                fill
+                className="object-contain drop-shadow-2xl"
+              />
             </div>
           </div>
 
           <div className="relative z-20 container mx-auto h-full flex flex-col justify-center text-white pl-8">
-            <p className="text-red-500 font-medium mb-2">WELCOME TO {restaurant.name.toUpperCase()}</p>
+            <p className="text-red-500 font-medium mb-2">
+              WELCOME TO {restaurant.name.toUpperCase()}
+            </p>
             <h1 className="text-4xl font-bold mb-2">TODAY SPECIAL FOOD</h1>
             <p className="text-amber-500 mb-4">Limited Time Offer</p>
             <Button
@@ -203,7 +184,12 @@ export default function RestaurantPage() {
       {/* Restaurant Info */}
       <div className="container mx-auto py-6">
         <div className="flex items-center mb-4">
-          <Button variant="ghost" size="icon" asChild className="rounded-full hover:bg-white/20 backdrop-blur-sm">
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="rounded-full hover:bg-white/20 backdrop-blur-sm"
+          >
             <Link href="/">
               <ChevronLeft className="h-4 w-4" />
             </Link>
@@ -229,7 +215,9 @@ export default function RestaurantPage() {
         <Card className="mb-8 glass-card border-0 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-white/80 to-white/40 backdrop-blur-sm">
             <CardTitle>Dining at {restaurant.name}</CardTitle>
-            <CardDescription>Select a table to view the menu and place your order</CardDescription>
+            <CardDescription>
+              Select a table to view the menu and place your order
+            </CardDescription>
           </CardHeader>
           <CardContent className="bg-white/30 backdrop-blur-sm">
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
@@ -245,7 +233,9 @@ export default function RestaurantPage() {
                 tables.slice(0, 6).map((table) => (
                   <Button
                     key={table.id}
-                    variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
+                    variant={
+                      table.status === "AVAILABLE" ? "outline" : "secondary"
+                    }
                     disabled={table.status !== "AVAILABLE"}
                     onClick={() => handleTableSelect(table.id)}
                     className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
@@ -282,7 +272,9 @@ export default function RestaurantPage() {
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-amber-500">🍔 ABOUT US 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6">Welcome to {restaurant.name}</h2>
+            <h2 className="text-3xl font-bold mb-6">
+              Welcome to {restaurant.name}
+            </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               {restaurant.description ||
                 `Experience the finest ${restaurant.cuisine} cuisine in town. Our chefs prepare each dish with fresh ingredients and authentic recipes.`}
@@ -327,7 +319,9 @@ export default function RestaurantPage() {
           {/* Call to Action */}
           <div className="text-center py-8">
             <h3 className="text-2xl font-bold mb-4">Ready to Order?</h3>
-            <p className="text-muted-foreground mb-6">Select a table to view our menu and place your order</p>
+            <p className="text-muted-foreground mb-6">
+              Select a table to view our menu and place your order
+            </p>
             <Button
               size="lg"
               onClick={() => setShowTableDialog(true)}
@@ -342,5 +336,5 @@ export default function RestaurantPage() {
       {/* Scrolling Text Banner */}
       <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
     </div>
-  )
+  );
 }

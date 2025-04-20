@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useState } from "react";
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { createTable, updateTable } from "@/actions/table-actions";
+import { ImageUpload } from "@/components/image-upload";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,29 +13,41 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createTable, updateTable } from "@/actions/table-actions"
-import { useToast } from "@/hooks/use-toast"
-import { ImageUpload } from "@/components/image-upload"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 interface TableEditModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  restaurantId: number
-  initialData: any | null
-  onSuccess: (table?: any) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  restaurantId: number;
+  initialData: any | null;
+  onSuccess: (table?: any) => void;
 }
 
-export function TableEditModal({ open, onOpenChange, restaurantId, initialData, onSuccess }: TableEditModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function TableEditModal({
+  open,
+  onOpenChange,
+  restaurantId,
+  initialData,
+  onSuccess,
+}: TableEditModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     number: initialData?.number || 0,
     capacity: initialData?.capacity || 4,
     status: initialData?.status || "AVAILABLE",
     imageUrl: initialData?.imageUrl || "",
-  })
-  const { toast } = useToast()
+  });
+  const { toast } = useToast();
 
   // Reset form when modal opens/closes or initialData changes
   useState(() => {
@@ -45,26 +57,26 @@ export function TableEditModal({ open, onOpenChange, restaurantId, initialData, 
         capacity: initialData?.capacity || 4,
         status: initialData?.status || "AVAILABLE",
         imageUrl: initialData?.imageUrl || "",
-      })
+      });
     }
-  })
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleImageChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, imageUrl: value }))
-  }
+    setFormData((prev) => ({ ...prev, imageUrl: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const tableData = {
@@ -73,34 +85,38 @@ export function TableEditModal({ open, onOpenChange, restaurantId, initialData, 
         status: formData.status,
         restaurantId: restaurantId,
         imageUrl: formData.imageUrl || null,
-      }
+      };
 
-      const result = initialData ? await updateTable(initialData.id, tableData) : await createTable(tableData)
+      const result = initialData
+        ? await updateTable(initialData.id, tableData)
+        : await createTable(tableData);
 
       if (result.success) {
         toast({
           title: "Success",
-          description: initialData ? "Table updated successfully" : "Table created successfully",
-        })
-        onSuccess(result.data)
+          description: initialData
+            ? "Table updated successfully"
+            : "Table created successfully",
+        });
+        onSuccess(result.data);
       } else {
         toast({
           title: "Error",
           description: result.error || "Failed to save table",
           variant: "destructive",
-        })
+        });
       }
     } catch (error) {
-      console.error("Error saving table:", error)
+      console.error("Error saving table:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,7 +124,9 @@ export function TableEditModal({ open, onOpenChange, restaurantId, initialData, 
         <DialogHeader>
           <DialogTitle>{initialData ? "Edit Table" : "Add Table"}</DialogTitle>
           <DialogDescription>
-            {initialData ? "Update table details below" : "Fill in the details to create a new table"}
+            {initialData
+              ? "Update table details below"
+              : "Fill in the details to create a new table"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -126,7 +144,11 @@ export function TableEditModal({ open, onOpenChange, restaurantId, initialData, 
               />
             </div>
 
-            <ImageUpload value={formData.imageUrl} onChange={handleImageChange} label="Table Image" />
+            <ImageUpload
+              value={formData.imageUrl}
+              onChange={handleImageChange}
+              label="Table Image"
+            />
 
             <div className="space-y-2">
               <Label htmlFor="capacity">Capacity *</Label>
@@ -143,7 +165,10 @@ export function TableEditModal({ open, onOpenChange, restaurantId, initialData, 
             </div>
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)}>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleSelectChange("status", value)}
+              >
                 <SelectTrigger id="status">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -158,11 +183,15 @@ export function TableEditModal({ open, onOpenChange, restaurantId, initialData, 
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : initialData ? "Update Table" : "Create Table"}
+              {isSubmitting
+                ? "Saving..."
+                : initialData
+                  ? "Update Table"
+                  : "Create Table"}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

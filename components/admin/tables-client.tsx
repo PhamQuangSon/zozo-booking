@@ -1,59 +1,66 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Plus, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { TableEditModal } from "@/components/admin/table-edit-modal"
-import { deleteTable } from "@/actions/table-actions"
-import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
-import { DataTable, type ColumnDef } from "@/components/admin/data-table"
-import { Table } from "@prisma/client"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Search } from "lucide-react";
+
+import { deleteTable } from "@/actions/table-actions";
+import { type ColumnDef, DataTable } from "@/components/admin/data-table";
+import { TableEditModal } from "@/components/admin/table-edit-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import type { Table } from "@prisma/client";
 
 interface TablesClientProps {
-  restaurantId: string
-  restaurantName: string
-  initialTables: Table[]
+  restaurantId: string;
+  restaurantName: string;
+  initialTables: Table[];
 }
 
-export function TablesClient({ restaurantId, restaurantName, initialTables }: TablesClientProps) {
-  const [tables, setTables] = useState<Table[]>(initialTables)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [editingTable, setEditingTable] = useState<Table | null>(null)
-  const { toast } = useToast()
-  const router = useRouter()
+export function TablesClient({
+  restaurantId,
+  restaurantName,
+  initialTables,
+}: TablesClientProps) {
+  const [tables, setTables] = useState<Table[]>(initialTables);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingTable, setEditingTable] = useState<Table | null>(null);
+  const router = useRouter();
 
   // Filter tables based on search query
-  const filteredTables = tables.filter((table) => table.number.toString().includes(searchQuery))
+  const filteredTables = tables.filter((table) =>
+    table.number.toString().includes(searchQuery)
+  );
 
   // Handle edit table
   const handleEditTable = (table: Table) => {
-    setEditingTable(table)
-    setIsAddDialogOpen(true)
-  }
+    setEditingTable(table);
+    setIsAddDialogOpen(true);
+  };
 
   // Handle successful table creation/update
   const handleTableSuccess = (updatedTable: Table) => {
-    setIsAddDialogOpen(false)
-    setEditingTable(null)
+    setIsAddDialogOpen(false);
+    setEditingTable(null);
 
     if (updatedTable) {
       // If it's an edit, update the table in the list
       if (tables.some((t) => t.id === updatedTable.id)) {
-        setTables(tables.map((t) => (t.id === updatedTable.id ? updatedTable : t)))
+        setTables(
+          tables.map((t) => (t.id === updatedTable.id ? updatedTable : t))
+        );
       }
       // If it's a new table, add it to the list
       else {
-        setTables([...tables, updatedTable])
+        setTables([...tables, updatedTable]);
       }
     }
 
-    router.refresh()
-  }
+    router.refresh();
+  };
 
   // Define columns for the DataTable
   const columns: ColumnDef<Table>[] = [
@@ -79,28 +86,30 @@ export function TablesClient({ restaurantId, restaurantName, initialTables }: Ta
         const getStatusColor = (status: string) => {
           switch (status) {
             case "AVAILABLE":
-              return "bg-green-500 text-white"
+              return "bg-green-500 text-white";
             case "OCCUPIED":
-              return "bg-red-500 text-white"
+              return "bg-red-500 text-white";
             case "RESERVED":
-              return "bg-amber-500 text-white"
+              return "bg-amber-500 text-white";
             case "MAINTENANCE":
-              return "bg-gray-500 text-white"
+              return "bg-gray-500 text-white";
             default:
-              return "bg-gray-500 text-white"
+              return "bg-gray-500 text-white";
           }
-        }
+        };
 
-        return <Badge className={getStatusColor(value)}>{value}</Badge>
+        return <Badge className={getStatusColor(value)}>{value}</Badge>;
       },
       sortable: true,
     },
-  ]
+  ];
 
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Tables for {restaurantName}</h2>
+        <h2 className="text-3xl font-bold tracking-tight">
+          Tables for {restaurantName}
+        </h2>
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Table
@@ -124,7 +133,12 @@ export function TablesClient({ restaurantId, restaurantName, initialTables }: Ta
           <CardTitle>All Tables</CardTitle>
         </CardHeader>
         <CardContent>
-          <DataTable data={filteredTables} columns={columns} deleteAction={deleteTable} onEdit={handleEditTable} />
+          <DataTable
+            data={filteredTables}
+            columns={columns}
+            deleteAction={deleteTable}
+            onEdit={handleEditTable}
+          />
         </CardContent>
       </Card>
 
@@ -136,5 +150,5 @@ export function TablesClient({ restaurantId, restaurantName, initialTables }: Ta
         onSuccess={handleTableSuccess}
       />
     </>
-  )
+  );
 }

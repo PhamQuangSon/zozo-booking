@@ -1,31 +1,36 @@
-"use client"
+"use client";
 
-import { formatCurrency } from "@/lib/i18n"
-import { useToast } from "@/hooks/use-toast"
-import { OrderWithRelations } from "@/types/menu-builder-types"
+import { useToast } from "@/hooks/use-toast";
+import { formatCurrency } from "@/lib/i18n";
+import type { OrderWithRelations } from "@/types/menu-builder-types";
 
 export function useReceiptPrinter() {
-  const { toast } = useToast()
+  const { toast } = useToast();
 
-  const printReceipt = (order : OrderWithRelations) => {
+  const printReceipt = (order: OrderWithRelations) => {
     // Create a new window for the receipt
-    const printWindow = window.open("", "_blank")
+    const printWindow = window.open("", "_blank");
     if (!printWindow) {
       toast({
         title: "Error",
-        description: "Unable to open print window. Please check your popup blocker settings.",
+        description:
+          "Unable to open print window. Please check your popup blocker settings.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Format the table number properly (ensure it's displayed as a base-10 number)
     const tableNumber =
-      typeof order.table?.number === "number" ? Number.parseInt(order.table?.number.toString(), 10) : order.table?.number
+      typeof order.table?.number === "number"
+        ? Number.parseInt(order.table?.number.toString(), 10)
+        : order.table?.number;
 
     // Get formatted date
     const orderDate =
-      order.createdAt instanceof Date ? order.createdAt.toLocaleString() : new Date(order.createdAt).toLocaleString()
+      order.createdAt instanceof Date
+        ? order.createdAt.toLocaleString()
+        : new Date(order.createdAt).toLocaleString();
 
     // Build the receipt HTML
     const receiptHTML = `
@@ -115,7 +120,10 @@ export function useReceiptPrinter() {
                   item.orderItemChoices && item.orderItemChoices.length > 0
                     ? `<div style="padding-left: 10px; font-size: 12px;">
                     ${item.orderItemChoices
-                      .map((choice) => `${choice.menuItemOption?.name}: ${choice.optionChoice?.name}`)
+                      .map(
+                        (choice) =>
+                          `${choice.menuItemOption?.name}: ${choice.optionChoice?.name}`
+                      )
                       .join("<br>")}
                   </div>`
                     : ""
@@ -126,7 +134,7 @@ export function useReceiptPrinter() {
                 ${formatCurrency(Number(item.unitPrice) * item.quantity)}
               </div>
             </div>
-          `,
+          `
             )
             .join("")}
         </div>
@@ -157,13 +165,13 @@ export function useReceiptPrinter() {
         </script>
       </body>
       </html>
-    `
+    `;
 
     // Write the HTML to the new window and print
-    printWindow.document.open()
-    printWindow.document.write(receiptHTML)
-    printWindow.document.close()
-  }
+    printWindow.document.open();
+    printWindow.document.write(receiptHTML);
+    printWindow.document.close();
+  };
 
-  return { printReceipt }
+  return { printReceipt };
 }

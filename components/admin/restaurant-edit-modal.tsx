@@ -1,21 +1,20 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
-import type { Category, MenuItem } from "@prisma/client"
-import { RestaurantForm } from "@/components/restaurant-form"
-import { Restaurant } from "@/actions/restaurant-actions"
-
-// Extended MenuItem type with category and restaurant relations
-type MenuItemWithRelations = MenuItem & {
-  category: Category
-  restaurant: Restaurant
-}
+import type { Restaurant } from "@/actions/restaurant-actions";
+import { RestaurantForm } from "@/components/restaurant-form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface RestaurantEditModalProps {
-  restaurants: Restaurant | null
-  open: boolean
-  onOpenChange: (refresh: boolean) => void
-  mode: "create" | "edit"
+  restaurants: Restaurant | null;
+  open: boolean;
+  onOpenChange: (refresh: boolean) => void;
+  mode: "create" | "edit";
 }
 
 export function RestaurantEditModal({
@@ -26,9 +25,11 @@ export function RestaurantEditModal({
   onOpenChange,
   mode = "edit",
 }: RestaurantEditModalProps) {
-  const isCreating = mode === "create"
-  const title = isCreating ? "Add Restaurant" : "Edit Restaurant"
-  const description = isCreating ? "Fill in the details to create a new restaurant" : "Update restaurant details below"
+  const isCreating = mode === "create";
+  const title = isCreating ? "Add Restaurant" : "Edit Restaurant";
+  const description = isCreating
+    ? "Fill in the details to create a new restaurant"
+    : "Update restaurant details below";
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onOpenChange(false)}>
@@ -40,11 +41,10 @@ export function RestaurantEditModal({
         <RestaurantForm
           initialData={restaurants}
           onOpenChange={() => {
-             onOpenChange(true)
+            onOpenChange(true);
           }}
         />
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

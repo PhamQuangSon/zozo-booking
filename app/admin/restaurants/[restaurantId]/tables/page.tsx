@@ -1,23 +1,30 @@
-import { notFound } from "next/navigation"
-import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { getRestaurantById } from "@/actions/restaurant-actions"
-import { getTablesByRestaurantId } from "@/actions/table-actions"
-import { TablesClient } from "@/components/admin/tables-client"
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
-export default async function TablesPage({ params }: { params: { restaurantId: string } }) {
+import { getRestaurantById } from "@/actions/restaurant-actions";
+import { getTablesByRestaurantId } from "@/actions/table-actions";
+import { TablesClient } from "@/components/admin/tables-client";
+import { Button } from "@/components/ui/button";
+
+export default async function TablesPage({
+  params,
+}: {
+  params: { restaurantId: string };
+}) {
   // Fetch restaurant details
-  const restaurantResult = await getRestaurantById(params.restaurantId)
+  const restaurantResult = await getRestaurantById(params.restaurantId);
   if (!restaurantResult.success || !restaurantResult.data) {
-    notFound()
+    notFound();
   }
-  const restaurant = restaurantResult.data
+  const restaurant = restaurantResult.data;
 
   // Fetch tables
-  const { data: tables = [], success } = await getTablesByRestaurantId(params.restaurantId)
+  const { data: tables = [], success } = await getTablesByRestaurantId(
+    params.restaurantId
+  );
   if (!success) {
-    return <div>Failed to load Tables</div>
+    return <div>Failed to load Tables</div>;
   }
 
   return (
@@ -31,7 +38,11 @@ export default async function TablesPage({ params }: { params: { restaurantId: s
         </Button>
       </div>
 
-      <TablesClient restaurantId={params.restaurantId} restaurantName={restaurant.name} initialTables={tables} />
+      <TablesClient
+        restaurantId={params.restaurantId}
+        restaurantName={restaurant.name}
+        initialTables={tables}
+      />
     </div>
-  )
+  );
 }

@@ -1,35 +1,57 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "@/components/ui/use-toast"
-import { createMenuItem, updateMenuItem } from "@/actions/menu-item-actions"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { Category, MenuItem, Restaurant } from "@prisma/client"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { menuItemSchema, type MenuItemFormValues } from "@/schemas/menu-item-schema"
-import { ImageUpload } from "@/components/ui/image-upload"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+
+import { createMenuItem, updateMenuItem } from "@/actions/menu-item-actions";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { ImageUpload } from "@/components/ui/image-upload";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
+import {
+  type MenuItemFormValues,
+  menuItemSchema,
+} from "@/schemas/menu-item-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Category, MenuItem, Restaurant } from "@prisma/client";
 
 // Extended MenuItem type with category and restaurant relations
 type MenuItemWithRelations = MenuItem & {
-  category: Category
-  restaurant: Restaurant
-}
+  category: Category;
+  restaurant: Restaurant;
+};
 
 interface MenuItemEditModalProps {
-  menuItem?: MenuItemWithRelations | null
-  categories: Category[]
-  restaurants: Restaurant[]
-  open: boolean
-  onOpenChange: (refresh: boolean) => void
-  mode: "create" | "edit"
+  menuItem?: MenuItemWithRelations | null;
+  categories: Category[];
+  restaurants: Restaurant[];
+  open: boolean;
+  onOpenChange: (refresh: boolean) => void;
+  mode: "create" | "edit";
 }
 
 export function MenuItemEditModal({
@@ -40,16 +62,19 @@ export function MenuItemEditModal({
   onOpenChange,
   mode = "edit",
 }: MenuItemEditModalProps) {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>(categories || []) // Add default empty array
+  const [isLoading, setIsLoading] = useState(false);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>(
+    categories || []
+  ); // Add default empty array
 
-  const isCreating = mode === "create"
-  const title = isCreating ? "Add Menu Item" : "Edit Menu Item"
-  const buttonText = isCreating ? "Create" : "Save changes"
+  const isCreating = mode === "create";
+  const title = isCreating ? "Add Menu Item" : "Edit Menu Item";
+  const buttonText = isCreating ? "Create" : "Save changes";
 
-  const defaultRestaurantId = restaurants?.[0]?.id
-  const defaultCategoryId = categories?.find(c => c.restaurantId === defaultRestaurantId)?.id
+  const defaultRestaurantId = restaurants?.[0]?.id;
+  const defaultCategoryId = categories?.find(
+    (c) => c.restaurantId === defaultRestaurantId
+  )?.id;
 
   const form = useForm<MenuItemFormValues>({
     resolver: zodResolver(menuItemSchema),
@@ -63,19 +88,23 @@ export function MenuItemEditModal({
       displayOrder: 0,
       imageUrl: null,
     },
-  })
+  });
 
   // Get the current restaurant ID from the form
-  const currentRestaurantId = form.watch("restaurantId")
+  const currentRestaurantId = form.watch("restaurantId");
 
   // Filter categories based on selected restaurant
   useEffect(() => {
     if (currentRestaurantId && categories?.length) {
-      setFilteredCategories(categories.filter((category) => category.restaurantId === currentRestaurantId))
+      setFilteredCategories(
+        categories.filter(
+          (category) => category.restaurantId === currentRestaurantId
+        )
+      );
     } else {
-      setFilteredCategories(categories || [])
+      setFilteredCategories(categories || []);
     }
-  }, [currentRestaurantId, categories])
+  }, [currentRestaurantId, categories]);
 
   // Update form data when menuItem changes
   useEffect(() => {
@@ -83,16 +112,21 @@ export function MenuItemEditModal({
       form.reset({
         name: menuItem.name,
         description: menuItem.description,
-        price: typeof menuItem.price === 'number' ? menuItem.price : Number(menuItem.price.toString()),
+        price:
+          typeof menuItem.price === "number"
+            ? menuItem.price
+            : Number(menuItem.price.toString()),
         categoryId: menuItem.categoryId,
         restaurantId: menuItem.restaurantId,
         isAvailable: menuItem.isAvailable,
         displayOrder: menuItem.displayOrder || 0,
         imageUrl: menuItem.imageUrl,
-      })
+      });
     } else if (mode === "create") {
-      const defaultRestaurantId = restaurants?.[0]?.id || 0
-      const defaultCategoryId = categories?.find((c) => c.restaurantId === defaultRestaurantId)?.id || 0
+      const defaultRestaurantId = restaurants?.[0]?.id || 0;
+      const defaultCategoryId =
+        categories?.find((c) => c.restaurantId === defaultRestaurantId)?.id ||
+        0;
 
       form.reset({
         name: "",
@@ -103,14 +137,14 @@ export function MenuItemEditModal({
         isAvailable: true,
         displayOrder: 0,
         imageUrl: null,
-      })
+      });
     }
-  }, [menuItem, mode, form, restaurants, categories])
+  }, [menuItem, mode, form, restaurants, categories]);
 
   const onSubmit = async (data: MenuItemFormValues) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      let result
+      let result;
 
       if (isCreating) {
         const payload = {
@@ -120,10 +154,10 @@ export function MenuItemEditModal({
           categoryId: Number(data.categoryId),
           restaurantId: Number(data.restaurantId),
           isAvailable: Boolean(data.isAvailable),
-          displayOrder: data.displayOrder ?? 0, 
+          displayOrder: data.displayOrder ?? 0,
           imageUrl: data.imageUrl ?? null,
-        }
-        result = await createMenuItem(payload)
+        };
+        result = await createMenuItem(payload);
       } else if (menuItem) {
         const payload = {
           name: data.name,
@@ -134,8 +168,8 @@ export function MenuItemEditModal({
           isAvailable: Boolean(data.isAvailable),
           displayOrder: data.displayOrder ?? menuItem.displayOrder ?? 0,
           imageUrl: data.imageUrl ?? null,
-        }
-        result = await updateMenuItem(menuItem.id, payload)
+        };
+        result = await updateMenuItem(menuItem.id, payload);
       }
 
       if (result?.success) {
@@ -144,40 +178,48 @@ export function MenuItemEditModal({
           description: isCreating
             ? "The menu item has been created successfully."
             : "The menu item has been updated successfully.",
-        })
-        onOpenChange(true) // Close modal and refresh data
+        });
+        onOpenChange(true); // Close modal and refresh data
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: result?.error || (isCreating ? "Failed to create menu item" : "Failed to update menu item"),
-        })
+          description:
+            result?.error ||
+            (isCreating
+              ? "Failed to create menu item"
+              : "Failed to update menu item"),
+        });
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "An unexpected error occurred",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Handle restaurant change
   const handleRestaurantChange = (restaurantId: number) => {
-    form.setValue("restaurantId", restaurantId)
+    form.setValue("restaurantId", restaurantId);
 
     // Reset category if it doesn't belong to the selected restaurant
-    const currentCategoryId = form.getValues("categoryId")
+    const currentCategoryId = form.getValues("categoryId");
     const categoryBelongsToRestaurant =
-      categories?.some((c) => c.id === currentCategoryId && c.restaurantId === restaurantId) || false
+      categories?.some(
+        (c) => c.id === currentCategoryId && c.restaurantId === restaurantId
+      ) || false;
 
     if (!categoryBelongsToRestaurant) {
-      const firstCategoryForRestaurant = categories?.find((c) => c.restaurantId === restaurantId)
-      form.setValue("categoryId", firstCategoryForRestaurant?.id || 0)
+      const firstCategoryForRestaurant = categories?.find(
+        (c) => c.restaurantId === restaurantId
+      );
+      form.setValue("categoryId", firstCategoryForRestaurant?.id || 0);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onOpenChange(false)}>
@@ -196,7 +238,11 @@ export function MenuItemEditModal({
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Menu item name" disabled={isLoading} />
+                        <Input
+                          {...field}
+                          placeholder="Menu item name"
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -237,7 +283,7 @@ export function MenuItemEditModal({
                           {...field}
                           onChange={(e) => {
                             const value = e.target.value;
-                            field.onChange(value === '' ? 0 : Number(value));
+                            field.onChange(value === "" ? 0 : Number(value));
                           }}
                           disabled={isLoading}
                         />
@@ -255,7 +301,9 @@ export function MenuItemEditModal({
                       <FormLabel>Restaurant</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) => handleRestaurantChange(Number.parseInt(value))}
+                        onValueChange={(value) =>
+                          handleRestaurantChange(Number.parseInt(value))
+                        }
                         disabled={isLoading}
                       >
                         <FormControl>
@@ -265,10 +313,17 @@ export function MenuItemEditModal({
                         </FormControl>
                         <SelectContent>
                           {restaurants?.map((restaurant) => (
-                            <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                            <SelectItem
+                              key={restaurant.id}
+                              value={restaurant.id.toString()}
+                            >
                               {restaurant.name}
                             </SelectItem>
-                          )) || <SelectItem value="none">No restaurants available</SelectItem>}
+                          )) || (
+                            <SelectItem value="none">
+                              No restaurants available
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -284,21 +339,28 @@ export function MenuItemEditModal({
                       <FormLabel>Category</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                        onValueChange={(value) =>
+                          field.onChange(Number.parseInt(value))
+                        }
                         disabled={isLoading || filteredCategories.length === 0}
                       >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue
                               placeholder={
-                                filteredCategories.length === 0 ? "No categories available" : "Select a category"
+                                filteredCategories.length === 0
+                                  ? "No categories available"
+                                  : "Select a category"
                               }
                             />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           {filteredCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id.toString()}>
+                            <SelectItem
+                              key={category.id}
+                              value={category.id.toString()}
+                            >
                               {category.name}
                             </SelectItem>
                           ))}
@@ -320,7 +382,11 @@ export function MenuItemEditModal({
                           <Input
                             type="number"
                             {...field}
-                            onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
+                            onChange={(e) =>
+                              field.onChange(
+                                Number.parseInt(e.target.value) || 0
+                              )
+                            }
                             min={0}
                             disabled={isLoading}
                           />
@@ -336,9 +402,15 @@ export function MenuItemEditModal({
                     render={({ field }) => (
                       <FormItem className="flex flex-column items-start items-end space-x-2 space-y-0 rounded-md p-4">
                         <FormControl>
-                          <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            disabled={isLoading}
+                          />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">Available</FormLabel>
+                        <FormLabel className="cursor-pointer">
+                          Available
+                        </FormLabel>
                       </FormItem>
                     )}
                   />
@@ -353,7 +425,11 @@ export function MenuItemEditModal({
                     <FormItem>
                       <FormLabel>Image</FormLabel>
                       <FormControl>
-                        <ImageUpload value={field.value || null} onChange={field.onChange} disabled={isLoading} />
+                        <ImageUpload
+                          value={field.value || null}
+                          onChange={field.onChange}
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -363,7 +439,12 @@ export function MenuItemEditModal({
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
@@ -374,6 +455,5 @@ export function MenuItemEditModal({
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

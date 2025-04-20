@@ -1,53 +1,62 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { DataTable, type ColumnDef } from "@/components/admin/data-table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { PlusCircle } from "lucide-react"
-import { deleteItemOption } from "@/actions/item-option-actions"
-import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal"
-import { ItemOptionWithRelations } from "@/types/menu-builder-types"
+import { useEffect, useState } from "react";
+import { PlusCircle } from "lucide-react";
+
+import { deleteItemOption } from "@/actions/item-option-actions";
+import { type ColumnDef, DataTable } from "@/components/admin/data-table";
+import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { ItemOptionWithRelations } from "@/types/menu-builder-types";
 
 // Define props interface
 interface ItemOptionsClientProps {
-  itemOptions: ItemOptionWithRelations[]
+  itemOptions: ItemOptionWithRelations[];
 }
 
-export function ItemOptionsClient({ itemOptions = [] }: ItemOptionsClientProps) { // Use the interface
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedItemOption, setSelectedItemOption] = useState<ItemOptionWithRelations | null>(null)
-  const [menuItems, setMenuItems] = useState<any[]>([])
+export function ItemOptionsClient({
+  itemOptions = [],
+}: ItemOptionsClientProps) {
+  // Use the interface
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItemOption, setSelectedItemOption] =
+    useState<ItemOptionWithRelations | null>(null);
+  const [menuItems, setMenuItems] = useState<any[]>([]);
 
   // Fetch menu items on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Get unique menu items from item options
-        const uniqueMenuItems = new Map()
+        const uniqueMenuItems = new Map();
 
         itemOptions.forEach((option) => {
           if (option.menuItem) {
-            uniqueMenuItems.set(option.menuItem.id, option.menuItem)
+            uniqueMenuItems.set(option.menuItem.id, option.menuItem);
           }
-        })
+        });
 
-        setMenuItems(Array.from(uniqueMenuItems.values()))
+        setMenuItems(Array.from(uniqueMenuItems.values()));
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error("Error fetching data:", error);
       }
-    }
+    };
 
-    fetchData()
-  }, [itemOptions])
+    fetchData();
+  }, [itemOptions]);
 
   const filteredItemOptions = itemOptions.filter(
     (option) =>
       option.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (option.menuItemName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (option.restaurantName?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
-  )
+      (option.menuItemName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (option.restaurantName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      )
+  );
 
   const columns: ColumnDef<ItemOptionWithRelations>[] = [
     {
@@ -81,17 +90,17 @@ export function ItemOptionsClient({ itemOptions = [] }: ItemOptionsClientProps) 
       accessorKey: "choicesCount", // Use pre-calculated choices count
       sortable: true,
     },
-  ]
+  ];
 
   const handleAddItemOption = () => {
-    setSelectedItemOption(null)
-    setIsModalOpen(true)
-  }
+    setSelectedItemOption(null);
+    setIsModalOpen(true);
+  };
 
   const handleEditItemOption = (itemOption: ItemOptionWithRelations) => {
-    setSelectedItemOption(itemOption)
-    setIsModalOpen(true)
-  }
+    setSelectedItemOption(itemOption);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="space-y-4">
@@ -123,6 +132,5 @@ export function ItemOptionsClient({ itemOptions = [] }: ItemOptionsClientProps) 
         mode={selectedItemOption ? "edit" : "create"}
       />
     </div>
-  )
+  );
 }
-

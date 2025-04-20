@@ -1,26 +1,33 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Plus } from "lucide-react"
+import { useState } from "react";
+import { Plus } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SelectionOption {
-  id: number
-  name: string
-  description?: string | null
-  is_active?: boolean
-  display_order?: number
-  [key: string]: any // Allow additional properties
+  id: number;
+  name: string;
+  description?: string | null;
+  is_active?: boolean;
+  display_order?: number;
+  [key: string]: any; // Allow additional properties
 }
 
 interface MenuSelectorProps {
-  title: string
-  options: SelectionOption[]
-  onSelect: (option: SelectionOption) => void
-  onCreateNew: () => void
-  createButtonText: string
+  title: string;
+  options: SelectionOption[];
+  onSelect: (option: SelectionOption) => void;
+  onCreateNew: () => void;
+  createButtonText: string;
 }
 
 export function MenuSelector({
@@ -28,9 +35,9 @@ export function MenuSelector({
   options,
   onSelect,
   onCreateNew,
-  createButtonText
+  createButtonText,
 }: MenuSelectorProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -48,22 +55,26 @@ export function MenuSelector({
                 <div
                   key={option.id}
                   onClick={() => {
-                    onSelect(option)
-                    setIsOpen(false)
+                    onSelect(option);
+                    setIsOpen(false);
                   }}
                   className="flex items-center justify-between p-3 rounded-lg border cursor-pointer hover:bg-accent"
                 >
                   <div>
                     <h4 className="font-medium">{option.name}</h4>
                     {option.description && (
-                      <p className="text-sm text-muted-foreground">{option.description}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {option.description}
+                      </p>
                     )}
                   </div>
                 </div>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-6">
-                <p className="text-sm text-muted-foreground mb-4">No items available</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  No items available
+                </p>
                 <Button onClick={onCreateNew}>
                   <Plus className="mr-2 h-4 w-4" />
                   {createButtonText}
@@ -83,5 +94,5 @@ export function MenuSelector({
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

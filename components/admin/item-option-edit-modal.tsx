@@ -1,29 +1,53 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { toast } from "@/components/ui/use-toast"
-import { createItemOption, updateItemOption } from "@/actions/item-option-actions"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import type { MenuItem, Restaurant } from "@prisma/client" // Keep base types if needed elsewhere
-import type { ItemOptionEditModalProps } from "@/types/menu-builder-types" // Import shared props type
-import { useForm, useFieldArray } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { itemOptionSchema, type ItemOptionFormValues } from "@/schemas/item-option-schema"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Trash2, Plus } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
+import { useFieldArray, useForm } from "react-hook-form";
 
+import {
+  createItemOption,
+  updateItemOption,
+} from "@/actions/item-option-actions";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "@/components/ui/use-toast";
+import {
+  type ItemOptionFormValues,
+  itemOptionSchema,
+} from "@/schemas/item-option-schema";
+import type { ItemOptionEditModalProps } from "@/types/menu-builder-types"; // Import shared props type
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { MenuItem, Restaurant } from "@prisma/client"; // Keep base types if needed elsewhere
 
 // Convert string/number to valid number
 const toValidNumber = (value: string | number | null | undefined): number => {
-  if (value === null || value === undefined || value === "") return 0
-  return typeof value === "number" ? value : Number(value)
-}
+  if (value === null || value === undefined || value === "") return 0;
+  return typeof value === "number" ? value : Number(value);
+};
 
 export function ItemOptionEditModal({
   itemOption,
@@ -31,42 +55,45 @@ export function ItemOptionEditModal({
   open,
   onOpenChange,
   mode = "edit",
-}: ItemOptionEditModalProps) { // Using imported props type
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null)
-  const [filteredMenuItems, setFilteredMenuItems] = useState<(MenuItem & { restaurant: Restaurant })[]>(menuItems)
+}: ItemOptionEditModalProps) {
+  // Using imported props type
+  const [isLoading, setIsLoading] = useState(false);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
+    number | null
+  >(null);
+  const [filteredMenuItems, setFilteredMenuItems] =
+    useState<(MenuItem & { restaurant: Restaurant })[]>(menuItems);
 
-  const isCreating = mode === "create"
-  const title = isCreating ? "Add Item Option" : "Edit Item Option"
-  const buttonText = isCreating ? "Create" : "Save changes"
+  const isCreating = mode === "create";
+  const title = isCreating ? "Add Item Option" : "Edit Item Option";
+  const buttonText = isCreating ? "Create" : "Save changes";
 
   // Extract unique restaurants from menu items
   useEffect(() => {
     if (menuItems && menuItems.length > 0) {
       // Create a map to store unique restaurants by ID
-      const restaurantMap = new Map<number, Restaurant>()
+      const restaurantMap = new Map<number, Restaurant>();
 
       // Populate the map with restaurants from menu items
       menuItems.forEach((item) => {
         if (item.restaurant && !restaurantMap.has(item.restaurant.id)) {
-          restaurantMap.set(item.restaurant.id, item.restaurant)
+          restaurantMap.set(item.restaurant.id, item.restaurant);
         }
-      })
+      });
 
       // Convert the map values to an array
-      const uniqueRestaurants = Array.from(restaurantMap.values())
-      setRestaurants(uniqueRestaurants)
+      const uniqueRestaurants = Array.from(restaurantMap.values());
+      setRestaurants(uniqueRestaurants);
     } else {
-      setRestaurants([])
+      setRestaurants([]);
     }
-  }, [menuItems])
+  }, [menuItems]);
 
   const newOptionChoice = {
     name: "",
     priceAdjustment: 0,
-  }
+  };
 
   const form = useForm<ItemOptionFormValues>({
     resolver: zodResolver(itemOptionSchema),
@@ -76,12 +103,12 @@ export function ItemOptionEditModal({
       menuItemId: 0,
       optionChoices: [newOptionChoice],
     },
-  })
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "optionChoices",
-  })
+  });
 
   // Update form data when itemOption changes
   useEffect(() => {
@@ -97,54 +124,62 @@ export function ItemOptionEditModal({
               priceAdjustment: toValidNumber(choice.priceAdjustment),
             }))
           : [],
-      })
+      });
 
       // Set selected restaurant
-      const menuItem = menuItems.find((item) => item.id === itemOption.menuItemId)
+      const menuItem = menuItems.find(
+        (item) => item.id === itemOption.menuItemId
+      );
       if (menuItem && menuItem.restaurant) {
-        setSelectedRestaurantId(menuItem.restaurantId)
+        setSelectedRestaurantId(menuItem.restaurantId);
       }
     } else if (mode === "create") {
-      const defaultRestaurantId = restaurants[0]?.id || null
-      setSelectedRestaurantId(defaultRestaurantId)
+      const defaultRestaurantId = restaurants[0]?.id || null;
+      setSelectedRestaurantId(defaultRestaurantId);
 
       const defaultMenuItem = defaultRestaurantId
         ? menuItems.find((item) => item.restaurantId === defaultRestaurantId)
-        : null
+        : null;
 
       form.reset({
         name: "",
         isRequired: false,
         menuItemId: defaultMenuItem?.id || 0,
         optionChoices: [newOptionChoice],
-      })
+      });
     }
-  }, [itemOption, mode, form, menuItems, restaurants])
+  }, [itemOption, mode, form, menuItems, restaurants]);
 
   // Filter menu items based on selected restaurant
   useEffect(() => {
     if (selectedRestaurantId && menuItems.length > 0) {
-      setFilteredMenuItems(menuItems.filter((item) => item.restaurantId === selectedRestaurantId))
+      setFilteredMenuItems(
+        menuItems.filter((item) => item.restaurantId === selectedRestaurantId)
+      );
     } else {
-      setFilteredMenuItems(menuItems)
+      setFilteredMenuItems(menuItems);
     }
-  }, [selectedRestaurantId, menuItems])
+  }, [selectedRestaurantId, menuItems]);
 
   const onSubmit = async (data: ItemOptionFormValues) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Validate that we have at least one option choice with a name
-      if (!data.optionChoices || data.optionChoices.length === 0 || !data.optionChoices[0].name) {
+      if (
+        !data.optionChoices ||
+        data.optionChoices.length === 0 ||
+        !data.optionChoices[0].name
+      ) {
         toast({
           variant: "destructive",
           title: "Error",
           description: "At least one option choice with a name is required",
-        })
-        setIsLoading(false)
-        return
+        });
+        setIsLoading(false);
+        return;
       }
 
-      let result
+      let result;
 
       if (isCreating) {
         result = await createItemOption({
@@ -153,7 +188,7 @@ export function ItemOptionEditModal({
             ...choice,
             priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
           })),
-        })
+        });
       } else if (itemOption) {
         result = await updateItemOption(itemOption.id, {
           ...data,
@@ -161,7 +196,7 @@ export function ItemOptionEditModal({
             ...choice,
             priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
           })),
-        })
+        });
       }
 
       if (result?.success) {
@@ -170,41 +205,48 @@ export function ItemOptionEditModal({
           description: isCreating
             ? "The item option has been created successfully."
             : "The item option has been updated successfully.",
-        })
-        onOpenChange(true) // Close modal and refresh data
+        });
+        onOpenChange(true); // Close modal and refresh data
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: result?.error || (isCreating ? "Failed to create item option" : "Failed to update item option"),
-        })
+          description:
+            result?.error ||
+            (isCreating
+              ? "Failed to create item option"
+              : "Failed to update item option"),
+        });
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "An unexpected error occurred",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Handle restaurant change
   const handleRestaurantChange = (restaurantId: number) => {
-    setSelectedRestaurantId(restaurantId)
+    setSelectedRestaurantId(restaurantId);
 
     // Reset menu item if it doesn't belong to the selected restaurant
-    const currentMenuItemId = form.getValues("menuItemId")
+    const currentMenuItemId = form.getValues("menuItemId");
     const menuItemBelongsToRestaurant = menuItems.some(
-      (item) => item.id === currentMenuItemId && item.restaurantId === restaurantId,
-    )
+      (item) =>
+        item.id === currentMenuItemId && item.restaurantId === restaurantId
+    );
 
     if (!menuItemBelongsToRestaurant) {
-      const firstMenuItemForRestaurant = menuItems.find((item) => item.restaurantId === restaurantId)
-      form.setValue("menuItemId", firstMenuItemForRestaurant?.id || 0)
+      const firstMenuItemForRestaurant = menuItems.find(
+        (item) => item.restaurantId === restaurantId
+      );
+      form.setValue("menuItemId", firstMenuItemForRestaurant?.id || 0);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onOpenChange(false)}>
@@ -223,7 +265,11 @@ export function ItemOptionEditModal({
                     <FormItem>
                       <FormLabel>Option Name</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Option name" disabled={isLoading} />
+                        <Input
+                          {...field}
+                          placeholder="Option name"
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -236,7 +282,11 @@ export function ItemOptionEditModal({
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-end space-x-2 space-y-0 rounded-md p-4">
                       <FormControl>
-                        <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={isLoading}
+                        />
                       </FormControl>
                       <FormLabel className="cursor-pointer">Required</FormLabel>
                     </FormItem>
@@ -249,7 +299,9 @@ export function ItemOptionEditModal({
                   <FormLabel>Restaurant</FormLabel>
                   <Select
                     value={selectedRestaurantId?.toString() || ""}
-                    onValueChange={(value) => handleRestaurantChange(Number.parseInt(value))}
+                    onValueChange={(value) =>
+                      handleRestaurantChange(Number.parseInt(value))
+                    }
                     disabled={isLoading}
                   >
                     <SelectTrigger>
@@ -258,12 +310,17 @@ export function ItemOptionEditModal({
                     <SelectContent>
                       {restaurants.length > 0 ? (
                         restaurants.map((restaurant) => (
-                          <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
+                          <SelectItem
+                            key={restaurant.id}
+                            value={restaurant.id.toString()}
+                          >
                             {restaurant.name}
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="no-restaurants">No restaurants available</SelectItem>
+                        <SelectItem value="no-restaurants">
+                          No restaurants available
+                        </SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -277,14 +334,18 @@ export function ItemOptionEditModal({
                       <FormLabel>Menu Item</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                        onValueChange={(value) =>
+                          field.onChange(Number.parseInt(value))
+                        }
                         disabled={isLoading || filteredMenuItems.length === 0}
                       >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue
                               placeholder={
-                                filteredMenuItems.length === 0 ? "No menu items available" : "Select a menu item"
+                                filteredMenuItems.length === 0
+                                  ? "No menu items available"
+                                  : "Select a menu item"
                               }
                             />
                           </SelectTrigger>
@@ -292,12 +353,17 @@ export function ItemOptionEditModal({
                         <SelectContent>
                           {filteredMenuItems.length > 0 ? (
                             filteredMenuItems.map((item) => (
-                              <SelectItem key={item.id} value={item.id.toString()}>
+                              <SelectItem
+                                key={item.id}
+                                value={item.id.toString()}
+                              >
                                 {item.name}
                               </SelectItem>
                             ))
                           ) : (
-                            <SelectItem value="no-menu-items">No menu items available</SelectItem>
+                            <SelectItem value="no-menu-items">
+                              No menu items available
+                            </SelectItem>
                           )}
                         </SelectContent>
                       </Select>
@@ -324,7 +390,10 @@ export function ItemOptionEditModal({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {fields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end border-b pb-4">
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end border-b pb-4"
+                    >
                       <div className="md:col-span-7">
                         <FormField
                           control={form.control}
@@ -333,7 +402,11 @@ export function ItemOptionEditModal({
                             <FormItem>
                               <FormLabel>Choice Name</FormLabel>
                               <FormControl>
-                                <Input {...field} placeholder="Choice name" disabled={isLoading} />
+                                <Input
+                                  {...field}
+                                  placeholder="Choice name"
+                                  disabled={isLoading}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -354,8 +427,12 @@ export function ItemOptionEditModal({
                                   min="0"
                                   {...field}
                                   onChange={(e) => {
-                                    const value = e.target.value
-                                    field.onChange(value === "" ? 0 : Number.parseFloat(value))
+                                    const value = e.target.value;
+                                    field.onChange(
+                                      value === ""
+                                        ? 0
+                                        : Number.parseFloat(value)
+                                    );
                                   }}
                                   disabled={isLoading}
                                 />
@@ -389,7 +466,12 @@ export function ItemOptionEditModal({
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
@@ -400,6 +482,5 @@ export function ItemOptionEditModal({
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

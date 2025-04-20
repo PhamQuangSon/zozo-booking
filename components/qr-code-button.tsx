@@ -1,8 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { QrCode } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { QrCode } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,19 +11,25 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface QrCodeButtonProps {
-  restaurantId: string
+  restaurantId: string;
 }
 
 export function QrCodeButton({ restaurantId }: QrCodeButtonProps) {
-  const [tableNumber, setTableNumber] = useState<string>("")
+  const [tableNumber, setTableNumber] = useState<string>("");
 
   // In a real app, this would generate a QR code for the specific table
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://example.com/table/${restaurantId}/${tableNumber}`)}`
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://example.com/table/${restaurantId}/${tableNumber}`)}`;
 
   return (
     <Dialog>
@@ -35,7 +42,9 @@ export function QrCodeButton({ restaurantId }: QrCodeButtonProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Table QR Code</DialogTitle>
-          <DialogDescription>Scan this QR code to place an order from your table.</DialogDescription>
+          <DialogDescription>
+            Scan this QR code to place an order from your table.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -65,12 +74,13 @@ export function QrCodeButton({ restaurantId }: QrCodeButtonProps) {
                   height={200}
                 />
               </div>
-              <p className="text-sm text-muted-foreground">Table {tableNumber}</p>
+              <p className="text-sm text-muted-foreground">
+                Table {tableNumber}
+              </p>
             </div>
           )}
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

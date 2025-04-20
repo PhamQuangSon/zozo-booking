@@ -1,13 +1,10 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { updateOrderItemStatus } from "@/actions/order-actions";
+import { useReceiptPrinter } from "@/components/receipt-printer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,54 +14,59 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { updateOrderItemStatus } from "@/actions/order-actions"
-import { OrderStatus } from "@prisma/client"
-import { useRouter } from "next/navigation"
-import { useReceiptPrinter } from "@/components/receipt-printer"
-import { OrderWithRelations } from "@/types/menu-builder-types"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import type { OrderWithRelations } from "@/types/menu-builder-types";
+import type { OrderStatus } from "@prisma/client";
+
 interface OrderActionsProps {
-  order: OrderWithRelations
+  order: OrderWithRelations;
 }
 
 export function OrderActions({ order }: OrderActionsProps) {
-  const router = useRouter()
-  const [showStatusDialog, setShowStatusDialog] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const { printReceipt } = useReceiptPrinter()
+  const router = useRouter();
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { printReceipt } = useReceiptPrinter();
 
   // Status options based on current status
   const getAvailableStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
     switch (currentStatus) {
       case "NEW":
-        return ["PREPARING", "CANCELLED"]
+        return ["PREPARING", "CANCELLED"];
       case "PREPARING":
-        return ["COMPLETED", "CANCELLED"]
+        return ["COMPLETED", "CANCELLED"];
       case "COMPLETED":
-        return []
+        return [];
       case "CANCELLED":
-        return []
+        return [];
       default:
-        return []
+        return [];
     }
-  }
+  };
 
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     try {
-      setLoading(true)
-      const result = await updateOrderItemStatus(order.id, newStatus)
+      setLoading(true);
+      const result = await updateOrderItemStatus(order.id, newStatus);
       if (result.success) {
-        router.refresh()
+        router.refresh();
       }
     } finally {
-      setLoading(false)
-      setShowStatusDialog(false)
+      setLoading(false);
+      setShowStatusDialog(false);
     }
-  }
+  };
 
   const handlePrintReceipt = () => {
-    printReceipt(order)
-  }
+    printReceipt(order);
+  };
 
   return (
     <div className="flex justify-end gap-2 pt-2">
@@ -95,7 +97,8 @@ export function OrderActions({ order }: OrderActionsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Order Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update this order status? This action cannot be undone.
+              Are you sure you want to update this order status? This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -113,5 +116,5 @@ export function OrderActions({ order }: OrderActionsProps) {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

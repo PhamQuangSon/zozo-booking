@@ -1,23 +1,25 @@
-"use server"
+"use server";
 
-import prisma from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
+import { revalidatePath } from "next/cache";
+
+import prisma from "@/lib/prisma";
 
 // Menu Item actions
 export async function deleteMenuItem(id: number) {
   try {
     await prisma.menuItem.delete({
       where: { id },
-    })
+    });
 
-    revalidatePath("/admin/menu-items")
-    return { success: true }
+    revalidatePath("/admin/menu-items");
+    return { success: true };
   } catch (error) {
-    console.error("Failed to delete menu item:", error)
+    console.error("Failed to delete menu item:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete menu item",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to delete menu item",
+    };
   }
 }
 
@@ -26,16 +28,16 @@ export async function deleteItemOption(id: number) {
   try {
     await prisma.menuItemOption.delete({
       where: { id },
-    })
+    });
 
-    revalidatePath("/admin/item-options")
-    return { success: true }
+    revalidatePath("/admin/item-options");
+    return { success: true };
   } catch (error) {
-    console.error("Failed to delete item option:", error)
+    console.error("Failed to delete item option:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete item option",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to delete item option",
+    };
   }
 }
-

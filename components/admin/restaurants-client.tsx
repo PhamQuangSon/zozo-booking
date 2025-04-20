@@ -1,33 +1,42 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { DataTable, type ColumnDef } from "@/components/admin/data-table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { PlusCircle } from "lucide-react"
-import { deleteRestaurant, Restaurant } from "@/actions/restaurant-actions"
-import { RestaurantEditModal } from "@/components/admin//restaurant-edit-modal"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { PlusCircle } from "lucide-react";
+
+import type { Restaurant } from "@/actions/restaurant-actions";
+import { deleteRestaurant } from "@/actions/restaurant-actions";
+import { RestaurantEditModal } from "@/components/admin//restaurant-edit-modal";
+import { type ColumnDef, DataTable } from "@/components/admin/data-table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface RestaurantsClientProps {
-  restaurants: Restaurant[]
+  restaurants: Restaurant[];
 }
 
-export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) {
-  const router = useRouter()
+export function RestaurantsClient({
+  restaurants = [],
+}: RestaurantsClientProps) {
+  const router = useRouter();
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Filter categories based on search query
   const filteredRestaurants = restaurants.filter(
     (restaurant) =>
       restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (restaurant.description && restaurant.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (restaurant.address && restaurant.address.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+      (restaurant.description &&
+        restaurant.description
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())) ||
+      (restaurant.address &&
+        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const columns: ColumnDef<Restaurant>[] = [
     {
@@ -43,7 +52,12 @@ export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) 
       cell: (value) =>
         value ? (
           <div className="relative w-12 h-12">
-            <Image src={value || "/placeholder.svg"} alt="Menu item" fill className="object-cover rounded-md" />
+            <Image
+              src={value || "/placeholder.svg"}
+              alt="Menu item"
+              fill
+              className="object-cover rounded-md"
+            />
           </div>
         ) : (
           <div className="text-gray-400">No image</div>
@@ -68,25 +82,25 @@ export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) 
       accessorKey: "email",
       sortable: true,
     },
-  ]
+  ];
 
-  const handleAddRestaurant= () => {
-    setSelectedRestaurant(null)
-    setIsModalOpen(true)
-  }
+  const handleAddRestaurant = () => {
+    setSelectedRestaurant(null);
+    setIsModalOpen(true);
+  };
 
-  const handleEditRestaurant= (restaurant: Restaurant) => {
-    setSelectedRestaurant(restaurant)
-    setIsModalOpen(true)
-  }
+  const handleEditRestaurant = (restaurant: Restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setIsModalOpen(true);
+  };
 
   // Handle modal close with refresh
   const handleModalClose = (refresh: boolean) => {
-    setIsModalOpen(false)
+    setIsModalOpen(false);
     if (refresh) {
-      router.refresh()
+      router.refresh();
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -103,7 +117,12 @@ export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) 
         </Button>
       </div>
 
-      <DataTable data={filteredRestaurants} columns={columns} deleteAction={deleteRestaurant} onEdit={handleEditRestaurant} />
+      <DataTable
+        data={filteredRestaurants}
+        columns={columns}
+        deleteAction={deleteRestaurant}
+        onEdit={handleEditRestaurant}
+      />
 
       <RestaurantEditModal
         open={isModalOpen}
@@ -112,6 +131,5 @@ export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) 
         mode={selectedRestaurant ? "edit" : "create"}
       />
     </div>
-  )
+  );
 }
-

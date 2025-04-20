@@ -1,5 +1,5 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 // Mock data - in a real app, this would come from the database
 const recentOrders = [
@@ -43,7 +43,7 @@ const recentOrders = [
     status: "preparing",
     time: "20 minutes ago",
   },
-]
+];
 
 export function RecentOrders() {
   return (
@@ -60,21 +60,28 @@ export function RecentOrders() {
           </Avatar>
           <div className="ml-4 space-y-1">
             <p className="text-sm font-medium leading-none">{order.customer}</p>
-            <p className="text-sm text-muted-foreground">{order.items.join(", ")}</p>
+            <p className="text-sm text-muted-foreground">
+              {order.items.join(", ")}
+            </p>
           </div>
           <div className="ml-auto text-right">
             <Badge
               variant={
-                order.status === "completed" ? "default" : order.status === "preparing" ? "outline" : "secondary"
+                order.status === "completed"
+                  ? "default"
+                  : order.status === "preparing"
+                    ? "outline"
+                    : "secondary"
               }
             >
               {order.status}
             </Badge>
-            <p className="text-sm text-muted-foreground">${order.total.toFixed(2)}</p>
+            <p className="text-sm text-muted-foreground">
+              ${order.total.toFixed(2)}
+            </p>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }
-

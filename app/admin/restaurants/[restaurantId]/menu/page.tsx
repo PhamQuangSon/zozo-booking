@@ -1,19 +1,22 @@
-import { getCachedRestaurantById } from "@/lib/restaurant-cache"
-import { notFound } from "next/navigation"
-import { RestaurantMenuClient } from "@/components/admin/restaurant-menu-client"
-import { getRestaurantById } from "@/actions/restaurant-actions"
-import { use } from "react"
-import { PageProps } from "@/types/page-props"
+import { notFound } from "next/navigation";
+
+import { RestaurantMenuClient } from "@/components/admin/restaurant-menu-client";
+import { getCachedRestaurantById } from "@/lib/restaurant-cache";
+import type { PageProps } from "@/types/page-props";
 
 export default async function RestaurantMenuPage({ params }: PageProps) {
-  const { restaurantId } = params
+  const { restaurantId } = params;
 
   // Use the cached version of getRestaurantById
-  const { success, data: restaurant, error } = await getCachedRestaurantById(restaurantId)
+  const {
+    success,
+    data: restaurant,
+    error,
+  } = await getCachedRestaurantById(restaurantId);
   // const { data: restaurant, success, error } = await getRestaurantById(restaurantId)
 
   if (!success || !restaurant) {
-    notFound()
+    notFound();
   }
 
   return (
@@ -24,23 +27,24 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
         restaurantId={restaurantId}
         allMenuItems={restaurant.categories?.flatMap((c) => c.items) || []}
         allItemOptions={
-          restaurant.categories?.flatMap((c) =>
-            c.items?.flatMap((i) =>
-              i.menuItemOptions.map(option => ({
-                ...option,
-                // Convert Decimal price to number
-                priceAdjustment: Number(option.priceAdjustment),
-                // Convert Decimal priceAdjustment in choices to number
-                optionChoices: option.optionChoices.map(choice => ({
-                  ...choice,
-                  priceAdjustment: Number(choice.priceAdjustment) // Convert Decimal to number
-                }))
-              })) || []
-            ) || []
+          restaurant.categories?.flatMap(
+            (c) =>
+              c.items?.flatMap(
+                (i) =>
+                  i.menuItemOptions.map((option) => ({
+                    ...option,
+                    // Convert Decimal price to number
+                    priceAdjustment: Number(option.priceAdjustment),
+                    // Convert Decimal priceAdjustment in choices to number
+                    optionChoices: option.optionChoices.map((choice) => ({
+                      ...choice,
+                      priceAdjustment: Number(choice.priceAdjustment), // Convert Decimal to number
+                    })),
+                  })) || []
+              ) || []
           ) || []
         }
       />
     </div>
-  )
+  );
 }
-

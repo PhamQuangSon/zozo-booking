@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react";
 
 interface ScrollingBannerProps {
-  text?: string
-  speed?: number
-  className?: string
-  repeat?: number
+  text?: string;
+  speed?: number;
+  className?: string;
+  repeat?: number;
 }
 
 export function ScrollingBanner({
@@ -15,28 +15,31 @@ export function ScrollingBanner({
   className = "",
   repeat = 10,
 }: ScrollingBannerProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [containerWidth, setContainerWidth] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
     if (containerRef.current) {
-      setContainerWidth(containerRef.current.offsetWidth)
+      setContainerWidth(containerRef.current.offsetWidth);
     }
 
     const handleResize = () => {
       if (containerRef.current) {
-        setContainerWidth(containerRef.current.offsetWidth)
+        setContainerWidth(containerRef.current.offsetWidth);
       }
-    }
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  const animationDuration = containerWidth / speed
+  const animationDuration = containerWidth / speed;
 
   return (
-    <div ref={containerRef} className={`hidden md:block bg-gray-100 py-4 overflow-hidden whitespace-nowrap ${className}`}>
+    <div
+      ref={containerRef}
+      className={`hidden md:block bg-gray-100 py-4 overflow-hidden whitespace-nowrap ${className}`}
+    >
       <div
         className="inline-block"
         style={{
@@ -52,6 +55,5 @@ export function ScrollingBanner({
           ))}
       </div>
     </div>
-  )
+  );
 }
-

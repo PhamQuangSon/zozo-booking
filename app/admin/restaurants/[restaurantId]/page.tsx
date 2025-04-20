@@ -1,25 +1,36 @@
-import { notFound } from "next/navigation"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import Image from "next/image"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Edit, Plus } from "lucide-react"
-import { tableStatusColors } from "@/types/status-colors"
-import { getCachedRestaurantById } from "@/lib/restaurant-cache"
-import { PageProps } from "@/types/page-props"
-import { MenuItem } from "@/components/menu-item"
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Edit, Plus } from "lucide-react";
+
+import { MenuItem } from "@/components/menu-item";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { getCachedRestaurantById } from "@/lib/restaurant-cache";
+import type { PageProps } from "@/types/page-props";
+import { tableStatusColors } from "@/types/status-colors";
 
 export default async function RestaurantDetailPage({ params }: PageProps) {
-  const { restaurantId } = params
+  const { restaurantId } = params;
   // Fetch restaurant details
-  const { success, data: restaurant, error } = await getCachedRestaurantById(restaurantId)
+  const {
+    success,
+    data: restaurant,
+    error,
+  } = await getCachedRestaurantById(restaurantId);
 
   if (!success || !restaurant) {
-    notFound()
+    notFound();
   }
 
-  const tables = restaurant.tables ? restaurant.tables : []
+  const tables = restaurant.tables ? restaurant.tables : [];
 
   return (
     <div className="flex min-h-screen">

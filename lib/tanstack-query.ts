@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query"
+import { QueryClient } from "@tanstack/react-query";
 
 // Create a client
 export const queryClient = new QueryClient({
@@ -8,4 +8,4 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
-})
+});

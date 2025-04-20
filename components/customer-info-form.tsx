@@ -1,50 +1,50 @@
-"use client"
+"use client";
 
-import type React from "react"
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useSession } from "next-auth/react"
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CustomerInfoFormProps {
-  onSubmit: (name: string, email: string) => void
+  onSubmit: () => void;
 }
 
 export function CustomerInfoForm({ onSubmit }: CustomerInfoFormProps) {
-  const { data: session } = useSession()
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
+  const { data: session } = useSession();
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   // Load saved customer info from localStorage
   useEffect(() => {
     if (!session) {
-      const savedName = localStorage.getItem("customerName")
-      const savedEmail = localStorage.getItem("customerEmail")
-      if (savedName) setName(savedName)
-      if (savedEmail) setEmail(savedEmail)
+      const savedName = localStorage.getItem("customerName");
+      const savedEmail = localStorage.getItem("customerEmail");
+      if (savedName) setName(savedName);
+      if (savedEmail) setEmail(savedEmail);
     }
-  }, [session])
+  }, [session]);
 
   // If user is logged in, use their info and disable the form
   useEffect(() => {
     if (session?.user) {
-      setName(session.user.name || "")
-      setEmail(session.user.email || "")
+      setName(session.user.name || "");
+      setEmail(session.user.email || "");
     }
-  }, [session])
+  }, [session]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Save to localStorage for future use
-    localStorage.setItem("customerName", name)
-    localStorage.setItem("customerEmail", email)
+    localStorage.setItem("customerName", name);
+    localStorage.setItem("customerEmail", email);
 
-    onSubmit(name, email)
-  }
+    onSubmit();
+  };
 
   return (
     <Card>
@@ -82,5 +82,5 @@ export function CustomerInfoForm({ onSubmit }: CustomerInfoFormProps) {
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

@@ -1,57 +1,71 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { useParams, useRouter } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, ChevronLeft, ShoppingCart } from "lucide-react"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { ScrollingBanner } from "@/components/scrolling-banner"
-import { Card, CardContent } from "@/components/ui/card"
-import { OrderCart } from "@/components/order-cart"
-import { MenuCategory } from "@/components/menu-category"
-import { useCurrencyStore } from "@/store/currency-store"
-import { useCartStore } from "@/store/cartStore"
-import { CustomerInfoForm } from "@/components/customer-info-form"
-import { useSession } from "next-auth/react"
-import { useToast } from "@/hooks/use-toast"
-import Loading from "@/app/loading"
-import { useTableFullData } from "@/hooks/use-restaurant-data"
-import { MenuItemDetail } from "@/components/menu-item-detail"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import React, { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { ArrowRight, ChevronLeft, ShoppingCart } from "lucide-react";
+
+import Loading from "@/app/loading";
+import { CustomerInfoForm } from "@/components/customer-info-form";
+import { MenuCategory } from "@/components/menu-category";
+import { MenuItemDetail } from "@/components/menu-item-detail";
+import { OrderCart } from "@/components/order-cart";
+import { ScrollingBanner } from "@/components/scrolling-banner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useTableFullData } from "@/hooks/use-restaurant-data";
+import { useToast } from "@/hooks/use-toast";
+import { useCartStore } from "@/store/cartStore";
 
 export default function TableOrderPage() {
-  const params = useParams()
-  const router = useRouter()
-  const { data: session } = useSession()
-  const { toast } = useToast()
-  const { currency } = useCurrencyStore()
+  const params = useParams();
+  const { data: session } = useSession();
+  const { toast } = useToast();
 
-  const restaurantId = params.restaurantId as string
-  const tableId = params.tableId as string
+  const restaurantId = params.restaurantId as string;
+  const tableId = params.tableId as string;
 
-  const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false)
-  const [showCustomerForm, setShowCustomerForm] = useState(false)
-  const [activeCategory, setActiveCategory] = useState("all")
-  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null)
-  const [showItemDetail, setShowItemDetail] = useState(false)
+  const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false);
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
+  const [showItemDetail, setShowItemDetail] = useState(false);
 
-  const { syncServerOrders, addToCart } = useCartStore()
+  const { syncServerOrders, addToCart } = useCartStore();
 
   // Fetch table data using TanStack Query
-  const { data: tableData, isLoading, error } = useTableFullData(restaurantId, tableId)
+  const {
+    data: tableData,
+    isLoading,
+    error,
+  } = useTableFullData(restaurantId, tableId);
 
   // Extract data once it's loaded
-  const restaurant = tableData?.restaurant
-  const table = tableData?.table
-  const orders = tableData?.orders
+  const restaurant = tableData?.restaurant;
+  const table = tableData?.table;
+  const orders = tableData?.orders;
 
   // Prepare all menu items for display
   const allItems = React.useMemo(() => {
-    if (!restaurant?.categories) return []
+    if (!restaurant?.categories) return [];
 
-    const items: any[] = []
+    const items: any[] = [];
     restaurant.categories.forEach((category: any) => {
       if (category.items && Array.isArray(category.items)) {
         category.items.forEach((item: any) => {
@@ -59,63 +73,71 @@ export default function TableOrderPage() {
             ...item,
             categoryName: category.name,
             categoryId: category.id,
-          })
-        })
+          });
+        });
       }
-    })
+    });
 
-    return items
-  }, [restaurant])
+    return items;
+  }, [restaurant]);
 
   // Sync server orders with cart state
   useEffect(() => {
     if (orders && Array.isArray(orders) && restaurantId && tableId) {
-      syncServerOrders(restaurantId, tableId, orders)
+      syncServerOrders(restaurantId, tableId, orders);
     }
-  }, [orders, restaurantId, tableId, syncServerOrders])
+  }, [orders, restaurantId, tableId, syncServerOrders]);
 
   // Check if customer info is needed
   useEffect(() => {
     // If user is logged in, we don't need customer info
     if (session?.user) {
-      setCustomerInfoSubmitted(true)
-      return
+      setCustomerInfoSubmitted(true);
+      return;
     }
 
     // Check if customer info is already in localStorage
-    const savedName = localStorage.getItem("customerName")
-    const savedEmail = localStorage.getItem("customerEmail")
+    const savedName = localStorage.getItem("customerName");
+    const savedEmail = localStorage.getItem("customerEmail");
 
     if (savedName && savedEmail) {
-      setCustomerInfoSubmitted(true)
+      setCustomerInfoSubmitted(true);
     } else {
-      setShowCustomerForm(true)
+      setShowCustomerForm(true);
     }
-  }, [session])
+  }, [session]);
 
-  const handleCustomerInfoSubmit = (name: string, email: string) => {
-    setCustomerInfoSubmitted(true)
-    setShowCustomerForm(false)
-  }
+  const handleCustomerInfoSubmit = () => {
+    setCustomerInfoSubmitted(true);
+    setShowCustomerForm(false);
+  };
 
   const handleCategoryChange = (category: string) => {
-    setActiveCategory(category)
-  }
+    setActiveCategory(category);
+  };
 
   // Filter items by category
   const filteredItems =
     activeCategory === "all"
       ? allItems
-      : allItems.filter((item) => item.categoryName?.toLowerCase() === activeCategory.toLowerCase())
+      : allItems.filter(
+          (item) =>
+            item.categoryName?.toLowerCase() === activeCategory.toLowerCase()
+        );
 
   // Handle menu item selection
   const handleMenuItemClick = (item: any) => {
-    setSelectedMenuItem(item)
-    setShowItemDetail(true)
-  }
+    setSelectedMenuItem(item);
+    setShowItemDetail(true);
+  };
 
   // Handle adding item to cart
-  const handleAddToCart = (item: any, options: any, quantity: number, specialInstructions: string) => {
+  const handleAddToCart = (
+    item: any,
+    options: any,
+    quantity: number,
+    specialInstructions: string
+  ) => {
     addToCart({
       id: item.id.toString(),
       name: item.name,
@@ -127,17 +149,17 @@ export default function TableOrderPage() {
       categoryName: item.categoryName,
       specialInstructions: specialInstructions,
       selectedOptions: options,
-    })
+    });
 
-    setShowItemDetail(false)
+    setShowItemDetail(false);
     toast({
       title: "Added to cart",
       description: `${quantity}x ${item.name} added to your order`,
-    })
-  }
+    });
+  };
 
   if (isLoading) {
-    return <Loading />
+    return <Loading />;
   }
 
   if (error || !tableData) {
@@ -145,7 +167,9 @@ export default function TableOrderPage() {
       <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-white to-gray-50">
         <Card className="glass-card border-none shadow-lg">
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Table not found or unavailable</p>
+            <p className="text-center text-muted-foreground">
+              Table not found or unavailable
+            </p>
             <div className="flex justify-center mt-4">
               <Button
                 asChild
@@ -160,7 +184,7 @@ export default function TableOrderPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -178,7 +202,10 @@ export default function TableOrderPage() {
           <div className="flex flex-col md:flex-row gap-6 items-center">
             <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg">
               <Image
-                src={restaurant?.imageUrl || "/placeholder.svg?height=400&width=400"}
+                src={
+                  restaurant?.imageUrl ||
+                  "/placeholder.svg?height=400&width=400"
+                }
                 alt={restaurant?.name ?? "Restaurant Image"}
                 fill
                 className="object-cover animate animate-jump-in animate-duration-1000 animate-delay-300"
@@ -186,8 +213,12 @@ export default function TableOrderPage() {
             </div>
 
             <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold animate animate-fade-up">{restaurant?.name}</h1>
-              <p className="mt-2 text-muted-foreground max-w-md">{restaurant?.description}</p>
+              <h1 className="text-3xl font-bold animate animate-fade-up">
+                {restaurant?.name}
+              </h1>
+              <p className="mt-2 text-muted-foreground max-w-md">
+                {restaurant?.description}
+              </p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800 animate animate-fade-right">
                 <span className="font-medium">Table {table?.number}</span>
               </div>
@@ -207,7 +238,9 @@ export default function TableOrderPage() {
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6 text-center animate animate-fade-up">{restaurant?.name} Menu</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center animate animate-fade-up">
+              {restaurant?.name} Menu
+            </h2>
 
             <MenuCategory
               items={filteredItems}
@@ -230,7 +263,12 @@ export default function TableOrderPage() {
             <MenuItemDetail
               item={selectedMenuItem}
               onAddToCart={(options, quantity, specialInstructions) =>
-                handleAddToCart(selectedMenuItem, options, quantity, specialInstructions)
+                handleAddToCart(
+                  selectedMenuItem,
+                  options,
+                  quantity,
+                  specialInstructions
+                )
               }
             />
           )}
@@ -263,5 +301,5 @@ export default function TableOrderPage() {
         </Sheet>
       </div>
     </main>
-  )
+  );
 }

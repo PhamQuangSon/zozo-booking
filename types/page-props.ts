@@ -1,4 +1,3 @@
 export type PageProps = {
-    params: { restaurantId: string };
-  };
-  
+  params: { restaurantId: string };
+};

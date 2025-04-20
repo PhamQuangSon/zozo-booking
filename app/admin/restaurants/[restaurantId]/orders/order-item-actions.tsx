@@ -1,61 +1,64 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+import { updateOrderItemStatus } from "@/actions/order-actions";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { updateOrderItemStatus } from "@/actions/order-actions"
-import { OrderItemStatus } from "@prisma/client"
-import { useRouter } from "next/navigation"
-import { orderItemStatusColors } from "@/types/status-colors"
+} from "@/components/ui/dropdown-menu";
+import { orderItemStatusColors } from "@/types/status-colors";
+import type { OrderItemStatus } from "@prisma/client";
 
 interface OrderItemActionsProps {
   item: {
-    id: number
-    status: OrderItemStatus
-  }
+    id: number;
+    status: OrderItemStatus;
+  };
 }
 
 export function OrderItemActions({ item }: OrderItemActionsProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   // Available status transitions
-  const getAvailableStatuses = (currentStatus: OrderItemStatus): OrderItemStatus[] => {
+  const getAvailableStatuses = (
+    currentStatus: OrderItemStatus
+  ): OrderItemStatus[] => {
     switch (currentStatus) {
       case "NEW":
-        return ["PREPARING", "CANCELLED"]
+        return ["PREPARING", "CANCELLED"];
       case "PREPARING":
-        return ["READY", "CANCELLED"]
+        return ["READY", "CANCELLED"];
       case "READY":
-        return ["DELIVERED", "CANCELLED"]
+        return ["DELIVERED", "CANCELLED"];
       case "DELIVERED":
-        return ["COMPLETED"]
+        return ["COMPLETED"];
       case "COMPLETED":
-        return []
+        return [];
       case "CANCELLED":
-        return []
+        return [];
       default:
-        return []
+        return [];
     }
-  }
+  };
 
   const handleStatusUpdate = async (newStatus: OrderItemStatus) => {
     try {
-      setLoading(true)
-      const result = await updateOrderItemStatus(item.id, newStatus)
+      setLoading(true);
+      const result = await updateOrderItemStatus(item.id, newStatus);
       if (result.success) {
-        router.refresh()
+        router.refresh();
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -66,7 +69,7 @@ export function OrderItemActions({ item }: OrderItemActionsProps) {
       >
         {item.status.charAt(0) + item.status.slice(1).toLowerCase()}
       </Badge>
-      
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -99,5 +102,5 @@ export function OrderItemActions({ item }: OrderItemActionsProps) {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }

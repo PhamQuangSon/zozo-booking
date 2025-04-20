@@ -1,39 +1,68 @@
-"use client"
+"use client";
 
-import React from "react"
+import React, { useEffect } from "react";
+import {
+  Check,
+  ChevronsUpDown,
+  CircleDollarSign,
+  DollarSign,
+} from "lucide-react";
 
-import { useEffect } from "react"
-import { Check, ChevronsUpDown, DollarSign, CircleDollarSign } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
-import type { Currency } from "@/lib/i18n"
-import { useCurrencyStore } from "@/store/currency-store"
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import type { Currency } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+import { useCurrencyStore } from "@/store/currency-store";
 
 const currencies = [
-  { value: "USD", label: "USD ($)", icon: DollarSign, description: "United States Dollar" },
-  { value: "VND", label: "VND (₫)", icon: CircleDollarSign, description: "Vietnamese Dong" },
-]
+  {
+    value: "USD",
+    label: "USD ($)",
+    icon: DollarSign,
+    description: "United States Dollar",
+  },
+  {
+    value: "VND",
+    label: "VND (₫)",
+    icon: CircleDollarSign,
+    description: "Vietnamese Dong",
+  },
+];
 
 export function CurrencySelector() {
-  const { currency, setCurrency } = useCurrencyStore()
-  const [open, setOpen] = React.useState(false)
+  const { currency, setCurrency } = useCurrencyStore();
+  const [open, setOpen] = React.useState(false);
 
   // Initialize from localStorage if available
   useEffect(() => {
-    const savedCurrency = localStorage.getItem("currency") as Currency | null
+    const savedCurrency = localStorage.getItem("currency") as Currency | null;
     if (savedCurrency && (savedCurrency === "USD" || savedCurrency === "VND")) {
-      setCurrency(savedCurrency)
+      setCurrency(savedCurrency);
     }
-  }, [setCurrency])
+  }, [setCurrency]);
 
-  const selectedCurrency = currencies.find((item) => item.value === currency)
+  const selectedCurrency = currencies.find((item) => item.value === currency);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-[120px] justify-between">
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[120px] justify-between"
+        >
           {selectedCurrency ? (
             <>
               <selectedCurrency.icon className="mr-2 h-4 w-4" />
@@ -55,16 +84,23 @@ export function CurrencySelector() {
                   key={item.value}
                   value={item.value}
                   onSelect={(value) => {
-                    setCurrency(value as Currency)
-                    localStorage.setItem("currency", value)
-                    setOpen(false)
+                    setCurrency(value as Currency);
+                    localStorage.setItem("currency", value);
+                    setOpen(false);
                   }}
                 >
-                  <Check className={cn("mr-2 h-4 w-4", currency === item.value ? "opacity-100" : "opacity-0")} />
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      currency === item.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
                   <item.icon className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
                     <span>{item.label}</span>
-                    <span className="text-xs text-muted-foreground">{item.description}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {item.description}
+                    </span>
                   </div>
                 </CommandItem>
               ))}
@@ -73,6 +109,5 @@ export function CurrencySelector() {
         </Command>
       </PopoverContent>
     </Popover>
-  )
+  );
 }
-

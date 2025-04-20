@@ -1,9 +1,9 @@
-"use server"
+"use server";
 
-import prisma from "@/lib/prisma"
-import { serializePrismaData } from "@/lib/prisma-helpers"
-import { formatCurrency, type Currency } from "@/lib/i18n"
-import { auth } from "@/config/auth"
+import { auth } from "@/config/auth";
+import { type Currency, formatCurrency } from "@/lib/i18n";
+import prisma from "@/lib/prisma";
+import { serializePrismaData } from "@/lib/prisma-helpers";
 
 // Get table details
 export async function getTableDetails(tableId: string) {
@@ -13,18 +13,18 @@ export async function getTableDetails(tableId: string) {
       include: {
         restaurant: true,
       },
-    })
+    });
 
     if (!table) {
-      return { success: false, error: "Table not found" }
+      return { success: false, error: "Table not found" };
     }
 
-    const serializedTable = serializePrismaData(table)
+    const serializedTable = serializePrismaData(table);
 
-    return { success: true, data: serializedTable }
+    return { success: true, data: serializedTable };
   } catch (error) {
-    console.error(`Failed to fetch table with ID ${tableId}:`, error)
-    return { success: false, error: "Failed to load table details" }
+    console.error(`Failed to fetch table with ID ${tableId}:`, error);
+    return { success: false, error: "Failed to load table details" };
   }
 }
 
@@ -38,14 +38,17 @@ export async function getRestaurantTables(restaurantId: string) {
       orderBy: {
         number: "asc",
       },
-    })
+    });
 
-    const serializedTables = serializePrismaData(tables)
+    const serializedTables = serializePrismaData(tables);
 
-    return { success: true, data: serializedTables }
+    return { success: true, data: serializedTables };
   } catch (error) {
-    console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
-    return { success: false, error: "Failed to load tables" }
+    console.error(
+      `Failed to fetch tables for restaurant ${restaurantId}:`,
+      error
+    );
+    return { success: false, error: "Failed to load tables" };
   }
 }
 
@@ -59,24 +62,27 @@ export async function getTablesByRestaurantId(restaurantId: string) {
       orderBy: {
         number: "asc",
       },
-    })
+    });
 
-    const serializedTables = serializePrismaData(tables)
+    const serializedTables = serializePrismaData(tables);
 
-    return { success: true, data: serializedTables }
+    return { success: true, data: serializedTables };
   } catch (error) {
-    console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error)
-    return { success: false, error: "Failed to load tables" }
+    console.error(
+      `Failed to fetch tables for restaurant ${restaurantId}:`,
+      error
+    );
+    return { success: false, error: "Failed to load tables" };
   }
 }
 
 // Create a new table
 export async function createTable(data: {
-  restaurantId: number
-  number: number
-  capacity: number
-  status?: string
-  imageUrl?: string | null
+  restaurantId: number;
+  number: number;
+  capacity: number;
+  status?: string;
+  imageUrl?: string | null;
 }) {
   try {
     // Check if table number already exists for this restaurant
@@ -85,10 +91,13 @@ export async function createTable(data: {
         restaurantId: data.restaurantId,
         number: data.number,
       },
-    })
+    });
 
     if (existingTable) {
-      return { success: false, error: "A table with this number already exists for this restaurant" }
+      return {
+        success: false,
+        error: "A table with this number already exists for this restaurant",
+      };
     }
 
     const table = await prisma.table.create({
@@ -99,12 +108,12 @@ export async function createTable(data: {
         status: (data.status as any) || "AVAILABLE",
         imageUrl: data.imageUrl,
       },
-    })
+    });
 
-    return { success: true, data: serializePrismaData(table) }
+    return { success: true, data: serializePrismaData(table) };
   } catch (error) {
-    console.error("Failed to create table:", error)
-    return { success: false, error: "Failed to create table" }
+    console.error("Failed to create table:", error);
+    return { success: false, error: "Failed to create table" };
   }
 }
 
@@ -112,12 +121,12 @@ export async function createTable(data: {
 export async function updateTable(
   id: number,
   data: {
-    number: number
-    capacity: number
-    status?: string
-    restaurantId: number
-    imageUrl?: string | null
-  },
+    number: number;
+    capacity: number;
+    status?: string;
+    restaurantId: number;
+    imageUrl?: string | null;
+  }
 ) {
   try {
     // Check if table number already exists for this restaurant (excluding this table)
@@ -127,10 +136,13 @@ export async function updateTable(
         number: data.number,
         id: { not: id },
       },
-    })
+    });
 
     if (existingTable) {
-      return { success: false, error: "A table with this number already exists for this restaurant" }
+      return {
+        success: false,
+        error: "A table with this number already exists for this restaurant",
+      };
     }
 
     const table = await prisma.table.update({
@@ -141,12 +153,12 @@ export async function updateTable(
         status: (data.status as any) || "AVAILABLE",
         imageUrl: data.imageUrl,
       },
-    })
+    });
 
-    return { success: true, data: serializePrismaData(table) }
+    return { success: true, data: serializePrismaData(table) };
   } catch (error) {
-    console.error(`Failed to update table with ID ${id}:`, error)
-    return { success: false, error: "Failed to update table" }
+    console.error(`Failed to update table with ID ${id}:`, error);
+    return { success: false, error: "Failed to update table" };
   }
 }
 
@@ -171,12 +183,12 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
           },
         },
       },
-    })
+    });
 
-    return { success: true, data: serializePrismaData(orders) }
+    return { success: true, data: serializePrismaData(orders) };
   } catch (error) {
-    console.error("Failed to fetch orders:", error)
-    return { success: false, error: "Failed to load orders" }
+    console.error("Failed to fetch orders:", error);
+    return { success: false, error: "Failed to load orders" };
   }
 }
 
@@ -185,17 +197,20 @@ export async function deleteTable(id: number) {
   try {
     await prisma.table.delete({
       where: { id },
-    })
+    });
 
-    return { success: true }
+    return { success: true };
   } catch (error) {
-    console.error(`Failed to delete table with ID ${id}:`, error)
-    return { success: false, error: "Failed to delete table" }
+    console.error(`Failed to delete table with ID ${id}:`, error);
+    return { success: false, error: "Failed to delete table" };
   }
 }
 
 // Format menu items with proper currency
-export async function formatTableMenuItems(menuCategories: any[], currency: Currency) {
+export async function formatTableMenuItems(
+  menuCategories: any[],
+  currency: Currency
+) {
   return menuCategories.map((category) => ({
     ...category,
     menu_items: category.menu_items.map((item: any) => ({
@@ -206,30 +221,33 @@ export async function formatTableMenuItems(menuCategories: any[], currency: Curr
         ...option,
         optionChoices: option.optionChoices.map((choice: any) => ({
           ...choice,
-          formattedPriceAdjustment: formatCurrency(choice.priceAdjustment, currency),
+          formattedPriceAdjustment: formatCurrency(
+            choice.priceAdjustment,
+            currency
+          ),
           priceAdjustment: Number(choice.priceAdjustment),
         })),
       })),
     })),
-  }))
+  }));
 }
 
 // Create a table order
 export async function createTableOrder(data: {
-  restaurantId: number
-  tableId: number
-  customerName?: string
-  customerEmail?: string
+  restaurantId: number;
+  tableId: number;
+  customerName?: string;
+  customerEmail?: string;
   items: Array<{
-    menuItemId: number
-    quantity: number
-    notes?: string | undefined
+    menuItemId: number;
+    quantity: number;
+    notes?: string | undefined;
     choices?: Array<{
-      optionId: number
-      choiceId: number
-    }>
-  }>
-  notes?: string
+      optionId: number;
+      choiceId: number;
+    }>;
+  }>;
+  notes?: string;
 }) {
   try {
     // First, verify the table exists and belongs to the restaurant
@@ -238,17 +256,20 @@ export async function createTableOrder(data: {
         id: data.tableId,
         restaurantId: data.restaurantId,
       },
-    })
+    });
 
     if (!table) {
-      return { success: false, error: "Table not found or does not belong to this restaurant" }
+      return {
+        success: false,
+        error: "Table not found or does not belong to this restaurant",
+      };
     }
 
     // Calculate total amount and create the order
-    let totalAmount = 0
+    let totalAmount = 0;
 
     // Get all menu items to calculate prices
-    const menuItemIds = data.items.map((item) => item.menuItemId)
+    const menuItemIds = data.items.map((item) => item.menuItemId);
     const menuItems = await prisma.menuItem.findMany({
       where: { id: { in: menuItemIds } },
       include: {
@@ -258,39 +279,46 @@ export async function createTableOrder(data: {
           },
         },
       },
-    })
+    });
 
     // Calculate total amount
     for (const orderItem of data.items) {
-      const menuItem = menuItems.find((item) => item.id === orderItem.menuItemId)
-      if (!menuItem) continue
+      const menuItem = menuItems.find(
+        (item) => item.id === orderItem.menuItemId
+      );
+      if (!menuItem) continue;
 
-      let itemPrice = Number(menuItem.price)
+      let itemPrice = Number(menuItem.price);
 
       // Add price adjustments for choices if any
       if (orderItem.choices && orderItem.choices.length > 0) {
         for (const choice of orderItem.choices) {
-          const option = menuItem.menuItemOptions.find((opt) => opt.id === choice.optionId)
-          if (!option) continue
+          const option = menuItem.menuItemOptions.find(
+            (opt) => opt.id === choice.optionId
+          );
+          if (!option) continue;
 
-          const selectedChoice = option.optionChoices.find((ch) => ch.id === choice.choiceId)
+          const selectedChoice = option.optionChoices.find(
+            (ch) => ch.id === choice.choiceId
+          );
           if (selectedChoice) {
-            itemPrice += Number(selectedChoice.priceAdjustment)
+            itemPrice += Number(selectedChoice.priceAdjustment);
           }
         }
       }
 
-      totalAmount += itemPrice * orderItem.quantity
+      totalAmount += itemPrice * orderItem.quantity;
     }
 
     // Get current user if authenticated
-    const session = await auth()
-    const userId = session?.user?.id
+    const session = await auth();
+    const userId = session?.user?.id;
 
     // Prepare notes with customer info if provided and user is not authenticated
-    let orderNotes = data.notes || ""
+    let orderNotes = data.notes || "";
     if (!userId && data.customerName && data.customerEmail) {
-      orderNotes = `Customer Info: ${data.customerName} (${data.customerEmail})\n\n${orderNotes}`.trim()
+      orderNotes =
+        `Customer Info: ${data.customerName} (${data.customerEmail})\n\n${orderNotes}`.trim();
     }
 
     // Create the order
@@ -304,7 +332,7 @@ export async function createTableOrder(data: {
         notes: orderNotes,
         orderItems: {
           create: data.items.map((item) => {
-            const menuItem = menuItems.find((mi) => mi.id === item.menuItemId)
+            const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
             return {
               menuItemId: item.menuItemId,
               quantity: item.quantity,
@@ -319,7 +347,7 @@ export async function createTableOrder(data: {
                     })),
                   }
                 : undefined,
-            }
+            };
           }),
         },
       },
@@ -335,20 +363,20 @@ export async function createTableOrder(data: {
           },
         },
       },
-    })
+    });
 
     // Update table status to occupied
     await prisma.table.update({
       where: { id: data.tableId },
       data: { status: "OCCUPIED" },
-    })
+    });
 
-    const serializedOrder = serializePrismaData(order)
+    const serializedOrder = serializePrismaData(order);
 
-    return { success: true, data: serializedOrder }
+    return { success: true, data: serializedOrder };
   } catch (error) {
-    console.error("Failed to create table order:", error)
-    return { success: false, error: "Failed to create order" }
+    console.error("Failed to create table order:", error);
+    return { success: false, error: "Failed to create order" };
   }
 }
 
@@ -358,10 +386,10 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
     // Get table data
     const table = await prisma.table.findUnique({
       where: { id: Number(tableId) },
-    })
+    });
 
     if (!table) {
-      return { success: false, error: "Table not found" }
+      return { success: false, error: "Table not found" };
     }
 
     // Get restaurant with all menu data
@@ -388,10 +416,10 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
           },
         },
       },
-    })
+    });
 
     if (!restaurant) {
-      return { success: false, error: "Restaurant not found" }
+      return { success: false, error: "Restaurant not found" };
     }
 
     // Get active orders for this table
@@ -414,7 +442,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
           },
         },
       },
-    })
+    });
 
     // Return all data in one response
     return {
@@ -424,12 +452,13 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
         restaurant,
         orders,
       }),
-    }
+    };
   } catch (error) {
-    console.error("Failed to fetch table data:", error)
+    console.error("Failed to fetch table data:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to load table data",
-    }
+      error:
+        error instanceof Error ? error.message : "Failed to load table data",
+    };
   }
 }

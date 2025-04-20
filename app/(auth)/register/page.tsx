@@ -1,19 +1,26 @@
-"use client"
-import { useActionState, useLayoutEffect } from "react"
-import { useFormStatus } from "react-dom"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { register } from "@/actions/auth-actions"
-import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ZodErrors } from "@/components/custom/zod-errors"
+"use client";
+import { useActionState, useLayoutEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AlertCircle } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 // Import type
-import type { RegisterState } from "@/actions/auth-actions"
+import type { RegisterState } from "@/actions/auth-actions";
+import { register } from "@/actions/auth-actions";
+import { ZodErrors } from "@/components/custom/zod-errors";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Initial state with proper type
 const initialState: RegisterState = {
@@ -27,36 +34,38 @@ const initialState: RegisterState = {
   },
   message: undefined,
   redirectUrl: undefined,
-}
+};
 
 // Submit button with loading state
 function SubmitButton() {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
 
   return (
     <Button className="w-full" type="submit" disabled={pending}>
       {pending ? "Creating account..." : "Register"}
     </Button>
-  )
+  );
 }
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const [formState, formAction] = useActionState(register, initialState)
+  const router = useRouter();
+  const [formState, formAction] = useActionState(register, initialState);
 
   // Update the useLayoutEffect to handle the redirect to verification page
   useLayoutEffect(() => {
     if (formState?.success && formState?.redirectUrl) {
-      router.push(formState.redirectUrl)
+      router.push(formState.redirectUrl);
     }
-  }, [formState?.success, formState?.redirectUrl, router])
+  }, [formState?.success, formState?.redirectUrl, router]);
 
   return (
     <div className="container flex h-screen items-center justify-center">
       <Card className="mx-auto w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
-          <CardDescription>Enter your details to create a new account</CardDescription>
+          <CardDescription>
+            Enter your details to create a new account
+          </CardDescription>
         </CardHeader>
         <form action={formAction} method="POST">
           <CardContent className="space-y-4">
@@ -69,13 +78,25 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" name="name" type="text" placeholder="John Doe" required />
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="John Doe"
+                required
+              />
               <ZodErrors error={formState?.zodErrors?.name ?? []} />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="your.email@example.com" required />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your.email@example.com"
+                required
+              />
               <ZodErrors error={formState?.zodErrors?.email ?? []} />
             </div>
 
@@ -87,7 +108,12 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+              />
               <ZodErrors error={formState?.zodErrors?.confirmPassword ?? []} />
             </div>
           </CardContent>
@@ -103,5 +129,5 @@ export default function RegisterPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

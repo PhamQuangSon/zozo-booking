@@ -1,44 +1,50 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { DataTable, type ColumnDef } from "@/components/admin/data-table"
-import { deleteCategory } from "@/actions/category-actions"
-import { CategoryEditModal } from "@/components/admin/category-edit-modal"
-import { useRouter } from "next/navigation"
-import type { Category } from "@prisma/client"
-import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import Image from "next/image"
-import { Restaurant } from "@/actions/restaurant-actions"
+import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+
+import { deleteCategory } from "@/actions/category-actions";
+import type { Restaurant } from "@/actions/restaurant-actions";
+import { CategoryEditModal } from "@/components/admin/category-edit-modal";
+import { type ColumnDef, DataTable } from "@/components/admin/data-table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { Category } from "@prisma/client";
 
 // Extended Category type with restaurant relation
 type CategoryWithRestaurant = Category & {
   restaurant: {
-    id: number
-    name: string
-  }
-}
+    id: number;
+    name: string;
+  };
+};
 
 interface CategoriesClientProps {
-  initialCategories: CategoryWithRestaurant[]
-  restaurants: Restaurant[]
+  initialCategories: CategoryWithRestaurant[];
+  restaurants: Restaurant[];
 }
 
-export function CategoriesClient({ initialCategories, restaurants }: CategoriesClientProps) {
-  const router = useRouter()
-  const [categories, setCategories] = useState<CategoryWithRestaurant[]>(initialCategories)
-  const [selectedCategory, setSelectedCategory] = useState<CategoryWithRestaurant | null>(null)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
+export function CategoriesClient({
+  initialCategories,
+  restaurants,
+}: CategoriesClientProps) {
+  const router = useRouter();
+  const [categories, setCategories] =
+    useState<CategoryWithRestaurant[]>(initialCategories);
+  const [selectedCategory, setSelectedCategory] =
+    useState<CategoryWithRestaurant | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Filter categories based on search query
   const filteredCategories = categories.filter(
     (category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      category.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const columns: ColumnDef<Category & { restaurant: { name: string } }>[] = [
     {
@@ -54,7 +60,12 @@ export function CategoriesClient({ initialCategories, restaurants }: CategoriesC
       cell: (value) =>
         value ? (
           <div className="relative w-12 h-12">
-            <Image src={value || "/placeholder.svg"} alt="Menu item" fill className="object-cover rounded-md" />
+            <Image
+              src={value || "/placeholder.svg"}
+              alt="Menu item"
+              fill
+              className="object-cover rounded-md"
+            />
           </div>
         ) : (
           <div className="text-gray-400">No image</div>
@@ -73,28 +84,28 @@ export function CategoriesClient({ initialCategories, restaurants }: CategoriesC
       accessorKey: "displayOrder",
       sortable: true,
     },
-  ]
+  ];
 
   // Handle edit button click
   const handleEdit = (category: CategoryWithRestaurant) => {
-    setSelectedCategory(category)
-    setIsEditModalOpen(true)
-  }
+    setSelectedCategory(category);
+    setIsEditModalOpen(true);
+  };
 
   // Handle add button click
   const handleAdd = () => {
-    setIsAddModalOpen(true)
-  }
+    setIsAddModalOpen(true);
+  };
 
   // Handle modal close with refresh
   const handleModalClose = (refresh: boolean) => {
-    setIsEditModalOpen(false)
-    setIsAddModalOpen(false)
+    setIsEditModalOpen(false);
+    setIsAddModalOpen(false);
 
     if (refresh) {
-      router.refresh()
+      router.refresh();
     }
-  }
+  };
 
   return (
     <>
@@ -113,7 +124,12 @@ export function CategoriesClient({ initialCategories, restaurants }: CategoriesC
         </Button>
       </div>
 
-      <DataTable data={filteredCategories} columns={columns} deleteAction={deleteCategory} onEdit={handleEdit} />
+      <DataTable
+        data={filteredCategories}
+        columns={columns}
+        deleteAction={deleteCategory}
+        onEdit={handleEdit}
+      />
 
       {/* Edit Modal */}
       {selectedCategory && (
@@ -135,6 +151,5 @@ export function CategoriesClient({ initialCategories, restaurants }: CategoriesC
         mode="create"
       />
     </>
-  )
+  );
 }
-

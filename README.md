@@ -25,6 +25,7 @@ Not use: npx prisma db drop --force
 1. Run Migrations: npx prisma migrate dev --name init
 2. Run Seed: node --loader ts-node/esm prisma/seed.ts
 
+... fix eslint: pnpm exec eslint . --ext .js,.jsx,.ts,.tsx --fix
 ```
 📂 restaurant-ordering
 ├── 📂 app

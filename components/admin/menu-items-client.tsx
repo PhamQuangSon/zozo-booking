@@ -1,68 +1,76 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { DataTable, type ColumnDef } from "@/components/admin/data-table"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { PlusCircle } from "lucide-react"
-import { deleteMenuItem } from "@/actions/menu-item-actions"
-import { MenuItemEditModal } from "@/components/admin/menu-item-edit-modal"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { MenuItemWithRelations } from "@/types/menu-builder-types"
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { PlusCircle } from "lucide-react";
+
+import { deleteMenuItem } from "@/actions/menu-item-actions";
+import { type ColumnDef, DataTable } from "@/components/admin/data-table";
+import { MenuItemEditModal } from "@/components/admin/menu-item-edit-modal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { MenuItemWithRelations } from "@/types/menu-builder-types";
 
 type MenuItemWithRelationsClient = MenuItemWithRelations & {
-  formattedPrice: string // Pre-formatted on server
-  categoryName: string // Pre-formatted on server
-  restaurantName: string // Pre-formatted on server
-}
+  formattedPrice: string; // Pre-formatted on server
+  categoryName: string; // Pre-formatted on server
+  restaurantName: string; // Pre-formatted on server
+};
 
 interface MenuItemsClientProps {
-  menuItems: MenuItemWithRelationsClient[]
+  menuItems: MenuItemWithRelationsClient[];
 }
 
 export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
-  const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemWithRelationsClient | null>(null)
-  const [categories, setCategories] = useState<any[]>([])
-  const [restaurants, setRestaurants] = useState<any[]>([])
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedMenuItem, setSelectedMenuItem] =
+    useState<MenuItemWithRelationsClient | null>(null);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [restaurants, setRestaurants] = useState<any[]>([]);
 
   // Fetch categories and restaurants on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Get unique categories and restaurants from menu items
-        const uniqueCategories = new Map()
-        const uniqueRestaurants = new Map()
+        const uniqueCategories = new Map();
+        const uniqueRestaurants = new Map();
 
         menuItems.forEach((item) => {
           if (item.category) {
-            uniqueCategories.set(item.category.id, item.category)
+            uniqueCategories.set(item.category.id, item.category);
           }
           if (item.restaurant) {
-            uniqueRestaurants.set(item.restaurant.id, item.restaurant)
+            uniqueRestaurants.set(item.restaurant.id, item.restaurant);
           }
-        })
+        });
 
-        setCategories(Array.from(uniqueCategories.values()))
-        setRestaurants(Array.from(uniqueRestaurants.values()))
+        setCategories(Array.from(uniqueCategories.values()));
+        setRestaurants(Array.from(uniqueRestaurants.values()));
       } catch (error) {
-        console.error("Error fetching data:", error)
+        console.error("Error fetching data:", error);
       }
-    }
+    };
 
-    fetchData()
-  }, [menuItems])
+    fetchData();
+  }, [menuItems]);
 
   const filteredMenuItems = menuItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.description?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (item.categoryName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (item.restaurantName?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
-  )
+      (item.description?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (item.categoryName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      ) ||
+      (item.restaurantName?.toLowerCase() || "").includes(
+        searchTerm.toLowerCase()
+      )
+  );
 
   const columns: ColumnDef<MenuItemWithRelationsClient>[] = [
     {
@@ -78,7 +86,12 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
       cell: (value) =>
         value ? (
           <div className="relative w-12 h-12">
-            <Image src={value || "/placeholder.svg"} alt="Menu item" fill className="object-cover rounded-md" />
+            <Image
+              src={value || "/placeholder.svg"}
+              alt="Menu item"
+              fill
+              className="object-cover rounded-md"
+            />
           </div>
         ) : (
           <div className="text-gray-400">No image</div>
@@ -110,25 +123,25 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
       cell: (value) => (value ? "Yes" : "No"),
       sortable: true,
     },
-  ]
+  ];
 
   const handleAddMenuItem = () => {
-    setSelectedMenuItem(null)
-    setIsModalOpen(true)
-  }
+    setSelectedMenuItem(null);
+    setIsModalOpen(true);
+  };
 
   const handleEditMenuItem = (menuItem: MenuItemWithRelationsClient) => {
-    setSelectedMenuItem(menuItem)
-    setIsModalOpen(true)
-  }
+    setSelectedMenuItem(menuItem);
+    setIsModalOpen(true);
+  };
 
   // Handle modal close with refresh
   const handleModalClose = (refresh: boolean) => {
-    setIsModalOpen(false)
+    setIsModalOpen(false);
     if (refresh) {
-      router.refresh()
+      router.refresh();
     }
-  }
+  };
 
   return (
     <div className="space-y-4">
@@ -145,7 +158,12 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
         </Button>
       </div>
 
-      <DataTable data={filteredMenuItems} columns={columns} deleteAction={deleteMenuItem} onEdit={handleEditMenuItem} />
+      <DataTable
+        data={filteredMenuItems}
+        columns={columns}
+        deleteAction={deleteMenuItem}
+        onEdit={handleEditMenuItem}
+      />
 
       <MenuItemEditModal
         open={isModalOpen}
@@ -156,6 +174,5 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
         mode={selectedMenuItem ? "edit" : "create"}
       />
     </div>
-  )
+  );
 }
-

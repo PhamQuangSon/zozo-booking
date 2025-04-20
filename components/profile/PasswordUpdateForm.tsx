@@ -1,16 +1,24 @@
 // components/profile/PasswordUpdateForm.tsx
 "use client";
 
-import { useEffect, useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { AlertCircle, Check, Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { type PasswordState, updatePassword } from "@/actions/user-actions";
+import { ZodErrors } from "@/components/custom/zod-errors";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Check, Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { updatePassword, type PasswordState } from "@/actions/user-actions";
-import { ZodErrors } from "@/components/custom/zod-errors";
 
 // Initial state
 const initialPasswordState: PasswordState = {
@@ -42,7 +50,10 @@ function PasswordSubmitButton() {
 }
 
 export function PasswordUpdateForm() {
-  const [passwordState, passwordAction] = useActionState(updatePassword, initialPasswordState);
+  const [passwordState, passwordAction] = useActionState(
+    updatePassword,
+    initialPasswordState
+  );
   const formRef = useRef<HTMLFormElement>(null); // Ref for resetting the form
 
   // Reset password form on success
@@ -57,7 +68,9 @@ export function PasswordUpdateForm() {
     <Card>
       <CardHeader>
         <CardTitle>Change Password</CardTitle>
-        <CardDescription>Update your password to keep your account secure</CardDescription>
+        <CardDescription>
+          Update your password to keep your account secure
+        </CardDescription>
       </CardHeader>
       {/* Use the action prop and add ref */}
       <form action={passwordAction} ref={formRef}>
@@ -66,7 +79,9 @@ export function PasswordUpdateForm() {
           {passwordState.success && passwordState.message && (
             <Alert className="bg-green-50 border-green-200">
               <Check className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-600">{passwordState.message}</AlertDescription>
+              <AlertDescription className="text-green-600">
+                {passwordState.message}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -80,18 +95,37 @@ export function PasswordUpdateForm() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">Current Password</Label>
-              <Input id="currentPassword" name="currentPassword" type="password" required />
-              <ZodErrors error={passwordState?.zodErrors?.currentPassword ?? []} />
+              <Input
+                id="currentPassword"
+                name="currentPassword"
+                type="password"
+                required
+              />
+              <ZodErrors
+                error={passwordState?.zodErrors?.currentPassword ?? []}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
-              <Input id="newPassword" name="newPassword" type="password" required />
+              <Input
+                id="newPassword"
+                name="newPassword"
+                type="password"
+                required
+              />
               <ZodErrors error={passwordState?.zodErrors?.newPassword ?? []} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input id="confirmPassword" name="confirmPassword" type="password" required />
-              <ZodErrors error={passwordState?.zodErrors?.confirmPassword ?? []} />
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+              />
+              <ZodErrors
+                error={passwordState?.zodErrors?.confirmPassword ?? []}
+              />
             </div>
           </div>
         </CardContent>

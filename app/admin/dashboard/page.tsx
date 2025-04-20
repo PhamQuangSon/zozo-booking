@@ -1,27 +1,33 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RecentOrders } from "@/components/recent-orders"
-import { Overview } from "@/components/overview"
-import { DashboardCards } from "@/components/dashboard-cards"
-import prisma from "@/lib/prisma"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { Store } from "lucide-react"
+import Link from "next/link";
+import { Store } from "lucide-react";
+
+import { DashboardCards } from "@/components/dashboard-cards";
+import { Overview } from "@/components/overview";
+import { RecentOrders } from "@/components/recent-orders";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 // Define the type for dashboard data
 type DashboardData = {
-  revenue: number
-  orders: number
-  activeTables: number
-  popularItem: string
-}
+  revenue: number;
+  orders: number;
+  activeTables: number;
+  popularItem: string;
+};
 
 type Restaurant = {
-  id: number
-  name: string
-  description: string
-  image_url: string
-}
+  id: number;
+  name: string;
+  description: string;
+  image_url: string;
+};
 
 // Mock data for fallback
 const mockRestaurants = [
@@ -43,17 +49,17 @@ const mockRestaurants = [
     description: "Fresh and creative sushi rolls",
     image_url: "/placeholder.svg?height=100&width=100",
   },
-]
+];
 
 export default async function DashboardPage() {
   // Use try/catch to handle any errors during data fetching
-  let dashboardData: DashboardData = {
+  const dashboardData: DashboardData = {
     revenue: 0,
     orders: 0,
     activeTables: 0,
     popularItem: "None",
-  }
-  let recentRestaurants: Restaurant[] = mockRestaurants;
+  };
+  const recentRestaurants: Restaurant[] = mockRestaurants;
 
   return (
     <div className="flex-1">
@@ -85,7 +91,9 @@ export default async function DashboardPage() {
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>You have received 12 orders today</CardDescription>
+                <CardDescription>
+                  You have received 12 orders today
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RecentOrders />
@@ -96,7 +104,9 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Your Restaurants</CardTitle>
-              <CardDescription>Quick access to your restaurants</CardDescription>
+              <CardDescription>
+                Quick access to your restaurants
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
@@ -110,7 +120,9 @@ export default async function DashboardPage() {
                           {restaurant.description || "No description available"}
                         </p>
                         <Button asChild className="mt-2 w-full">
-                          <Link href={`/admin/restaurants/${restaurant.id}`}>Manage</Link>
+                          <Link href={`/admin/restaurants/${restaurant.id}`}>
+                            Manage
+                          </Link>
                         </Button>
                       </div>
                     </CardContent>
@@ -124,14 +136,18 @@ export default async function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Analytics</CardTitle>
-              <CardDescription>Detailed analytics will be displayed here</CardDescription>
+              <CardDescription>
+                Detailed analytics will be displayed here
+              </CardDescription>
             </CardHeader>
             <CardContent className="h-[400px] flex items-center justify-center">
-              <p className="text-muted-foreground">Analytics dashboard coming soon</p>
+              <p className="text-muted-foreground">
+                Analytics dashboard coming soon
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

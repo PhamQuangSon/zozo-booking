@@ -1,20 +1,26 @@
-"use client"
-import { useActionState, useLayoutEffect } from "react"
-import { useFormStatus } from "react-dom"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { login } from "@/actions/auth-actions"
-import { AlertCircle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+"use client";
+import { useActionState, useLayoutEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { AlertCircle } from "lucide-react";
+import { useFormStatus } from "react-dom";
 
 // Import type
-import type { AuthState } from "@/actions/auth-actions"
+import type { AuthState } from "@/actions/auth-actions";
+import { login } from "@/actions/auth-actions";
 import { ZodErrors } from "@/components/custom/zod-errors";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Initial state with proper type
 const initialState: AuthState = {
@@ -25,37 +31,39 @@ const initialState: AuthState = {
     password: [],
   },
   message: undefined,
-  redirectUrl: undefined
-}
+  redirectUrl: undefined,
+};
 
 // Submit button with loading state
 function SubmitButton() {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
 
   return (
     <Button className="w-full" type="submit" disabled={pending}>
       {pending ? "Logging in..." : "Login"}
     </Button>
-  )
+  );
 }
 
 export default function LoginPage() {
-  const router = useRouter()
-  const [formState, formAction] = useActionState(login, initialState)
+  const router = useRouter();
+  const [formState, formAction] = useActionState(login, initialState);
 
   // Handle redirect after successful login
   useLayoutEffect(() => {
     if (formState?.success && formState?.redirectUrl) {
-      router.push(formState.redirectUrl)
+      router.push(formState.redirectUrl);
     }
-  }, [formState?.success, formState?.redirectUrl, router])
-  
+  }, [formState?.success, formState?.redirectUrl, router]);
+
   return (
     <div className="container flex h-screen items-center justify-center">
       <Card className="mx-auto w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
         </CardHeader>
         <form action={formAction} method="POST">
           <CardContent className="space-y-4">
@@ -67,13 +75,22 @@ export default function LoginPage() {
             )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="your.email@example.com" required />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="your.email@example.com"
+                required
+              />
               <ZodErrors error={formState?.zodErrors?.email ?? []} />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-primary"
+                >
                   Forgot password?
                 </Link>
               </div>
@@ -93,5 +110,5 @@ export default function LoginPage() {
         </form>
       </Card>
     </div>
-  )
+  );
 }

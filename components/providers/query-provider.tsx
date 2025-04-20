@@ -1,9 +1,10 @@
-"use client"
+"use client";
 
-import { QueryClientProvider } from "@tanstack/react-query"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { queryClient } from "@/lib/tanstack-query"
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
+
+import { queryClient } from "@/lib/tanstack-query";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   return (
@@ -11,5 +12,5 @@ export function QueryProvider({ children }: { children: ReactNode }) {
       {children}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  )
+  );
 }

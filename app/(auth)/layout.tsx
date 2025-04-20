@@ -1,10 +1,10 @@
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 
-import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface AuthLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function AuthLayout({ children }: AuthLayoutProps): JSX.Element {
@@ -24,19 +24,18 @@ export default function AuthLayout({ children }: AuthLayoutProps): JSX.Element {
           href="/"
           className="absolute left-8 top-6 z-20 flex items-center text-lg font-bold tracking-tight w-40 h-10"
         >
-            <Image
-              src="/placeholder-logo.png"
-              alt="A skateboarder doing a high drop"
-              className="mr-2 h-6 w-6 object-contain"
-              fill
-            />
-            {/* <span>Zozo Booking</span> */}
+          <Image
+            src="/placeholder-logo.png"
+            alt="A skateboarder doing a high drop"
+            className="mr-2 h-6 w-6 object-contain"
+            fill
+          />
+          {/* <span>Zozo Booking</span> */}
         </Link>
       </AspectRatio>
       <main className="container absolute top-1/2 col-span-1 flex -translate-y-1/2 items-center md:static md:top-0 md:col-span-2 md:flex md:translate-y-0 lg:col-span-1">
         {children}
       </main>
     </div>
-  )
+  );
 }
-

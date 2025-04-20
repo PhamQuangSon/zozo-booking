@@ -1,12 +1,12 @@
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
 interface ZodErrorsProps {
-  error: string[]
-  className?: string
+  error: string[];
+  className?: string;
 }
 
 export function ZodErrors({ error, className }: ZodErrorsProps) {
-  if (!error || error.length === 0) return null
+  if (!error || error.length === 0) return null;
 
   return (
     <div className={cn("mt-1 text-sm text-destructive", className)}>
@@ -14,5 +14,5 @@ export function ZodErrors({ error, className }: ZodErrorsProps) {
         <p key={i}>{err}</p>
       ))}
     </div>
-  )
+  );
 }

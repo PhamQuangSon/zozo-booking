@@ -1,15 +1,11 @@
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { RestaurantCard } from "@/components/restaurant-card";
-import { getRestaurants, Restaurant } from "@/actions/restaurant-actions";
+import type { Restaurant } from "@/actions/restaurant-actions";
+import { getRestaurants } from "@/actions/restaurant-actions";
 import { Carousel } from "@/components/carousel";
-import { ScrollingBanner } from "@/components/scrolling-banner";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { HowItWorks } from "@/components/how-it-works";
+import { RestaurantCard } from "@/components/restaurant-card";
+import { ScrollingBanner } from "@/components/scrolling-banner";
+import { SiteFooter } from "@/components/site-footer";
 import { Testimonials } from "@/components/testimonials";
-import { CTASection } from "@/components/cta-section";
 
 // Carousel data
 const carouselItems = [
@@ -87,7 +83,9 @@ export default async function Home() {
             <section className="py-3">
               <div className="container mx-auto px-4">
                 <div className="text-center mb-10">
-                  <h2 className="text-3xl font-bold mb-2 animate animate-fade-up">Restaurants</h2>
+                  <h2 className="text-3xl font-bold mb-2 animate animate-fade-up">
+                    Restaurants
+                  </h2>
                   <p className="text-muted-foreground">
                     Discover our top-rated dining experiences
                   </p>

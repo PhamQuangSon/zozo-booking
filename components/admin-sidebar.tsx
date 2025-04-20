@@ -1,30 +1,36 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
-  LayoutDashboard,
-  Store,
-  LogOut,
-  ChevronDown,
-  ShoppingBag,
-  QrCode,
-  Table,
   BookOpen,
-  ListOrdered,
+  ChevronDown,
   Coffee,
-  Utensils,
+  LayoutDashboard,
+  ListOrdered,
+  LogOut,
+  QrCode,
+  ShoppingBag,
+  Store,
+  Table,
   User,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { CurrencySelector } from "@/components/currency-selector"
-import { useState, useEffect } from "react"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { RestaurantSelector, RESTAURANT_CHANGE_EVENT } from "@/components/restaurant-selector"
-import { signOut, useSession } from "next-auth/react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+  Utensils,
+} from "lucide-react";
+
+import { CurrencySelector } from "@/components/currency-selector";
+import {
+  RESTAURANT_CHANGE_EVENT,
+  RestaurantSelector,
+} from "@/components/restaurant-selector";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,21 +38,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 // Add this near the top of the file, after the imports
 function debugLog(message: string, data?: any) {
   if (process.env.NODE_ENV === "development") {
-    console.log(`🔍 AdminSidebar Debug: ${message}`, data || "")
+    console.log(`🔍 AdminSidebar Debug: ${message}`, data || "");
   }
 }
 
 export function AdminSidebar() {
-  const pathname = usePathname()
-  const [defaultRestaurant, setDefaultRestaurant] = useState<{ id: string; name: string } | null>(null)
-  const [isRestaurantOpen, setIsRestaurantOpen] = useState(true)
-  const { data: session, status } = useSession()
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const pathname = usePathname();
+  const [defaultRestaurant, setDefaultRestaurant] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [isRestaurantOpen, setIsRestaurantOpen] = useState(true);
+  const { data: session, status } = useSession();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Then update the useEffect for session debugging
   useEffect(() => {
@@ -63,14 +74,16 @@ export function AdminSidebar() {
             role: session.user.role,
           }
         : null,
-    })
+    });
     if (session?.user?.image) {
-      setAvatarUrl(session.user.image)
+      setAvatarUrl(session.user.image);
     } else if (session?.user?.name) {
       // Use UI Avatars as fallback
-      setAvatarUrl(`https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`)
+      setAvatarUrl(
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`
+      );
     }
-  }, [session, status])
+  }, [session, status]);
 
   // Update the useEffect to use prisma/seed.ts data and listen for restaurant changes
   useEffect(() => {
@@ -79,40 +92,43 @@ export function AdminSidebar() {
       try {
         // In a real app, this would be an API call to fetch restaurants
         // For now, we'll use the data from seed.ts
-        const savedRestaurant = localStorage.getItem("defaultRestaurant")
+        const savedRestaurant = localStorage.getItem("defaultRestaurant");
 
         if (savedRestaurant) {
           try {
-            setDefaultRestaurant(JSON.parse(savedRestaurant))
+            setDefaultRestaurant(JSON.parse(savedRestaurant));
           } catch (e) {
-            console.error("Failed to parse saved restaurant:", e)
+            console.error("Failed to parse saved restaurant:", e);
             // Fallback to a default from seed data
-            setDefaultRestaurant({ id: "1", name: "Pasta Paradise" })
+            setDefaultRestaurant({ id: "1", name: "Pasta Paradise" });
           }
         } else {
           // Set a default from seed data if none is saved
-          setDefaultRestaurant({ id: "1", name: "Pasta Paradise" })
+          setDefaultRestaurant({ id: "1", name: "Pasta Paradise" });
         }
       } catch (error) {
-        console.error("Error fetching restaurants:", error)
+        console.error("Error fetching restaurants:", error);
       }
-    }
+    };
 
-    fetchDefaultRestaurant()
+    fetchDefaultRestaurant();
 
     // Listen for restaurant change events
     const handleRestaurantChange = (event: Event) => {
-      const customEvent = event as CustomEvent<{ id: string; name: string }>
-      setDefaultRestaurant(customEvent.detail)
-    }
+      const customEvent = event as CustomEvent<{ id: string; name: string }>;
+      setDefaultRestaurant(customEvent.detail);
+    };
 
-    window.addEventListener(RESTAURANT_CHANGE_EVENT, handleRestaurantChange)
+    window.addEventListener(RESTAURANT_CHANGE_EVENT, handleRestaurantChange);
 
     // Clean up event listener
     return () => {
-      window.removeEventListener(RESTAURANT_CHANGE_EVENT, handleRestaurantChange)
-    }
-  }, [])
+      window.removeEventListener(
+        RESTAURANT_CHANGE_EVENT,
+        handleRestaurantChange
+      );
+    };
+  }, []);
 
   // Update the navItems array to include the new pages
   const navItems = [
@@ -146,7 +162,7 @@ export function AdminSidebar() {
       href: "/admin/item-options",
       icon: Utensils,
     },
-  ]
+  ];
 
   // Update the restaurantNavItems array to include view order and Item Options
   const restaurantNavItems = defaultRestaurant
@@ -172,16 +188,19 @@ export function AdminSidebar() {
           icon: BookOpen,
         },
       ]
-    : []
+    : [];
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: "/login" })
-  }
+    signOut({ callbackUrl: "/login" });
+  };
 
   return (
     <div className="flex h-screen w-50 flex-col border-r bg-muted/40">
       <div className="flex h-14 items-center border-b px-4">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
+        <Link
+          href="/admin/dashboard"
+          className="flex items-center gap-2 font-semibold"
+        >
           <Store className="h-5 w-5" />
           <span>Zozo Booking Admin</span>
         </Link>
@@ -196,7 +215,9 @@ export function AdminSidebar() {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  pathname === item.href ? "bg-accent text-accent-foreground" : "transparent",
+                  pathname === item.href
+                    ? "bg-accent text-accent-foreground"
+                    : "transparent"
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -207,13 +228,22 @@ export function AdminSidebar() {
 
           {defaultRestaurant && (
             <div className="mt-6">
-              <Collapsible open={isRestaurantOpen} onOpenChange={setIsRestaurantOpen} className="px-2">
+              <Collapsible
+                open={isRestaurantOpen}
+                onOpenChange={setIsRestaurantOpen}
+                className="px-2"
+              >
                 <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
                   <div className="flex items-center gap-3">
                     <Store className="h-4 w-4" />
                     <span>{defaultRestaurant.name}</span>
                   </div>
-                  <ChevronDown className={cn("h-4 w-4 transition-transform", isRestaurantOpen && "rotate-180")} />
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      isRestaurantOpen && "rotate-180"
+                    )}
+                  />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <div className="mt-1 space-y-1 pl-7">
@@ -223,7 +253,9 @@ export function AdminSidebar() {
                         href={item.href}
                         className={cn(
                           "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                          pathname === item.href ? "bg-accent text-accent-foreground" : "transparent",
+                          pathname === item.href
+                            ? "bg-accent text-accent-foreground"
+                            : "transparent"
                         )}
                       >
                         <item.icon className="h-4 w-4" />
@@ -252,19 +284,31 @@ export function AdminSidebar() {
           <div className="flex items-center justify-between">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-2 w-full justify-start"
+                >
                   <Avatar className="h-8 w-8">
                     {avatarUrl ? (
-                      <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
+                      <AvatarImage
+                        src={avatarUrl}
+                        alt={session?.user?.name || "User"}
+                      />
                     ) : (
                       <AvatarFallback>
-                        {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || "U"}
+                        {session?.user?.name?.charAt(0) ||
+                          session?.user?.email?.charAt(0) ||
+                          "U"}
                       </AvatarFallback>
                     )}
                   </Avatar>
                   <div className="flex flex-col items-start text-sm">
-                    <span className="font-medium">{session.user.name || "User"}</span>
-                    <span className="text-xs text-muted-foreground">{session.user.email}</span>
+                    <span className="font-medium">
+                      {session.user.name || "User"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {session.user.email}
+                    </span>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
@@ -294,5 +338,5 @@ export function AdminSidebar() {
         )}
       </div>
     </div>
-  )
+  );
 }
