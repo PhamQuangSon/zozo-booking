@@ -66,7 +66,7 @@ export function RestaurantMenuClient({
 
   // State for menu items and options
   const [menuItems, setMenuItems] = useState<MenuItemWithRelations[]>([]);
-  const [itemOptions, setItemOptions] = useState<ItemOptionWithRelations[]>([]);
+  // const [itemOptions, setItemOptions] = useState<ItemOptionWithRelations[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
   // State for modals
@@ -82,9 +82,9 @@ export function RestaurantMenuClient({
   const [expandedCategories, setExpandedCategories] = useState<
     Record<number, boolean>
   >({});
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null
-  );
+  // const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+  //   null
+  // );
   const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(
     null
   );
@@ -126,21 +126,21 @@ export function RestaurantMenuClient({
       setMenuItems(filteredMenuItems);
 
       // Filter item options for the filtered menu items
-      const filteredItemOptions = Array.isArray(allItemOptions)
-        ? allItemOptions.filter(
-            (option) =>
-              option &&
-              filteredMenuItems.some(
-                (item) => item && item.id === option.menuItemId
-              )
-          )
-        : [];
-      setItemOptions(filteredItemOptions);
+      // const filteredItemOptions = Array.isArray(allItemOptions)
+      //   ? allItemOptions.filter(
+      //       (option) =>
+      //         option &&
+      //         filteredMenuItems.some(
+      //           (item) => item && item.id === option.menuItemId
+      //         )
+      //     )
+      //   : [];
+      // setItemOptions(filteredItemOptions);
 
       // Set first category as selected if there are categories
-      if (restaurantCategories.length > 0) {
-        setSelectedCategoryId(restaurantCategories[0].id);
-      }
+      // if (restaurantCategories.length > 0) {
+      //   setSelectedCategoryId(restaurantCategories[0].id);
+      // }
     } catch (error) {
       console.error("Error processing menu data:", error);
     }
@@ -168,7 +168,8 @@ export function RestaurantMenuClient({
 
   // Handle menu item modal
   const handleAddMenuItem = (categoryId: number) => {
-    setSelectedCategoryId(categoryId);
+    console.log("handleAddMenuItem", categoryId);
+    // setSelectedCategoryId(categoryId);
     setSelectedMenuItem(null);
     setModalMode("create");
     setMenuItemModalOpen(true);

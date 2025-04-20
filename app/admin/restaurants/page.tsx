@@ -13,35 +13,34 @@ export default function RestaurantsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  // Load restaurants
-  const loadRestaurants = async () => {
-    setIsLoading(true);
-    try {
-      const result = await getRestaurants();
-      if (result.success) {
-        setRestaurants(result.data);
-      } else {
+  useEffect(() => {
+    // Load restaurants
+    const loadRestaurants = async () => {
+      setIsLoading(true);
+      try {
+        const result = await getRestaurants();
+        if (result.success) {
+          setRestaurants(result.data);
+        } else {
+          toast({
+            title: "Error",
+            description: result.error || "Failed to load restaurants",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error loading restaurants:", error);
         toast({
           title: "Error",
-          description: result.error || "Failed to load restaurants",
+          description: "An unexpected error occurred",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error loading restaurants:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
+    };
     loadRestaurants();
-  }, []);
+  }, [toast]);
 
   if (isLoading) {
     return <Loading />;

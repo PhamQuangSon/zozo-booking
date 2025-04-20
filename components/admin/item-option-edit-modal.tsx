@@ -145,7 +145,7 @@ export function ItemOptionEditModal({
         name: "",
         isRequired: false,
         menuItemId: defaultMenuItem?.id || 0,
-        optionChoices: [newOptionChoice],
+        optionChoices: [{ name: "", priceAdjustment: 0 }],
       });
     }
   }, [itemOption, mode, form, menuItems, restaurants]);

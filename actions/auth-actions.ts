@@ -35,7 +35,7 @@ export type RegisterState = {
 // Login action
 export async function login(
   prevState: AuthState,
-  formData: FormData
+  formData: FormData,
 ): Promise<AuthState> {
   try {
     const validatedFields = loginSchema.safeParse({
@@ -120,7 +120,7 @@ export async function login(
 // Register action
 export async function register(
   prevState: RegisterState,
-  formData: FormData
+  formData: FormData,
 ): Promise<RegisterState> {
   try {
     const validatedFields = registerSchema.safeParse({
@@ -177,7 +177,7 @@ export async function register(
     // In a real app, you would send an email with the verification link
     // For now, we'll just return the token for redirection
     console.log(
-      `Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/auth/verify/${verificationToken}`
+      `Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/auth/verify/${verificationToken}`,
     );
 
     return {

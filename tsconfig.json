@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "target": "ES6",
     "skipLibCheck": true,
@@ -23,9 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
@@ -33,10 +27,8 @@
     "**/*.tsx",
     "next-env.d.ts",
     "scripts/seed-data.mts",
-    ".next/types/**/*.ts"
-, "prisma/seed.cjs"  ],
-  "exclude": [
-    "node_modules",
-    ".next"
-  ]
+    ".next/types/**/*.ts",
+    "prisma/seed.cjs"
+  ],
+  "exclude": ["node_modules", ".next"]
 }

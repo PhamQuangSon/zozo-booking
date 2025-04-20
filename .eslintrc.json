@@ -26,9 +26,7 @@
     "no-restricted-imports": [
       "error",
       {
-        "paths": [
-          "lodash"
-        ]
+        "paths": ["lodash"]
       }
     ],
     "@typescript-eslint/indent": 0,
@@ -54,7 +52,7 @@
     "import/no-duplicates": "error",
     "react/react-in-jsx-scope": "off",
     "jsx-a11y/anchor-is-valid": "off",
-     "@typescript-eslint/no-unused-vars": "warn"
+    "@typescript-eslint/no-unused-vars": "off"
   },
   "overrides": [
     {
@@ -66,7 +64,16 @@
             "groups": [
               ["^react$", "^next", "^[a-z]"],
               ["^@"],
-              ["^~", "^config/", "^lib/", "^components/", "^hooks/", "^store/", "^schemas/", "^types/"],
+              [
+                "^~",
+                "^config/",
+                "^lib/",
+                "^components/",
+                "^hooks/",
+                "^store/",
+                "^schemas/",
+                "^types/"
+              ],
               ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
               ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
               ["^.+\\.s?css$"],

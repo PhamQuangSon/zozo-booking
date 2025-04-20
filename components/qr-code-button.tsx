@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { QrCode } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -67,11 +68,13 @@ export function QrCodeButton({ restaurantId }: QrCodeButtonProps) {
           {tableNumber && (
             <div className="flex flex-col items-center space-y-2">
               <div className="overflow-hidden rounded-lg border p-1">
-                <img
+                <Image
                   src={qrCodeUrl || "/placeholder.svg"}
                   alt={`QR Code for Table ${tableNumber}`}
+                  fill
                   width={200}
                   height={200}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
               <p className="text-sm text-muted-foreground">

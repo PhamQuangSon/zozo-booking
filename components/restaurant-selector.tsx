@@ -72,7 +72,7 @@ export function RestaurantSelector() {
     };
 
     fetchRestaurants();
-  }, []);
+  }, [toast]);
 
   const handleRestaurantChange = (value: string) => {
     setSelectedRestaurant(value);

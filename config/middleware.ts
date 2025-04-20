@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     "/reset-password",
   ];
   const isPublicPath = publicPaths.some((publicPath) =>
-    path.startsWith(publicPath)
+    path.startsWith(publicPath),
   );
 
   // Redirect unauthenticated users to login

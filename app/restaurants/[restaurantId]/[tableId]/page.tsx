@@ -44,7 +44,7 @@ export default function TableOrderPage() {
   const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedMenuItem, setSelectedMenuItem] = useState<any>(null);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<unknown>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
 
   const { syncServerOrders, addToCart } = useCartStore();
@@ -66,9 +66,9 @@ export default function TableOrderPage() {
     if (!restaurant?.categories) return [];
 
     const items: any[] = [];
-    restaurant.categories.forEach((category: any) => {
+    restaurant.categories.forEach((category) => {
       if (category.items && Array.isArray(category.items)) {
-        category.items.forEach((item: any) => {
+        category.items.forEach((item) => {
           items.push({
             ...item,
             categoryName: category.name,
@@ -126,7 +126,7 @@ export default function TableOrderPage() {
         );
 
   // Handle menu item selection
-  const handleMenuItemClick = (item: any) => {
+  const handleMenuItemClick = (item: unknown) => {
     setSelectedMenuItem(item);
     setShowItemDetail(true);
   };

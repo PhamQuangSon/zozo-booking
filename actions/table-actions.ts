@@ -46,7 +46,7 @@ export async function getRestaurantTables(restaurantId: string) {
   } catch (error) {
     console.error(
       `Failed to fetch tables for restaurant ${restaurantId}:`,
-      error
+      error,
     );
     return { success: false, error: "Failed to load tables" };
   }
@@ -70,7 +70,7 @@ export async function getTablesByRestaurantId(restaurantId: string) {
   } catch (error) {
     console.error(
       `Failed to fetch tables for restaurant ${restaurantId}:`,
-      error
+      error,
     );
     return { success: false, error: "Failed to load tables" };
   }
@@ -126,7 +126,7 @@ export async function updateTable(
     status?: string;
     restaurantId: number;
     imageUrl?: string | null;
-  }
+  },
 ) {
   try {
     // Check if table number already exists for this restaurant (excluding this table)
@@ -209,7 +209,7 @@ export async function deleteTable(id: number) {
 // Format menu items with proper currency
 export async function formatTableMenuItems(
   menuCategories: any[],
-  currency: Currency
+  currency: Currency,
 ) {
   return menuCategories.map((category) => ({
     ...category,
@@ -223,7 +223,7 @@ export async function formatTableMenuItems(
           ...choice,
           formattedPriceAdjustment: formatCurrency(
             choice.priceAdjustment,
-            currency
+            currency,
           ),
           priceAdjustment: Number(choice.priceAdjustment),
         })),
@@ -284,7 +284,7 @@ export async function createTableOrder(data: {
     // Calculate total amount
     for (const orderItem of data.items) {
       const menuItem = menuItems.find(
-        (item) => item.id === orderItem.menuItemId
+        (item) => item.id === orderItem.menuItemId,
       );
       if (!menuItem) continue;
 
@@ -294,12 +294,12 @@ export async function createTableOrder(data: {
       if (orderItem.choices && orderItem.choices.length > 0) {
         for (const choice of orderItem.choices) {
           const option = menuItem.menuItemOptions.find(
-            (opt) => opt.id === choice.optionId
+            (opt) => opt.id === choice.optionId,
           );
           if (!option) continue;
 
           const selectedChoice = option.optionChoices.find(
-            (ch) => ch.id === choice.choiceId
+            (ch) => ch.id === choice.choiceId,
           );
           if (selectedChoice) {
             itemPrice += Number(selectedChoice.priceAdjustment);

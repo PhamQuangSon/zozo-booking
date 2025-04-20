@@ -31,8 +31,8 @@ export function CategoriesClient({
   restaurants,
 }: CategoriesClientProps) {
   const router = useRouter();
-  const [categories, setCategories] =
-    useState<CategoryWithRestaurant[]>(initialCategories);
+  // const [categories, setCategories] =
+  //   useState<CategoryWithRestaurant[]>(initialCategories);
   const [selectedCategory, setSelectedCategory] =
     useState<CategoryWithRestaurant | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -40,7 +40,7 @@ export function CategoriesClient({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter categories based on search query
-  const filteredCategories = categories.filter(
+  const filteredCategories = initialCategories.filter(
     (category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       category.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())

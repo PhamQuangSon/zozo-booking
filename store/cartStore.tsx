@@ -25,14 +25,14 @@ interface CartState {
   markItemsAsSubmitted: (
     restaurantId: string,
     tableId: string,
-    orderId: number
+    orderId: number,
   ) => void;
   getSubmittedItems: (restaurantId: string, tableId: string) => CartItem[];
   getPendingItems: (restaurantId: string, tableId: string) => CartItem[];
   syncServerOrders: (
     restaurantId: string,
     tableId: string,
-    orders: any[]
+    orders: any[],
   ) => void;
 }
 
@@ -75,7 +75,7 @@ export const useCartStore = create<CartState>()(
       updateQuantity: (id, quantity) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.id === id ? { ...item, quantity } : item
+            item.id === id ? { ...item, quantity } : item,
           ),
         })),
 
@@ -84,7 +84,7 @@ export const useCartStore = create<CartState>()(
           cart: state.cart.map((item) =>
             item.restaurantId === restaurantId && item.tableId === tableId
               ? { ...item, submitted: true, orderId }
-              : item
+              : item,
           ),
         })),
 
@@ -131,14 +131,14 @@ export const useCartStore = create<CartState>()(
                       id: String(choice.id),
                       name: choice.optionChoice.name,
                       priceAdjustment: Number(
-                        choice.optionChoice.priceAdjustment
+                        choice.optionChoice.priceAdjustment,
                       ),
                     },
                   }),
-                  {}
+                  {},
                 ),
-              })
-            )
+              }),
+            ),
           );
 
           // Merge with existing cart items, preserving non-submitted items
@@ -148,7 +148,7 @@ export const useCartStore = create<CartState>()(
                 item.restaurantId === restaurantId &&
                 item.tableId === tableId &&
                 item.submitted
-              )
+              ),
           );
 
           return {
@@ -161,7 +161,7 @@ export const useCartStore = create<CartState>()(
           (item) =>
             item.restaurantId === restaurantId &&
             item.tableId === tableId &&
-            item.submitted === true
+            item.submitted === true,
         );
       },
 
@@ -170,12 +170,12 @@ export const useCartStore = create<CartState>()(
           (item) =>
             item.restaurantId === restaurantId &&
             item.tableId === tableId &&
-            (item.submitted === false || item.submitted === undefined)
+            (item.submitted === false || item.submitted === undefined),
         );
       },
     }),
     {
       name: "food-ordering-cart",
-    }
-  )
+    },
+  ),
 );

@@ -1,11 +1,13 @@
 # Next.js template
 
 ### Môi trường chạy dự án: Node.js v20.14.0
+
 https://nodejs.org/download/release/v20.14.0/
 
 ===
 
 Các bước cài đặt: (chế độ development)
+
 1. clone code
 2. cài đặt thư viện: npm i
 3. Update file .env.development (nếu cần thiết)
@@ -14,18 +16,21 @@ Các bước cài đặt: (chế độ development)
 ===
 
 Cách chạy tại chế độ production:
+
 1. clone code
 2. cài đặt thư viện: npm i
 3. Update file .env.production (nếu cần thiết)
 4. Build dự án: npm run build
 5. Chạy dự án: npm run preview
 
-Install database example: node --loader ts-node/esm prisma/seed.ts 
+Install database example: node --loader ts-node/esm prisma/seed.ts
 Not use: npx prisma db drop --force
+
 1. Run Migrations: npx prisma migrate dev --name init
 2. Run Seed: node --loader ts-node/esm prisma/seed.ts
 
 ... fix eslint: pnpm exec eslint . --ext .js,.jsx,.ts,.tsx --fix
+
 ```
 📂 restaurant-ordering
 ├── 📂 app
@@ -48,6 +53,7 @@ Not use: npx prisma db drop --force
 ```
 
 ===
+
 1. An admin user (email: [admin@example.com](mailto:admin@example.com), password: admin123)
 2. A regular user (email: [user@example.com](mailto:user@example.com), password: user123)
 3. A sample restaurant

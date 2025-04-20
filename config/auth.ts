@@ -31,7 +31,7 @@ export const {
       async authorize(credentials) {
         debugLog(
           "🟢 authorize() called with credentials",
-          credentials ? "provided" : "missing"
+          credentials ? "provided" : "missing",
         );
         try {
           const typedCredentials = credentials as Record<
@@ -57,7 +57,7 @@ export const {
           // Hash the provided password
           const isCorrectPassword = await bcrypt.compare(
             typedCredentials.password,
-            foundUser.password
+            foundUser.password,
           );
           if (!isCorrectPassword) {
             debugLog("🟢 Password mismatch");

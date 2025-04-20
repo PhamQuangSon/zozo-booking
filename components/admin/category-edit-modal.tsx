@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
 import { createCategory, updateCategory } from "@/actions/category-actions";
@@ -63,7 +62,6 @@ export function CategoryEditModal({
   onOpenChange,
   mode = "edit",
 }: CategoryEditModalProps) {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const isCreating = mode === "create";

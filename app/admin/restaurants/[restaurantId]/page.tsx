@@ -20,11 +20,8 @@ import { tableStatusColors } from "@/types/status-colors";
 export default async function RestaurantDetailPage({ params }: PageProps) {
   const { restaurantId } = params;
   // Fetch restaurant details
-  const {
-    success,
-    data: restaurant,
-    error,
-  } = await getCachedRestaurantById(restaurantId);
+  const { success, data: restaurant } =
+    await getCachedRestaurantById(restaurantId);
 
   if (!success || !restaurant) {
     notFound();

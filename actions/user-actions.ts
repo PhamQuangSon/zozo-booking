@@ -82,7 +82,7 @@ async function saveImage(file: File): Promise<string> {
 // Update profile action
 export async function updateProfile(
   prevState: ProfileState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ProfileState> {
   try {
     const session = await auth();
@@ -159,7 +159,7 @@ export async function updateProfile(
 // Update password action
 export async function updatePassword(
   prevState: PasswordState,
-  formData: FormData
+  formData: FormData,
 ): Promise<PasswordState> {
   try {
     const session = await auth();
@@ -196,7 +196,7 @@ export async function updatePassword(
     // Verify current password
     const isPasswordValid = await bcrypt.compare(
       currentPassword,
-      user.password
+      user.password,
     );
     if (!isPasswordValid) {
       return { success: false, message: "Current password is incorrect" };

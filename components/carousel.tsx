@@ -47,19 +47,22 @@ export function Carousel({
     );
   };
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
+  // const goToSlide = (index: number) => {
+  //   setCurrentIndex(index);
+  // };
 
   useEffect(() => {
     if (!autoPlay || isHovering) return;
 
     const slideInterval = setInterval(() => {
-      nextSlide();
+      // nextSlide();
+      setCurrentIndex((prevIndex) =>
+        prevIndex === items.length - 1 ? 0 : prevIndex + 1
+      );
     }, interval);
 
     return () => clearInterval(slideInterval);
-  }, [autoPlay, interval, isHovering]);
+  }, [autoPlay, interval, isHovering, items.length]);
 
   return (
     <div

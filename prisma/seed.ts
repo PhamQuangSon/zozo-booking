@@ -101,8 +101,8 @@ async function main() {
           capacity: num === 5 ? 8 : 4,
           status: "AVAILABLE" as TableStatus,
         },
-      })
-    )
+      }),
+    ),
   );
 
   // Create tables for restaurant 2
@@ -115,8 +115,8 @@ async function main() {
           capacity: 4,
           status: "AVAILABLE" as TableStatus,
         },
-      })
-    )
+      }),
+    ),
   );
 
   console.log("Created tables");

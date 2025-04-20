@@ -25,7 +25,6 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
   const { currency } = useCurrencyStore();
   const { data: session } = useSession();
   const {
-    cart,
     removeItem,
     markItemsAsSubmitted,
     getSubmittedItems,
