@@ -12,32 +12,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/lib/i18n";
 import { useCurrencyStore } from "@/store/currency-store";
-
-interface OptionChoice {
-  id: number | string;
-  name: string;
-  priceAdjustment: number;
-}
-
-interface MenuItemOption {
-  id: number | string;
-  name: string;
-  isRequired: boolean;
-  optionChoices: OptionChoice[];
-}
-
-interface MenuItem {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  imageUrl?: string;
-  categoryName?: string;
-  menuItemOptions?: MenuItemOption[];
-}
+import type { MenuItemWithRelations } from "@/types/menu-builder-types";
 
 interface MenuItemDetailProps {
-  item: MenuItem;
+  item: MenuItemWithRelations;
   onAddToCart: (
     options: Record<string, any>,
     quantity: number,
@@ -65,7 +43,11 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
     // Process menu item options if available
     if (item.menuItemOptions && item.menuItemOptions.length > 0) {
       item.menuItemOptions.forEach((option) => {
-        if (option.isRequired && option.optionChoices.length > 0) {
+        if (
+          option.isRequired &&
+          option.optionChoices &&
+          option.optionChoices.length > 0
+        ) {
           // Select the first option by default for required options
           const defaultChoice = option.optionChoices[0];
           initialOptions[option.id] = {
@@ -127,7 +109,7 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
 
   // Calculate total price including options
   const calculateTotalPrice = () => {
-    let total = item.price;
+    let total = Number(item.price);
 
     // Add price adjustments from selected options
     Object.values(selectedOptions).forEach((option) => {
@@ -166,7 +148,7 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
         <div>
           <p className="text-sm text-muted-foreground">{item.description}</p>
           <p className="mt-2 text-lg font-semibold">
-            {formatCurrency(item.price, currency)}
+            {formatCurrency(Number(item.price), currency)}
           </p>
         </div>
         <Button variant="outline" size="icon">
@@ -190,73 +172,83 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
               <RadioGroup
                 value={selectedOptions[option.id]?.id?.toString()}
                 onValueChange={(value) => {
-                  const choice = option.optionChoices.find(
-                    (c) => c.id.toString() === value
-                  );
+                  const choice =
+                    option.optionChoices &&
+                    option.optionChoices.find((c) => c.id.toString() === value);
                   if (choice) {
                     handleRadioOptionChange(
                       option.id.toString(),
                       choice.id.toString(),
                       choice.name,
-                      choice.priceAdjustment || 0
+                      Number(choice.priceAdjustment) || 0
                     );
                   }
                 }}
               >
-                {option.optionChoices.map((choice) => (
-                  <div
-                    key={choice.id}
-                    className="flex items-center justify-between space-x-2 p-2 hover:bg-white/40 rounded-lg transition-colors"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem
-                        value={choice.id.toString()}
-                        id={`${option.id}-${choice.id}`}
-                      />
-                      <Label htmlFor={`${option.id}-${choice.id}`}>
-                        {choice.name}
-                      </Label>
+                {option.optionChoices &&
+                  option.optionChoices.map((choice) => (
+                    <div
+                      key={choice.id}
+                      className="flex items-center justify-between space-x-2 p-2 hover:bg-white/40 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value={choice.id.toString()}
+                          id={`${option.id}-${choice.id}`}
+                        />
+                        <Label htmlFor={`${option.id}-${choice.id}`}>
+                          {choice.name}
+                        </Label>
+                      </div>
+                      {Number(choice.priceAdjustment) > 0 && (
+                        <span className="text-sm font-medium">
+                          +
+                          {formatCurrency(
+                            Number(choice.priceAdjustment),
+                            currency
+                          )}
+                        </span>
+                      )}
                     </div>
-                    {choice.priceAdjustment > 0 && (
-                      <span className="text-sm font-medium">
-                        +{formatCurrency(choice.priceAdjustment, currency)}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                  ))}
               </RadioGroup>
             ) : (
               <div className="space-y-2">
-                {option.optionChoices.map((choice) => (
-                  <div
-                    key={choice.id}
-                    className="flex items-center justify-between space-x-2 p-2 hover:bg-white/40 rounded-lg transition-colors"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`${option.id}-${choice.id}`}
-                        checked={!!selectedOptions[option.id]?.[choice.id]}
-                        onCheckedChange={(checked) => {
-                          handleCheckboxOptionChange(
-                            option.id.toString(),
-                            choice.id.toString(),
-                            choice.name,
-                            choice.priceAdjustment || 0,
-                            !!checked
-                          );
-                        }}
-                      />
-                      <Label htmlFor={`${option.id}-${choice.id}`}>
-                        {choice.name}
-                      </Label>
+                {option.optionChoices &&
+                  option.optionChoices.map((choice) => (
+                    <div
+                      key={choice.id}
+                      className="flex items-center justify-between space-x-2 p-2 hover:bg-white/40 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`${option.id}-${choice.id}`}
+                          checked={!!selectedOptions[option.id]?.[choice.id]}
+                          onCheckedChange={(checked) => {
+                            handleCheckboxOptionChange(
+                              option.id.toString(),
+                              choice.id.toString(),
+                              choice.name,
+                              Number(choice.priceAdjustment) || 0,
+                              !!checked
+                            );
+                          }}
+                        />
+                        <Label htmlFor={`${option.id}-${choice.id}`}>
+                          {choice.name}
+                        </Label>
+                      </div>
+                      {Number(choice.priceAdjustment) > 0 && (
+                        <span className="text-sm font-medium">
+                          +
+                          {formatCurrency(
+                            Number(choice.priceAdjustment),
+                            currency
+                          )}
+                        </span>
+                      )}
                     </div>
-                    {choice.priceAdjustment > 0 && (
-                      <span className="text-sm font-medium">
-                        +{formatCurrency(choice.priceAdjustment, currency)}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                  ))}
               </div>
             )}
           </div>

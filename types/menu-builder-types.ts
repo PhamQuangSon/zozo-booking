@@ -23,7 +23,11 @@ export type RestaurantWithCategories = Restaurant & {
 export type MenuItemWithRelations = MenuItem & {
   category: Category;
   restaurant: Restaurant;
-  menuItemOptions: MenuItemOption[];
+  menuItemOptions:
+  | (MenuItemOption & {
+      optionChoices?: OptionChoice[] | null;
+    }) []
+  | null;
 };
 
 // Define OptionChoice ensuring priceAdjustment is a number for forms

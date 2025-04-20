@@ -32,6 +32,7 @@ import {
 import { useTableFullData } from "@/hooks/use-restaurant-data";
 import { useToast } from "@/hooks/use-toast";
 import { useCartStore } from "@/store/cartStore";
+import type { MenuItemWithRelations } from "@/types/menu-builder-types";
 
 export default function TableOrderPage() {
   const params = useParams();
@@ -44,7 +45,8 @@ export default function TableOrderPage() {
   const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedMenuItem, setSelectedMenuItem] = useState<unknown>(null);
+  const [selectedMenuItem, setSelectedMenuItem] =
+    useState<MenuItemWithRelations | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
 
   const { syncServerOrders, addToCart } = useCartStore();
@@ -126,7 +128,7 @@ export default function TableOrderPage() {
         );
 
   // Handle menu item selection
-  const handleMenuItemClick = (item: unknown) => {
+  const handleMenuItemClick = (item: any) => {
     setSelectedMenuItem(item);
     setShowItemDetail(true);
   };

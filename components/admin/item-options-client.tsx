@@ -8,7 +8,10 @@ import { type ColumnDef, DataTable } from "@/components/admin/data-table";
 import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { ItemOptionWithRelations } from "@/types/menu-builder-types";
+import type {
+  ItemOptionWithRelations,
+  MenuItemWithRelations,
+} from "@/types/menu-builder-types";
 
 // Define props interface
 interface ItemOptionsClientProps {
@@ -23,7 +26,7 @@ export function ItemOptionsClient({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItemOption, setSelectedItemOption] =
     useState<ItemOptionWithRelations | null>(null);
-  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItemWithRelations[]>([]);
 
   // Fetch menu items on component mount
   useEffect(() => {
