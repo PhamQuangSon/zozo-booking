@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { io, type Socket } from "socket.io-client";
-import { useCartStore } from "@/store/cartStore";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { io, type Socket } from "socket.io-client";
+
+import { useCartStore } from "@/store/cartStore";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function useRealTimeCart(restaurantId: string, tableId: string) {
@@ -88,7 +89,7 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
         socket.disconnect();
       }
     };
-  }, [restaurantId, tableId, fetchLatestOrders, session?.user?.id]);
+  }, [restaurantId, tableId, fetchLatestOrders, session?.user?.id, socket]);
 
   // Broadcast cart updates when our cart changes
   useEffect(() => {
@@ -124,11 +125,6 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
           restaurantId,
           tableId,
           order,
-        //   userId: session?.user?.id || localStorage.getItem("customerUserId"),
-        //   userName:
-        //     session?.user?.name ||
-        //     localStorage.getItem("customerName") ||
-        //     "Anonymous",
         });
 
         // Invalidate the query to refresh data
@@ -140,7 +136,6 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
       isConnected,
       restaurantId,
       tableId,
-      session,
       markItemsAsSubmitted,
       fetchLatestOrders,
     ]

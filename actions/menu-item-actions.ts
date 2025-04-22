@@ -80,7 +80,7 @@ export async function updateMenuItem(
     isAvailable: boolean;
     displayOrder?: number;
     imageUrl?: string | null;
-  },
+  }
 ) {
   try {
     const menuItem = await prisma.menuItem.update({

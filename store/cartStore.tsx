@@ -180,7 +180,11 @@ export const useCartStore = create<CartState>()(
                 orderItemId: item.id,
                 specialInstructions: item.notes,
                 userId: order.user?.id || undefined,
-                userName: order.user?.name || order.notes && order.notes.split("Customer Info:")[1].trim() || "Anonymous 5",
+                userName:
+                  order.user?.name ||
+                  (order.notes &&
+                    order.notes.split("Customer Info:")[1].trim()) ||
+                  "Anonymous 5",
                 // timestamp: new Date(order.createdAt || Date.now()).getTime(),
                 selectedOptions: item.orderItemChoices?.reduce(
                   (acc: Record<string, any>, choice: any) => {

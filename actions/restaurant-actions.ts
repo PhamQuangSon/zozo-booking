@@ -139,7 +139,7 @@ export async function updateRestaurant(
     email?: string;
     imageUrl?: string;
     cuisine?: string;
-  },
+  }
 ) {
   try {
     const restaurant = await prisma.restaurant.update({
@@ -187,7 +187,7 @@ export async function deleteRestaurant(id: number) {
 // Format menu items with proper currency
 export async function formatMenuItems(
   menuItems: any[],
-  currency: Currency = "USD",
+  currency: Currency = "USD"
 ) {
   if (!menuItems || !Array.isArray(menuItems)) return [];
 
@@ -204,7 +204,7 @@ export async function formatMenuItems(
 // Add a new function for formatting item options
 export async function formatItemOptions(
   itemOptions: any[],
-  currency: Currency = "USD",
+  currency: Currency = "USD"
 ) {
   if (!itemOptions || !Array.isArray(itemOptions)) return [];
 
@@ -217,7 +217,7 @@ export async function formatItemOptions(
       ...option,
       formattedPriceAdjustment: formatCurrency(
         option.priceAdjustment || 0,
-        currency,
+        currency
       ),
     };
 
@@ -227,9 +227,9 @@ export async function formatItemOptions(
           ...choice,
           formattedPriceAdjustment: formatCurrency(
             choice.priceAdjustment || 0,
-            currency,
+            currency
           ),
-        }),
+        })
       );
     } else {
       formattedOption.optionChoices = [];

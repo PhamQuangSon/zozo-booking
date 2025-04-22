@@ -17,7 +17,7 @@ const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
 
 // Then fix the getRestaurantOrders function to properly handle the type conversion
 export async function getRestaurantOrders(
-  restaurantId: string,
+  restaurantId: string
 ): Promise<{ success: boolean; data?: OrderWithRelations[]; error?: string }> {
   try {
     const orders = await prisma.order.findMany({
@@ -57,7 +57,7 @@ export async function getRestaurantOrders(
             email: null,
           },
         };
-      }),
+      })
     );
 
     // Fix the serialization and type casting
@@ -202,7 +202,7 @@ export async function getRestaurantOrders(
 // Also fix the updateOrderItemStatus function to use the correct OrderItem type
 export async function updateOrderItemStatus(
   orderItemId: number,
-  newStatus: OrderItemStatus,
+  newStatus: OrderItemStatus
 ) {
   try {
     const updatedItem = await prisma.$transaction(async (tx) => {
@@ -222,7 +222,7 @@ export async function updateOrderItemStatus(
 
       // Check if all items in the order have the same status
       const allItemsSameStatus = orderItem.order.orderItems.every(
-        (item) => item.status === newStatus,
+        (item) => item.status === newStatus
       );
 
       // If all items have the same status, update order status
@@ -305,7 +305,7 @@ export async function updateOptionChoice(
   data: {
     name: string;
     priceAdjustment: number;
-  },
+  }
 ) {
   try {
     const choice = await prisma.optionChoice.update({
@@ -347,7 +347,7 @@ export async function updateMenuOrder(menuId: number, newOrder: number) {
 
 export async function updateCategoryOrder(
   categoryId: number,
-  newOrder: number,
+  newOrder: number
 ) {
   try {
     await prisma.$executeRaw`

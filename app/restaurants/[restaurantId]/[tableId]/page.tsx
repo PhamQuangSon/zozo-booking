@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ArrowRight, ChevronLeft, ShoppingCart, Users } from "lucide-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Loading from "@/app/loading";
 import { CustomerInfoForm } from "@/components/customer-info-form";
@@ -22,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -31,12 +31,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { useTableFullData } from "@/hooks/use-restaurant-data";
 import { useRealTimeCart } from "@/hooks/use-real-time-cart";
+import { useTableFullData } from "@/hooks/use-restaurant-data";
 import { useToast } from "@/hooks/use-toast";
 import { useCartStore } from "@/store/cartStore";
 import type { MenuItemWithRelations } from "@/types/menu-builder-types";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -174,7 +174,8 @@ function TableOrderPageContent() {
     quantity: number,
     specialInstructions: string
   ) => {
-    const userId = session?.user?.id || localStorage.getItem("customerUserId") || "";
+    const userId =
+      session?.user?.id || localStorage.getItem("customerUserId") || "";
     const userName =
       session?.user?.name ||
       localStorage.getItem("customerName") ||

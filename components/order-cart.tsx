@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Clock, Trash2, User, RefreshCw } from "lucide-react";
+import { Clock, RefreshCw, Trash2, User } from "lucide-react";
 
 import { createTableOrder } from "@/actions/table-actions";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/i18n";
 import { type CartItem, useCartStore } from "@/store/cartStore";
 import { useCurrencyStore } from "@/store/currency-store";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 
 interface OrderCartProps {
   restaurantId: string;

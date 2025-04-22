@@ -24,10 +24,10 @@ export type MenuItemWithRelations = MenuItem & {
   category: Category;
   restaurant: Restaurant;
   menuItemOptions:
-  | (MenuItemOption & {
-      optionChoices?: OptionChoice[] | null;
-    }) []
-  | null;
+    | (MenuItemOption & {
+        optionChoices?: OptionChoice[] | null;
+      })[]
+    | null;
 };
 
 // Define OptionChoice ensuring priceAdjustment is a number for forms

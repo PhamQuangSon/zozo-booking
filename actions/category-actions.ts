@@ -65,7 +65,7 @@ export async function updateCategory(
     restaurantId: number;
     displayOrder?: number;
     imageUrl?: string | null;
-  },
+  }
 ) {
   try {
     const category = await prisma.category.update({
@@ -100,7 +100,7 @@ export async function deleteCategory(id: number) {
 // Update category display order
 export async function updateCategoryDisplayOrder(
   categoryId: number,
-  targetCategoryId: number,
+  targetCategoryId: number
 ) {
   try {
     // Get both categories to determine their current display orders

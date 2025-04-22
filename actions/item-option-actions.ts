@@ -136,7 +136,7 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
 
     // Create a map of existing choices by ID for quick lookup
     const existingChoicesMap = new Map(
-      existingChoices.map((choice) => [choice.id, choice]),
+      existingChoices.map((choice) => [choice.id, choice])
     );
 
     // Process each option choice

@@ -401,7 +401,6 @@ export async function createTableOrder(data: {
         user: existingUser,
       }),
     };
-
   } catch (error) {
     console.error("Failed to create table order:", error);
     return { success: false, error: "Failed to create order" };
@@ -482,7 +481,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
           return { ...order, user };
         }
         return { ...order, user: null };
-      }),
+      })
     );
 
     // Return all data in one response

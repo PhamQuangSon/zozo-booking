@@ -1,5 +1,5 @@
-import { Server } from "socket.io";
 import { NextResponse } from "next/server";
+import { Server } from "socket.io";
 
 // Global variable to store the Socket.IO server instance
 let io: Server;
