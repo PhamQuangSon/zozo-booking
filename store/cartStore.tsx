@@ -15,31 +15,37 @@ export interface CartItem {
   submitted?: boolean; // Flag to track if the item has been submitted
   orderId?: number; // Reference to server order if item was synced
   orderItemId?: number; // Reference to server order item if item was synced
+  userId?: string; // User who added this item
+  userName?: string; // Name of the user who added this item
 }
 
 interface CartState {
   cart: CartItem[];
+  collaborativeMode: boolean;
   addToCart: (item: CartItem) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   markItemsAsSubmitted: (
     restaurantId: string,
     tableId: string,
-    orderId: number,
+    orderId: number
   ) => void;
   getSubmittedItems: (restaurantId: string, tableId: string) => CartItem[];
   getPendingItems: (restaurantId: string, tableId: string) => CartItem[];
   syncServerOrders: (
     restaurantId: string,
     tableId: string,
-    orders: any[],
+    orders: any[]
   ) => void;
+  mergeExternalCart: (userId: string, externalCart: CartItem[]) => void;
+  setCollaborativeMode: (enabled: boolean) => void;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       cart: [],
+      collaborativeMode: true, // Enable by default
 
       addToCart: (item) =>
         set((state) => {
@@ -48,6 +54,7 @@ export const useCartStore = create<CartState>()(
             i.id === item.id &&
             i.restaurantId === item.restaurantId &&
             i.tableId === item.tableId &&
+            i.userId === item.userId &&
             JSON.stringify(i.selectedOptions) ===
               JSON.stringify(item.selectedOptions);
 
@@ -75,16 +82,18 @@ export const useCartStore = create<CartState>()(
       updateQuantity: (id, quantity) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.id === id ? { ...item, quantity } : item,
+            item.id === id ? { ...item, quantity } : item
           ),
         })),
 
       markItemsAsSubmitted: (restaurantId, tableId, orderId) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.restaurantId === restaurantId && item.tableId === tableId
+            item.restaurantId === restaurantId &&
+            item.tableId === tableId &&
+            !item.submitted
               ? { ...item, submitted: true, orderId }
-              : item,
+              : item
           ),
         })),
 
@@ -131,14 +140,14 @@ export const useCartStore = create<CartState>()(
                       id: String(choice.id),
                       name: choice.optionChoice.name,
                       priceAdjustment: Number(
-                        choice.optionChoice.priceAdjustment,
+                        choice.optionChoice.priceAdjustment
                       ),
                     },
                   }),
-                  {},
+                  {}
                 ),
-              }),
-            ),
+              })
+            )
           );
 
           // Merge with existing cart items, preserving non-submitted items
@@ -148,7 +157,7 @@ export const useCartStore = create<CartState>()(
                 item.restaurantId === restaurantId &&
                 item.tableId === tableId &&
                 item.submitted
-              ),
+              )
           );
 
           return {
@@ -156,12 +165,46 @@ export const useCartStore = create<CartState>()(
           };
         }),
 
+      // New method to merge external cart from other users
+      mergeExternalCart: (userId, externalCart) =>
+        set((state) => {
+          if (!state.collaborativeMode) return state;
+
+          // Filter out items from this user that we already have
+          const filteredExternalCart = externalCart.filter((item) => {
+            // Check if we already have this exact item
+            const existingItem = state.cart.find(
+              (i) =>
+                i.id === item.id &&
+                i.restaurantId === item.restaurantId &&
+                i.tableId === item.tableId &&
+                i.userId === userId &&
+                JSON.stringify(i.selectedOptions) ===
+                  JSON.stringify(item.selectedOptions)
+            );
+
+            return !existingItem;
+          });
+
+          // Add userId to each item
+          const itemsWithUserId = filteredExternalCart.map((item) => ({
+            ...item,
+            userId,
+          }));
+
+          return {
+            cart: [...state.cart, ...itemsWithUserId],
+          };
+        }),
+
+      setCollaborativeMode: (enabled) => set({ collaborativeMode: enabled }),
+
       getSubmittedItems: (restaurantId, tableId) => {
         return get().cart.filter(
           (item) =>
             item.restaurantId === restaurantId &&
             item.tableId === tableId &&
-            item.submitted === true,
+            item.submitted === true
         );
       },
 
@@ -170,12 +213,12 @@ export const useCartStore = create<CartState>()(
           (item) =>
             item.restaurantId === restaurantId &&
             item.tableId === tableId &&
-            (item.submitted === false || item.submitted === undefined),
+            (item.submitted === false || item.submitted === undefined)
         );
       },
     }),
     {
       name: "food-ordering-cart",
-    },
-  ),
+    }
+  )
 );

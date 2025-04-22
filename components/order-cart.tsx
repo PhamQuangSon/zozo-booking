@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Clock, Trash2 } from "lucide-react";
+import { Clock, Trash2, User } from "lucide-react";
 
 import { createTableOrder } from "@/actions/table-actions";
 import { Badge } from "@/components/ui/badge";
@@ -13,13 +13,19 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/i18n";
 import { type CartItem, useCartStore } from "@/store/cartStore";
 import { useCurrencyStore } from "@/store/currency-store";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface OrderCartProps {
   restaurantId: string;
   tableId: string;
+  collaborativeMode?: boolean;
 }
 
-export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
+export function OrderCart({
+  restaurantId,
+  tableId,
+  collaborativeMode = false,
+}: OrderCartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { currency } = useCurrencyStore();
@@ -36,6 +42,21 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
     restaurantId && tableId ? getPendingItems(restaurantId, tableId) : [];
   const submittedItems =
     restaurantId && tableId ? getSubmittedItems(restaurantId, tableId) : [];
+
+  // Group items by user if in collaborative mode
+  const groupedPendingItems = collaborativeMode
+    ? pendingItems.reduce(
+        (acc, item) => {
+          const userId = item.userId || "anonymous";
+          if (!acc[userId]) {
+            acc[userId] = [];
+          }
+          acc[userId].push(item);
+          return acc;
+        },
+        {} as Record<string, CartItem[]>
+      )
+    : { current: pendingItems };
 
   const calculateSubtotal = (items: CartItem[]) => {
     return items.reduce((total, item) => {
@@ -149,7 +170,7 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
     }
   };
 
-  const renderCartItems = (items: CartItem[]) => {
+  const renderCartItems = (items: CartItem[], showUserInfo = false) => {
     if (items.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-8 text-center">
@@ -175,6 +196,14 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
                 <span className="mr-2 font-medium">{item.quantity}x</span>
                 <span>{item.name}</span>
               </div>
+
+              {/* Show user info in collaborative mode */}
+              {showUserInfo && item.userName && (
+                <div className="ml-6 flex items-center text-xs text-muted-foreground mt-1">
+                  <User className="h-3 w-3 mr-1" />
+                  <span>{item.userName}</span>
+                </div>
+              )}
 
               {/* Display selected options */}
               {item.selectedOptions &&
@@ -248,6 +277,37 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
     );
   };
 
+  const renderCollaborativeCartItems = () => {
+    return (
+      <div className="space-y-6">
+        {Object.entries(groupedPendingItems).map(([userId, items]) => {
+          const userName = items[0]?.userName || "Anonymous";
+          const isCurrentUser =
+            userId === session?.user?.id || userId === "current";
+
+          return (
+            <div key={userId} className="space-y-2">
+              {/* User header */}
+              {userId !== "current" && (
+                <div className="flex items-center gap-2 pb-1 border-b">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <span className={isCurrentUser ? "font-medium" : ""}>
+                    {isCurrentUser ? "Your items" : `${userName}'s items`}
+                  </span>
+                </div>
+              )}
+
+              {/* Items */}
+              {renderCartItems(items, false)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderOrderSummary = (
     subtotal: number,
     tax: number,
@@ -309,7 +369,9 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
         </TabsList>
 
         <TabsContent value="current" className="flex-1 overflow-auto">
-          {renderCartItems(pendingItems)}
+          {collaborativeMode
+            ? renderCollaborativeCartItems()
+            : renderCartItems(pendingItems)}
           {renderOrderSummary(pendingSubtotal, pendingTax, pendingTotal, false)}
         </TabsContent>
 
@@ -320,7 +382,7 @@ export function OrderCart({ restaurantId, tableId }: OrderCartProps) {
               <span>These items have been sent to the kitchen</span>
             </div>
           )}
-          {renderCartItems(submittedItems)}
+          {renderCartItems(submittedItems, collaborativeMode)}
           {renderOrderSummary(
             submittedSubtotal,
             submittedTax,

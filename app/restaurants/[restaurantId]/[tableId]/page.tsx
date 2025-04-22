@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { ArrowRight, ChevronLeft, ShoppingCart } from "lucide-react";
+import { ArrowRight, ChevronLeft, ShoppingCart, Users } from "lucide-react";
 
 import Loading from "@/app/loading";
 import { CustomerInfoForm } from "@/components/customer-info-form";
@@ -29,7 +29,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Switch } from "@/components/ui/switch";
 import { useTableFullData } from "@/hooks/use-restaurant-data";
+import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 import { useToast } from "@/hooks/use-toast";
 import { useCartStore } from "@/store/cartStore";
 import type { MenuItemWithRelations } from "@/types/menu-builder-types";
@@ -49,7 +51,18 @@ export default function TableOrderPage() {
     useState<MenuItemWithRelations | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
 
-  const { syncServerOrders, addToCart } = useCartStore();
+  const {
+    syncServerOrders,
+    addToCart,
+    setCollaborativeMode,
+    collaborativeMode,
+  } = useCartStore();
+
+  // Use our real-time cart hook
+  const { isConnected, otherUserCarts } = useRealTimeCart(
+    restaurantId,
+    tableId
+  );
 
   // Fetch table data using TanStack Query
   const {
@@ -109,6 +122,18 @@ export default function TableOrderPage() {
     }
   }, [session]);
 
+  // Sync other users' carts when they update
+  useEffect(() => {
+    if (collaborativeMode) {
+      Object.entries(otherUserCarts).forEach(([userId, userData]) => {
+        // Only process if we have cart data
+        if (userData.cart && Array.isArray(userData.cart)) {
+          useCartStore.getState().mergeExternalCart(userId, userData.cart);
+        }
+      });
+    }
+  }, [otherUserCarts, collaborativeMode]);
+
   const handleCustomerInfoSubmit = () => {
     setCustomerInfoSubmitted(true);
     setShowCustomerForm(false);
@@ -151,6 +176,11 @@ export default function TableOrderPage() {
       categoryName: item.categoryName,
       specialInstructions: specialInstructions,
       selectedOptions: options,
+      userId: session?.user?.id,
+      userName:
+        session?.user?.name ||
+        localStorage.getItem("customerName") ||
+        "Anonymous",
     });
 
     setShowItemDetail(false);
@@ -206,7 +236,8 @@ export default function TableOrderPage() {
               <Image
                 src={
                   restaurant?.imageUrl ||
-                  "/placeholder.svg?height=400&width=400"
+                  "/placeholder.svg?height=400&width=400" ||
+                  "/placeholder.svg"
                 }
                 alt={restaurant?.name ?? "Restaurant Image"}
                 fill
@@ -223,6 +254,23 @@ export default function TableOrderPage() {
               </p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800 animate animate-fade-right">
                 <span className="font-medium">Table {table?.number}</span>
+              </div>
+
+              {/* Collaborative mode toggle */}
+              <div className="mt-4 flex items-center gap-2">
+                <Switch
+                  checked={collaborativeMode}
+                  onCheckedChange={setCollaborativeMode}
+                  id="collaborative-mode"
+                />
+                <label
+                  htmlFor="collaborative-mode"
+                  className="text-sm flex items-center gap-1"
+                >
+                  <Users className="h-4 w-4" />
+                  Collaborative Mode{" "}
+                  {isConnected ? "(Connected)" : "(Connecting...)"}
+                </label>
               </div>
             </div>
           </div>
@@ -297,7 +345,11 @@ export default function TableOrderPage() {
               </SheetDescription>
             </SheetHeader>
             <div className="mt-6">
-              <OrderCart restaurantId={restaurantId} tableId={tableId} />
+              <OrderCart
+                restaurantId={restaurantId}
+                tableId={tableId}
+                collaborativeMode={collaborativeMode}
+              />
             </div>
           </SheetContent>
         </Sheet>
