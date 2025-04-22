@@ -56,7 +56,11 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
         console.log("Received cart update:", data);
 
         // Update other users' carts
-        if (data.userId && data.userId !== session?.user?.id) {
+        if (
+          data.userId &&
+          data.userId !== session?.user?.id &&
+          data.userId !== localStorage.getItem("customerUserId")
+        ) {
           setOtherUserCarts((prev) => ({
             ...prev,
             [data.userId]: {
@@ -67,8 +71,8 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
         }
       });
 
-      socketInstance.on("order-update", (data) => {
-        console.log("Received order update:", data);
+      socketInstance.on("order-submitted", (data) => {
+        console.log("Order submitted by another user:", data);
         setLastOrderUpdate(data);
 
         // Fetch latest data to sync with server
@@ -125,6 +129,11 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
           restaurantId,
           tableId,
           order,
+          userId: session?.user?.id || localStorage.getItem("customerUserId"),
+          userName:
+            session?.user?.name ||
+            localStorage.getItem("customerName") ||
+            "Anonymous",
         });
 
         // Invalidate the query to refresh data
@@ -138,6 +147,7 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
       tableId,
       markItemsAsSubmitted,
       fetchLatestOrders,
+      session,
     ]
   );
 

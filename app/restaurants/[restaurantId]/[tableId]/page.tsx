@@ -70,13 +70,13 @@ function TableOrderPageContent() {
     tableId
   );
 
-  // Fetch table data using custom hook with React Query
+  // Fetch table data using custom hook with React Query - pass isConnected to control refetch behavior
   const {
     data: tableData,
     isLoading,
     error,
     refetch,
-  } = useTableFullData(restaurantId, tableId);
+  } = useTableFullData(restaurantId, tableId, isConnected);
 
   // Extract data once it's loaded
   const restaurant = tableData?.restaurant;
@@ -249,7 +249,8 @@ function TableOrderPageContent() {
               <Image
                 src={
                   restaurant?.imageUrl ||
-                  "/placeholder.svg?height=400&width=400"
+                  "/placeholder.svg?height=400&width=400" ||
+                  "/placeholder.svg"
                 }
                 alt={restaurant?.name ?? "Restaurant Image"}
                 fill
