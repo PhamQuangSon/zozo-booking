@@ -82,8 +82,7 @@ function TableOrderPageContent() {
   const restaurant = tableData?.restaurant;
   const table = tableData?.table;
   const orders = tableData?.orders;
-  console.log("Table Data:", tableData);
-  console.log("Orders:", orders);
+
   // Prepare all menu items for display
   const allItems = React.useMemo(() => {
     if (!restaurant?.categories) return [];

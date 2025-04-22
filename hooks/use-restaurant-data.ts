@@ -50,7 +50,7 @@ export function useTableFullData(restaurantId: string, tableId: string) {
     },
     staleTime: 30000, // Data is considered fresh for 30 seconds
     refetchOnWindowFocus: true,
-    refetchInterval: 60000, // Refetch every minute
+    refetchInterval: 60000 * 5, // Refetch every minute
   });
 
   return {
