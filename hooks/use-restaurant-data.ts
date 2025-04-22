@@ -36,15 +36,28 @@ export function useRestaurantTables(restaurantId: string) {
 }
 
 // Hook for fetching full table data (including menu items) att app/restaurants/[restaurantId]/[tableId]/page.tsx full has orders
+// and cart
+// This is used in the table page to get the full data for a specific table
 export function useTableFullData(restaurantId: string, tableId: string) {
-  return useQuery({
-    queryKey: ["table-full-data", restaurantId, tableId],
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["tableData", restaurantId, tableId],
     queryFn: async () => {
-      const result = await getTableFullData(restaurantId, tableId);
+      const result = await getTableFullData(restaurantId, tableId)
       if (!result.success) {
-        throw new Error(result.error || "Failed to fetch table data");
+        throw new Error(result.error || "Failed to fetch table data")
       }
-      return result.data;
+      return result.data
     },
-  });
+    staleTime: 30000, // Data is considered fresh for 30 seconds
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // Refetch every minute
+  })
+
+  return {
+    data,
+    isLoading,
+    error,
+    refetch,
+  }
 }
+

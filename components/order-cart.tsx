@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { Clock, Trash2, User } from "lucide-react";
+import { Clock, Trash2, User, RefreshCw } from "lucide-react";
 
 import { createTableOrder } from "@/actions/table-actions";
 import { Badge } from "@/components/ui/badge";
@@ -14,19 +14,23 @@ import { formatCurrency } from "@/lib/i18n";
 import { type CartItem, useCartStore } from "@/store/cartStore";
 import { useCurrencyStore } from "@/store/currency-store";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 
 interface OrderCartProps {
   restaurantId: string;
   tableId: string;
   collaborativeMode?: boolean;
+  notifyOrderSubmitted?: (order: any) => void;
 }
 
 export function OrderCart({
   restaurantId,
   tableId,
   collaborativeMode = false,
+  notifyOrderSubmitted,
 }: OrderCartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const { currency } = useCurrencyStore();
   const { data: session } = useSession();
@@ -36,6 +40,13 @@ export function OrderCart({
     getSubmittedItems,
     getPendingItems,
   } = useCartStore();
+
+  // Use our real-time cart hook
+  const {
+    isConnected,
+    notifyOrderSubmitted: notifyOrderSubmittedRealtime,
+    fetchLatestOrders,
+  } = useRealTimeCart(restaurantId, tableId);
 
   // Get pending and submitted items
   const pendingItems =
@@ -82,6 +93,13 @@ export function OrderCart({
   const submittedSubtotal = calculateSubtotal(submittedItems);
   const submittedTax = submittedSubtotal * 0.08; // 8% tax
   const submittedTotal = submittedSubtotal + submittedTax;
+
+  // Function to refresh orders
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchLatestOrders();
+    setIsRefreshing(false);
+  };
 
   const handleSubmitOrder = async () => {
     if (!restaurantId || !tableId || pendingItems.length === 0) {
@@ -149,8 +167,13 @@ export function OrderCart({
           description: "Your order has been sent to the kitchen!",
         });
 
-        // Mark items as submitted instead of removing them
+        // Mark items as submitted
         markItemsAsSubmitted(restaurantId, tableId, Number(result.data?.id));
+
+        // Notify other users about the order using the provided function
+        if (notifyOrderSubmitted) {
+          notifyOrderSubmitted(result.data);
+        }
       } else {
         toast({
           title: "Error",
@@ -188,7 +211,7 @@ export function OrderCart({
       <div className="space-y-4">
         {items.map((item: CartItem, index: number) => (
           <div
-            key={`item-${item.id}-${index}`}
+            key={`item-${item.id}-${index}-${item.userId || "none"}`}
             className="flex justify-between"
           >
             <div>
@@ -209,40 +232,58 @@ export function OrderCart({
               {item.selectedOptions &&
                 Object.entries(item.selectedOptions).length > 0 && (
                   <div className="ml-6 text-sm text-muted-foreground">
-                    {Object.values(item.selectedOptions).map(
-                      (optionGroup: any, groupIndex: number) => (
-                        <div
-                          key={`group-${optionGroup.id}-${groupIndex}`}
-                          className="mb-2"
-                        >
-                          <strong>{optionGroup.name}</strong>
-
-                          {optionGroup && typeof optionGroup === "object" && (
-                            <div className="mt-2 space-y-1">
-                              {Object.values(optionGroup).map(
-                                (subOption: any, subIndex: number) => {
-                                  if (
-                                    subOption?.name &&
-                                    subOption?.priceAdjustment !== undefined
-                                  ) {
-                                    return (
-                                      <div
-                                        key={`sub-${subOption.id}-${groupIndex}-${subIndex}`}
-                                        className="text-sm pl-4 border-l-2 border-gray-200"
-                                      >
-                                        {subOption.name}
-                                        {subOption.priceAdjustment > 0 &&
-                                          ` (+${formatCurrency(subOption.priceAdjustment, currency)})`}
-                                      </div>
-                                    );
+                    {Object.entries(item.selectedOptions).map(
+                      ([optionId, optionValue], groupIndex) => {
+                        // Handle different option structures
+                        if (
+                          typeof optionValue === "object" &&
+                          optionValue !== null
+                        ) {
+                          if ("name" in optionValue) {
+                            // Single option case
+                            return (
+                              <div
+                                key={`option-${optionId}-${groupIndex}`}
+                                className="mb-2"
+                              >
+                                <strong>{optionValue.name}</strong>
+                                {optionValue.priceAdjustment > 0 &&
+                                  ` (+${formatCurrency(optionValue.priceAdjustment, currency)})`}
+                              </div>
+                            );
+                          } else {
+                            // Multiple options case
+                            return (
+                              <div
+                                key={`option-group-${optionId}-${groupIndex}`}
+                                className="mb-2"
+                              >
+                                {Object.entries(optionValue).map(
+                                  (
+                                    [choiceId, choice]: [string, any],
+                                    choiceIndex
+                                  ) => {
+                                    if (choice?.name) {
+                                      return (
+                                        <div
+                                          key={`choice-${choiceId}-${choiceIndex}`}
+                                          className="text-sm pl-4 border-l-2 border-gray-200"
+                                        >
+                                          {choice.name}
+                                          {choice.priceAdjustment > 0 &&
+                                            ` (+${formatCurrency(choice.priceAdjustment, currency)})`}
+                                        </div>
+                                      );
+                                    }
+                                    return null;
                                   }
-                                  return null;
-                                }
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )
+                                )}
+                              </div>
+                            );
+                          }
+                        }
+                        return null;
+                      }
                     )}
                   </div>
                 )}
@@ -265,7 +306,7 @@ export function OrderCart({
                   variant="ghost"
                   size="icon"
                   className="h-6 w-6"
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item.id, item.userId || "none")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -281,23 +322,22 @@ export function OrderCart({
     return (
       <div className="space-y-6">
         {Object.entries(groupedPendingItems).map(([userId, items]) => {
-          const userName = items[0]?.userName || "Anonymous";
+          const userName = items[0]?.userName || "Anonymous 2";
           const isCurrentUser =
-            userId === session?.user?.id || userId === "current";
+            userId === session?.user?.id ||
+            (userId === "anonymous" && !session?.user?.id);
 
           return (
             <div key={userId} className="space-y-2">
               {/* User header */}
-              {userId !== "current" && (
-                <div className="flex items-center gap-2 pb-1 border-b">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <span className={isCurrentUser ? "font-medium" : ""}>
-                    {isCurrentUser ? "Your items" : `${userName}'s items`}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center gap-2 pb-1 border-b">
+                <Avatar className="h-6 w-6">
+                  <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <span className={isCurrentUser ? "font-medium" : ""}>
+                  {isCurrentUser ? "Your items" : `${userName}'s items`}
+                </span>
+              </div>
 
               {/* Items */}
               {renderCartItems(items, false)}
@@ -348,6 +388,21 @@ export function OrderCart({
 
   return (
     <div className="flex flex-col h-full">
+      <div className="absolute top-9 right-6 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-1 text-xs"
+        >
+          <RefreshCw
+            className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`}
+          />
+          Refresh
+        </Button>
+      </div>
+
       <Tabs defaultValue="current" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="current" className="relative">

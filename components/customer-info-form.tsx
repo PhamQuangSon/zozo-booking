@@ -39,6 +39,12 @@ export function CustomerInfoForm({ onSubmit }: CustomerInfoFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Generate a unique customer ID if not already present
+    if (!localStorage.getItem("customerUserId")) {
+      const anonymousId = `anon-${Math.random().toString(36).substring(2, 15)}`;
+      localStorage.setItem("customerUserId", anonymousId);
+    }
+
     // Save to localStorage for future use
     localStorage.setItem("customerName", name);
     localStorage.setItem("customerEmail", email);

@@ -50,7 +50,13 @@ export async function getRestaurantOrders(
           });
           return { ...order, user };
         }
-        return { ...order, user: null };
+        return {
+          ...order,
+          user: {
+            name: null,
+            email: null,
+          },
+        };
       }),
     );
 

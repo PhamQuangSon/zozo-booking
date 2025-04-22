@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ArrowRight, ChevronLeft, ShoppingCart, Users } from "lucide-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Loading from "@/app/loading";
 import { CustomerInfoForm } from "@/components/customer-info-form";
@@ -30,13 +31,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { useTableFullData } from "@/hooks/use-restaurant-data";
 import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 import { useToast } from "@/hooks/use-toast";
 import { useCartStore } from "@/store/cartStore";
 import type { MenuItemWithRelations } from "@/types/menu-builder-types";
 
-export default function TableOrderPage() {
+// Create a client
+const queryClient = new QueryClient();
+
+// Wrapper component with QueryClientProvider
+function TableOrderPageContent() {
   const params = useParams();
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -59,23 +65,25 @@ export default function TableOrderPage() {
   } = useCartStore();
 
   // Use our real-time cart hook
-  const { isConnected, otherUserCarts } = useRealTimeCart(
+  const { isConnected, otherUserCarts, notifyOrderSubmitted } = useRealTimeCart(
     restaurantId,
     tableId
   );
 
-  // Fetch table data using TanStack Query
+  // Fetch table data using custom hook with React Query
   const {
     data: tableData,
     isLoading,
     error,
+    refetch,
   } = useTableFullData(restaurantId, tableId);
 
   // Extract data once it's loaded
   const restaurant = tableData?.restaurant;
   const table = tableData?.table;
   const orders = tableData?.orders;
-
+  console.log("Table Data:", tableData);
+  console.log("Orders:", orders);
   // Prepare all menu items for display
   const allItems = React.useMemo(() => {
     if (!restaurant?.categories) return [];
@@ -114,8 +122,9 @@ export default function TableOrderPage() {
     // Check if customer info is already in localStorage
     const savedName = localStorage.getItem("customerName");
     const savedEmail = localStorage.getItem("customerEmail");
+    const savedUserId = localStorage.getItem("customerUserId");
 
-    if (savedName && savedEmail) {
+    if (savedName && savedEmail && savedUserId) {
       setCustomerInfoSubmitted(true);
     } else {
       setShowCustomerForm(true);
@@ -165,6 +174,12 @@ export default function TableOrderPage() {
     quantity: number,
     specialInstructions: string
   ) => {
+    const userId = session?.user?.id || localStorage.getItem("customerUserId") || "";
+    const userName =
+      session?.user?.name ||
+      localStorage.getItem("customerName") ||
+      "Anonymous 1";
+
     addToCart({
       id: item.id.toString(),
       name: item.name,
@@ -176,11 +191,9 @@ export default function TableOrderPage() {
       categoryName: item.categoryName,
       specialInstructions: specialInstructions,
       selectedOptions: options,
-      userId: session?.user?.id,
-      userName:
-        session?.user?.name ||
-        localStorage.getItem("customerName") ||
-        "Anonymous",
+      userId,
+      userName,
+      timestamp: Date.now(),
     });
 
     setShowItemDetail(false);
@@ -236,8 +249,7 @@ export default function TableOrderPage() {
               <Image
                 src={
                   restaurant?.imageUrl ||
-                  "/placeholder.svg?height=400&width=400" ||
-                  "/placeholder.svg"
+                  "/placeholder.svg?height=400&width=400"
                 }
                 alt={restaurant?.name ?? "Restaurant Image"}
                 fill
@@ -259,18 +271,18 @@ export default function TableOrderPage() {
               {/* Collaborative mode toggle */}
               <div className="mt-4 flex items-center gap-2">
                 <Switch
+                  id="collaborative-mode"
                   checked={collaborativeMode}
                   onCheckedChange={setCollaborativeMode}
-                  id="collaborative-mode"
                 />
-                <label
+                <Label
                   htmlFor="collaborative-mode"
                   className="text-sm flex items-center gap-1"
                 >
                   <Users className="h-4 w-4" />
                   Collaborative Mode{" "}
                   {isConnected ? "(Connected)" : "(Connecting...)"}
-                </label>
+                </Label>
               </div>
             </div>
           </div>
@@ -349,11 +361,21 @@ export default function TableOrderPage() {
                 restaurantId={restaurantId}
                 tableId={tableId}
                 collaborativeMode={collaborativeMode}
+                notifyOrderSubmitted={notifyOrderSubmitted}
               />
             </div>
           </SheetContent>
         </Sheet>
       </div>
     </main>
+  );
+}
+
+// Export the page with QueryClientProvider
+export default function TableOrderPage() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TableOrderPageContent />
+    </QueryClientProvider>
   );
 }
