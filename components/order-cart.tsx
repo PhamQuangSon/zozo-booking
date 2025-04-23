@@ -20,14 +20,12 @@ interface OrderCartProps {
   restaurantId: string;
   tableId: string;
   collaborativeMode?: boolean;
-  notifyOrderSubmitted?: (order: any) => void;
 }
 
 export function OrderCart({
   restaurantId,
   tableId,
   collaborativeMode = false,
-  notifyOrderSubmitted,
 }: OrderCartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -42,11 +40,8 @@ export function OrderCart({
   } = useCartStore();
 
   // Use our real-time cart hook
-  const {
-    isConnected,
-    notifyOrderSubmitted: notifyOrderSubmittedRealtime,
-    fetchLatestOrders,
-  } = useRealTimeCart(restaurantId, tableId);
+  const { isConnected, notifyOrderSubmitted, fetchLatestOrders } =
+    useRealTimeCart(restaurantId, tableId);
 
   // Get pending and submitted items
   const pendingItems =

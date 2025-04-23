@@ -13,7 +13,7 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
   const [otherUserCarts, setOtherUserCarts] = useState<Record<string, any>>({});
   const [lastOrderUpdate, setLastOrderUpdate] = useState<any>(null);
 
-  const { cart, syncServerOrders, markItemsAsSubmitted } = useCartStore();
+  const { cart, markItemsAsSubmitted } = useCartStore();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
 

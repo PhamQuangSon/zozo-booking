@@ -62,10 +62,11 @@ function TableOrderPageContent() {
     addToCart,
     setCollaborativeMode,
     collaborativeMode,
+    mergeExternalCart,
   } = useCartStore();
 
   // Use our real-time cart hook
-  const { isConnected, otherUserCarts, notifyOrderSubmitted } = useRealTimeCart(
+  const { isConnected, otherUserCarts } = useRealTimeCart(
     restaurantId,
     tableId
   );
@@ -136,11 +137,11 @@ function TableOrderPageContent() {
       Object.entries(otherUserCarts).forEach(([userId, userData]) => {
         // Only process if we have cart data
         if (userData.cart && Array.isArray(userData.cart)) {
-          useCartStore.getState().mergeExternalCart(userId, userData.cart);
+          mergeExternalCart(userId, userData.cart);
         }
       });
     }
-  }, [otherUserCarts, collaborativeMode]);
+  }, [otherUserCarts, collaborativeMode, mergeExternalCart]);
 
   const handleCustomerInfoSubmit = () => {
     setCustomerInfoSubmitted(true);
@@ -362,7 +363,6 @@ function TableOrderPageContent() {
                 restaurantId={restaurantId}
                 tableId={tableId}
                 collaborativeMode={collaborativeMode}
-                notifyOrderSubmitted={notifyOrderSubmitted}
               />
             </div>
           </SheetContent>
