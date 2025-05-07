@@ -1,3 +1,4 @@
+import Image from "next/image"
 import type { Restaurant } from "@/actions/restaurant-actions";
 import { getRestaurants } from "@/actions/restaurant-actions";
 import { Carousel } from "@/components/carousel";
@@ -74,7 +75,18 @@ export default async function Home() {
 
         {/* Scrolling Banner */}
         <ScrollingBanner text="PIZZA   BURGER   SUSHI   PASTA   DESSERT   DRINKS   ZOZO BOOKING" />
-        <div className="bg-[url(/banner-bg.jpg)] bg-local">
+        <div className="relative w-full overflow-hidden">
+          {/* Background Image */}
+          <Image
+            src="/banner-bg.jpg"
+            alt="Banner"
+            fill
+            priority
+            fetchPriority="high"
+            className="object-cover -z-10"
+            sizes="100vw"
+          />
+
           <div className="container mx-auto py-16">
             {/* How It Works */}
             <HowItWorks />

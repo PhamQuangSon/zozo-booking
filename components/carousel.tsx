@@ -88,6 +88,7 @@ export function Carousel({
                 sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover opacity-90"
                 priority={index === 0}
+                fetchPriority="high"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent"></div>
 
