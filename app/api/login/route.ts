@@ -2,11 +2,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sign } from "jsonwebtoken";
 
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const body = await request.json();
+    const email = body?.email as string | undefined;
+    const password = body?.password as string | undefined;
+
+    if (!email || !password) {
+      return NextResponse.json(errorResponse("Missing email or password"), {
+        status: 400,
+      });
+    }
 
     // Find the user
     const user = await prisma.user.findUnique({
@@ -14,15 +23,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user || !user.password) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
-      );
+      return NextResponse.json(errorResponse("Invalid credentials"), {
+        status: 401,
+      });
     }
 
     if (!user.emailVerified) {
       return NextResponse.json(
-        { error: "Please verify your email before logging in" },
+        errorResponse("Please verify your email before logging in"),
         { status: 401 }
       );
     }
@@ -30,10 +38,9 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isCorrectPassword = await bcrypt.compare(password, user.password);
     if (!isCorrectPassword) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 }
-      );
+      return NextResponse.json(errorResponse("Invalid credentials"), {
+        status: 401,
+      });
     }
 
     // Create a JWT token
@@ -49,7 +56,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Create the response
-    const response = NextResponse.json({ success: true });
+    const response = NextResponse.json(successResponse({ success: true }));
 
     // Set the session cookie on the response
     response.cookies.set({
@@ -64,9 +71,8 @@ export async function POST(request: NextRequest) {
     return response; // Return the response with the cookie set
   } catch (error) {
     console.error("Login error:", error);
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json(errorResponse("An unexpected error occurred"), {
+      status: 500,
+    });
   }
 }

@@ -1,18 +1,22 @@
-import { NextResponse } from "next/server";
 import { Server } from "socket.io";
+
+import { successResponse } from "@/lib/apiResponse";
 
 // Global variable to store the Socket.IO server instance
 let io: Server;
 
 export async function GET() {
+  const { NextResponse } = await import("next/server");
+
   // If the Socket.IO server is already running, return early
   if (io) {
-    return NextResponse.json({
-      success: true,
-      message: "Socket server already running",
-    });
+    return NextResponse.json(
+      successResponse({
+        success: true,
+        message: "Socket server already running",
+      })
+    );
   }
-
   // Create a new Socket.IO server
   io = new Server({
     path: "/api/socket",
@@ -58,5 +62,10 @@ export async function GET() {
     });
   });
 
-  return NextResponse.json({ success: true, message: "Socket server started" });
+  return NextResponse.json(
+    successResponse({
+      success: true,
+      message: "Socket server started",
+    })
+  );
 }

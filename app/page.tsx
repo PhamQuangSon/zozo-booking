@@ -1,4 +1,5 @@
-import Image from "next/image"
+import Image from "next/image";
+
 import type { Restaurant } from "@/actions/restaurant-actions";
 import { getRestaurants } from "@/actions/restaurant-actions";
 import { Carousel } from "@/components/carousel";
