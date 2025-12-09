@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { safeLocalStorage } from "@/lib/utils";
 
 interface CustomerInfoFormProps {
   onSubmit: () => void;
@@ -21,8 +22,8 @@ export function CustomerInfoForm({ onSubmit }: CustomerInfoFormProps) {
   // Load saved customer info from localStorage
   useEffect(() => {
     if (!session) {
-      const savedName = localStorage.getItem("customerName");
-      const savedEmail = localStorage.getItem("customerEmail");
+      const savedName = safeLocalStorage.getItem("customerName");
+      const savedEmail = safeLocalStorage.getItem("customerEmail");
       if (savedName) setName(savedName);
       if (savedEmail) setEmail(savedEmail);
     }

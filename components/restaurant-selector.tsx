@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { safeLocalStorage, safeParseJSON } from "@/lib/utils";
 
 interface Restaurant {
   id: string;
@@ -26,6 +27,8 @@ export function RestaurantSelector() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<string>("");
   const { toast } = useToast();
   useEffect(() => {
+    let isCancelled = false;
+
     // Fetch restaurants - in a real app, this would be an API call
     const fetchRestaurants = async () => {
       try {
@@ -34,44 +37,52 @@ export function RestaurantSelector() {
           { id: "1", name: "Pasta Paradise" },
           { id: "2", name: "Sushi Sensation" },
         ];
-        setRestaurants(mockRestaurants);
+
+        if (!isCancelled) {
+          setRestaurants(mockRestaurants);
+        }
 
         const result = await getRestaurants();
-        if (result.success) {
-          setRestaurants(
-            result.data.map((r) => ({ id: r.id.toString(), name: r.name }))
-          );
-        } else {
-          toast({
-            title: "Error",
-            description: result.error || "Failed to load restaurants",
-            variant: "destructive",
-          });
-        }
-
-        // Check if we have a saved default restaurant
-        const savedRestaurant = localStorage.getItem("defaultRestaurant");
-        if (savedRestaurant) {
-          try {
-            const parsed = JSON.parse(savedRestaurant);
-            setSelectedRestaurant(parsed.id);
-          } catch (e) {
-            console.error("Failed to parse saved restaurant:", e);
-            // Set first restaurant as default if parsing fails
-            if (mockRestaurants.length > 0) {
-              setSelectedRestaurant(mockRestaurants[0].id);
-            }
+        if (!isCancelled) {
+          if (result.success) {
+            setRestaurants(
+              result.data.map((r) => ({ id: r.id.toString(), name: r.name }))
+            );
+          } else {
+            toast({
+              title: "Error",
+              description: result.error || "Failed to load restaurants",
+              variant: "destructive",
+            });
           }
-        } else if (mockRestaurants.length > 0) {
-          // Set first restaurant as default if none is saved
-          setSelectedRestaurant(mockRestaurants[0].id);
+
+          // Check if we have a saved default restaurant
+          const savedRestaurant = safeLocalStorage.getItem("defaultRestaurant");
+          const fallback =
+            mockRestaurants.length > 0 ? mockRestaurants[0] : null;
+
+          if (savedRestaurant) {
+            const parsed = safeParseJSON(savedRestaurant, fallback);
+            if (parsed) {
+              setSelectedRestaurant(parsed.id);
+            }
+          } else if (fallback) {
+            // Set first restaurant as default if none is saved
+            setSelectedRestaurant(fallback.id);
+          }
         }
       } catch (error) {
-        console.error("Error fetching restaurants:", error);
+        if (!isCancelled) {
+          console.error("Error fetching restaurants:", error);
+        }
       }
     };
 
     fetchRestaurants();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [toast]);
 
   const handleRestaurantChange = (value: string) => {
@@ -81,7 +92,7 @@ export function RestaurantSelector() {
     const restaurant = restaurants.find((r) => r.id === value);
     if (restaurant) {
       // Save to localStorage
-      localStorage.setItem("defaultRestaurant", JSON.stringify(restaurant));
+      safeLocalStorage.setItem("defaultRestaurant", JSON.stringify(restaurant));
 
       // Dispatch a custom event to notify other components
       const event = new CustomEvent(RESTAURANT_CHANGE_EVENT, {

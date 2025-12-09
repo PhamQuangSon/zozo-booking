@@ -40,7 +40,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { cn, safeLocalStorage, safeParseJSON } from "@/lib/utils";
 
 // Add this near the top of the file, after the imports
 function debugLog(message: string, data?: any) {
@@ -92,20 +92,11 @@ export function AdminSidebar() {
       try {
         // In a real app, this would be an API call to fetch restaurants
         // For now, we'll use the data from seed.ts
-        const savedRestaurant = localStorage.getItem("defaultRestaurant");
+        const savedRestaurant = safeLocalStorage.getItem("defaultRestaurant");
+        const defaultFallback = { id: "1", name: "Pasta Paradise" };
 
-        if (savedRestaurant) {
-          try {
-            setDefaultRestaurant(JSON.parse(savedRestaurant));
-          } catch (e) {
-            console.error("Failed to parse saved restaurant:", e);
-            // Fallback to a default from seed data
-            setDefaultRestaurant({ id: "1", name: "Pasta Paradise" });
-          }
-        } else {
-          // Set a default from seed data if none is saved
-          setDefaultRestaurant({ id: "1", name: "Pasta Paradise" });
-        }
+        const restaurant = safeParseJSON(savedRestaurant, defaultFallback);
+        setDefaultRestaurant(restaurant);
       } catch (error) {
         console.error("Error fetching restaurants:", error);
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 
 import { getRestaurants } from "@/actions/restaurant-actions";
@@ -24,102 +24,146 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
+interface Restaurant {
+  id: string;
+  name: string;
+}
+
+interface Table {
+  id: string;
+  number: number;
+}
+
+type QRType = "table" | "restaurant";
+
 export default function QRCodeGenerator() {
   const [restaurantId, setRestaurantId] = useState("");
   const [tableId, setTableId] = useState("");
-  const [qrType, setQrType] = useState("table");
+  const [qrType, setQrType] = useState<QRType>("table");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
-  const [restaurants, setRestaurants] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [tables, setTables] = useState<{ id: string; number: number }[]>([]);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [tables, setTables] = useState<Table[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-  // Fetch restaurants on component mount
-  useEffect(() => {
-    const fetchRestaurants = async () => {
-      try {
-        const result = await getRestaurants();
-        if (result.success) {
-          setRestaurants(
-            result.data.map((r) => ({ id: r.id.toString(), name: r.name }))
-          );
-        } else {
-          toast({
-            title: "Error",
-            description: result.error || "Failed to load restaurants",
-            variant: "destructive",
-          });
-        }
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
 
-        setIsLoading(false);
+  const { toast } = useToast();
+
+  const showError = useCallback(
+    (message: string) => {
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      });
+    },
+    [toast]
+  );
+
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setIsLoading(true);
+        const result = await getRestaurants();
+
+        if (result.success) {
+          const restaurantData = result.data.map((r) => ({
+            id: r.id.toString(),
+            name: r.name,
+          }));
+          setRestaurants(restaurantData);
+        } else {
+          showError(result.error || "Failed to load restaurants");
+        }
       } catch (error) {
         console.error("Error fetching restaurants:", error);
+        showError("Failed to load restaurants");
+      } finally {
         setIsLoading(false);
       }
     };
 
-    fetchRestaurants();
-  }, [toast]);
+    fetchInitialData();
+  }, []);
 
-  // Fetch tables when restaurant is selected
   useEffect(() => {
     const fetchTables = async () => {
       if (!restaurantId) {
         setTables([]);
+        setTableId(""); // Reset table selection
         return;
       }
 
       try {
+        setIsLoadingTables(true);
         const { success, data, error } =
           await getRestaurantTables(restaurantId);
-        if (success && data) {
-          setTables(
-            data.map((t) => ({ id: t.id.toString(), number: t.number }))
-          );
-        } else {
-          toast({
-            title: "Error",
-            description: error || "Failed to fetch tables",
-            variant: "destructive",
-          });
-        }
 
+        if (success && data) {
+          const tableData = data.map((t) => ({
+            id: t.id.toString(),
+            number: t.number,
+          }));
+          setTables(tableData);
+        } else {
+          showError(error || "Failed to fetch tables");
+          setTables([]);
+        }
         setTableId(""); // Reset table selection
       } catch (error) {
         console.error("Error fetching tables:", error);
+        showError("Failed to fetch tables");
+        setTables([]);
+      } finally {
+        setIsLoadingTables(false);
       }
     };
 
     fetchTables();
-  }, [restaurantId, toast]);
+  }, [restaurantId, showError]);
 
-  const handleRestaurantChange = (value: string) => {
+  const generateTableQR = useCallback(() => {
+    if (!restaurantId || !tableId) return "";
+
+    const baseUrl = "https://v0-next-js-zozo-booking.vercel.app";
+    const tableUrl = `${baseUrl}/restaurants/${restaurantId}/${tableId}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(tableUrl)}`;
+  }, [restaurantId, tableId]);
+
+  const generateRestaurantQR = useCallback(() => {
+    if (!restaurantId) return "";
+
+    const baseUrl = "https://v0-next-js-zozo-booking.vercel.app";
+    const restaurantUrl = `${baseUrl}/restaurant/${restaurantId}`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(restaurantUrl)}`;
+  }, [restaurantId]);
+
+  const handleRestaurantChange = useCallback((value: string) => {
     setRestaurantId(value);
     setQrCodeUrl(""); // Reset QR code when restaurant changes
-  };
+  }, []);
 
-  const generateQRCode = () => {
-    // In a real app, this would call an API to generate a QR code
-    // For now, we'll just create a placeholder URL
-    if (qrType === "table" && restaurantId && tableId) {
-      const selectedTable = tables.find((t) => t.id === tableId);
-      if (selectedTable) {
-        setQrCodeUrl(
-          `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://v0-next-js-zozo-booking.vercel.app/restaurants/${restaurantId}/${tableId}`
-        );
-      }
-    } else if (qrType === "restaurant" && restaurantId) {
-      setQrCodeUrl(
-        `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://v0-next-js-zozo-booking.vercel.app/restaurant/${restaurantId}`
-      );
+  const handleQrTypeChange = useCallback((value: string) => {
+    setQrType(value as QRType);
+    setQrCodeUrl(""); // Reset QR code when type changes
+  }, []);
+
+  const generateQRCode = useCallback(() => {
+    let newQrUrl = "";
+
+    if (qrType === "table") {
+      newQrUrl = generateTableQR();
+    } else {
+      newQrUrl = generateRestaurantQR();
     }
-  };
 
-  const downloadQRCode = () => {
-    // In a real app, this would download the QR code
-    window.open(qrCodeUrl, "_blank");
-  };
+    setQrCodeUrl(newQrUrl);
+  }, [qrType, generateTableQR, generateRestaurantQR]);
+
+  const downloadQRCode = useCallback(() => {
+    if (qrCodeUrl) {
+      window.open(qrCodeUrl, "_blank");
+    }
+  }, [qrCodeUrl]);
 
   return (
     <div className="container mx-auto py-10">
@@ -131,10 +175,7 @@ export default function QRCodeGenerator() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Tabs
-            defaultValue="table"
-            onValueChange={(value) => setQrType(value)}
-          >
+          <Tabs defaultValue="table" onValueChange={handleQrTypeChange}>
             <TabsList className="mb-4">
               <TabsTrigger value="table">Table QR Code</TabsTrigger>
               <TabsTrigger value="restaurant">Restaurant QR Code</TabsTrigger>
@@ -172,16 +213,18 @@ export default function QRCodeGenerator() {
                   <Select
                     value={tableId}
                     onValueChange={setTableId}
-                    disabled={!restaurantId || tables.length === 0}
+                    disabled={!restaurantId || isLoadingTables}
                   >
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
                           !restaurantId
                             ? "Select a restaurant first"
-                            : tables.length === 0
+                            : isLoadingTables
                               ? "Loading tables..."
-                              : "Select table"
+                              : tables.length === 0
+                                ? "No tables found"
+                                : "Select table"
                         }
                       />
                     </SelectTrigger>
@@ -198,7 +241,7 @@ export default function QRCodeGenerator() {
 
               <Button
                 onClick={generateQRCode}
-                disabled={!restaurantId || !tableId}
+                disabled={!restaurantId || !tableId || isLoadingTables}
               >
                 Generate QR Code
               </Button>
@@ -230,7 +273,10 @@ export default function QRCodeGenerator() {
                 </Select>
               </div>
 
-              <Button onClick={generateQRCode} disabled={!restaurantId}>
+              <Button
+                onClick={generateQRCode}
+                disabled={!restaurantId || isLoading}
+              >
                 Generate QR Code
               </Button>
             </TabsContent>
@@ -238,13 +284,13 @@ export default function QRCodeGenerator() {
 
           {qrCodeUrl && (
             <div className="mt-8 flex flex-col items-center">
-              <div className="border p-4 rounded-lg mb-4">
+              <div className="border p-4 rounded-lg mb-4 relative w-48 h-48">
                 <Image
-                  src={qrCodeUrl || "/placeholder.svg"}
+                  src={qrCodeUrl}
                   alt="QR Code"
-                  className="w-48 h-48"
                   fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-contain"
+                  sizes="192px"
                 />
               </div>
               <Button onClick={downloadQRCode}>Download QR Code</Button>

@@ -26,74 +26,91 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
 
   // Initialize socket connection
   useEffect(() => {
+    let isMounted = true;
+    let currentSocket: Socket | null = null;
+
     // Initialize the socket
     const socketInit = async () => {
-      // Make sure the socket server is running
-      await fetch("/api/socket");
+      try {
+        // Make sure the socket server is running
+        await fetch("/api/socket");
 
-      const socketInstance = io({
-        path: "/api/socket",
-        addTrailingSlash: false,
-      });
+        if (!isMounted) return; // Prevent socket creation if component is unmounted
 
-      socketInstance.on("connect", () => {
-        console.log("Socket connected");
-        setIsConnected(true);
+        const socketInstance = io({
+          path: "/api/socket",
+          addTrailingSlash: false,
+        });
 
-        // Join the table room
-        socketInstance.emit("join-table", { restaurantId, tableId });
+        currentSocket = socketInstance;
 
-        // Fetch latest data when connected
-        fetchLatestOrders();
-      });
+        socketInstance.on("connect", () => {
+          if (!isMounted) return;
+          console.log("Socket connected");
+          setIsConnected(true);
 
-      socketInstance.on("disconnect", () => {
-        console.log("Socket disconnected");
-        setIsConnected(false);
-      });
+          // Join the table room
+          socketInstance.emit("join-table", { restaurantId, tableId });
 
-      socketInstance.on("cart-updated", (data) => {
-        console.log("Received cart update:", data);
+          // Fetch latest data when connected
+          fetchLatestOrders();
+        });
 
-        // Update other users' carts
-        if (
-          data.userId &&
-          data.userId !== session?.user?.id &&
-          data.userId !== localStorage.getItem("customerUserId")
-        ) {
-          setOtherUserCarts((prev) => ({
-            ...prev,
-            [data.userId]: {
-              cart: data.cart,
-              userName: data.userName || "Anonymous",
-            },
-          }));
+        socketInstance.on("disconnect", () => {
+          if (!isMounted) return;
+          console.log("Socket disconnected");
+          setIsConnected(false);
+        });
+
+        socketInstance.on("cart-updated", (data) => {
+          if (!isMounted) return;
+          console.log("Received cart update:", data);
+
+          // Update other users' carts
+          if (
+            data.userId &&
+            data.userId !== session?.user?.id &&
+            data.userId !== localStorage.getItem("customerUserId")
+          ) {
+            setOtherUserCarts((prev) => ({
+              ...prev,
+              [data.userId]: {
+                cart: data.cart,
+                userName: data.userName || "Anonymous",
+              },
+            }));
+          }
+        });
+
+        socketInstance.on("order-submitted", (data) => {
+          if (!isMounted) return;
+          console.log("Order submitted by another user:", data);
+          setLastOrderUpdate(data);
+
+          // Fetch latest data to sync with server
+          fetchLatestOrders();
+        });
+
+        if (isMounted) {
+          setSocket(socketInstance);
         }
-      });
-
-      socketInstance.on("order-submitted", (data) => {
-        console.log("Order submitted by another user:", data);
-        setLastOrderUpdate(data);
-
-        // Fetch latest data to sync with server
-        fetchLatestOrders();
-      });
-
-      setSocket(socketInstance);
-
-      return () => {
-        socketInstance.disconnect();
-      };
+      } catch (error) {
+        console.error("Socket initialization failed:", error);
+      }
     };
 
     socketInit();
 
     return () => {
-      if (socket) {
-        socket.disconnect();
+      isMounted = false;
+      if (currentSocket) {
+        currentSocket.disconnect();
+        currentSocket = null;
       }
+      setSocket(null);
+      setIsConnected(false);
     };
-  }, [restaurantId, tableId, fetchLatestOrders, session?.user?.id, socket]);
+  }, [restaurantId, tableId, fetchLatestOrders, session?.user?.id]);
 
   // Broadcast cart updates when our cart changes
   useEffect(() => {
