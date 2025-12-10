@@ -30,7 +30,7 @@ export const safeLocalStorage = {
       return null;
     }
   },
-  
+
   setItem: (key: string, value: string): boolean => {
     try {
       localStorage.setItem(key, value);
@@ -39,7 +39,7 @@ export const safeLocalStorage = {
       return false;
     }
   },
-  
+
   removeItem: (key: string): boolean => {
     try {
       localStorage.removeItem(key);
@@ -47,5 +47,5 @@ export const safeLocalStorage = {
     } catch {
       return false;
     }
-  }
+  },
 };

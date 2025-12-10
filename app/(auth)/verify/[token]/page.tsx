@@ -28,29 +28,43 @@ export default function VerifyPage() {
   } | null>(null);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const verify = async () => {
       try {
         if (!token) {
-          setVerificationResult({
-            success: false,
-            error: "Invalid verification token",
-          });
+          if (!isCancelled) {
+            setVerificationResult({
+              success: false,
+              error: "Invalid verification token",
+            });
+          }
           return;
         }
 
         const result = await verifyEmail(token);
-        setVerificationResult(result);
+        if (!isCancelled) {
+          setVerificationResult(result);
+        }
       } catch (error) {
-        setVerificationResult({
-          success: false,
-          error: "An unexpected error occurred",
-        });
+        if (!isCancelled) {
+          setVerificationResult({
+            success: false,
+            error: "An unexpected error occurred",
+          });
+        }
       } finally {
-        setIsVerifying(false);
+        if (!isCancelled) {
+          setIsVerifying(false);
+        }
       }
     };
 
     verify();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [token]);
 
   return (

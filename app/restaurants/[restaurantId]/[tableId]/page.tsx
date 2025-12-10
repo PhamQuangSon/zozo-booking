@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 import { useTableFullData } from "@/hooks/use-restaurant-data";
 import { useToast } from "@/hooks/use-toast";
+import { safeLocalStorage } from "@/lib/utils";
 import { useCartStore } from "@/store/cartStore";
 import type { MenuItemWithRelations } from "@/types/menu-builder-types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -120,9 +121,9 @@ function TableOrderPageContent() {
     }
 
     // Check if customer info is already in localStorage
-    const savedName = localStorage.getItem("customerName");
-    const savedEmail = localStorage.getItem("customerEmail");
-    const savedUserId = localStorage.getItem("customerUserId");
+    const savedName = safeLocalStorage.getItem("customerName");
+    const savedEmail = safeLocalStorage.getItem("customerEmail");
+    const savedUserId = safeLocalStorage.getItem("customerUserId");
 
     if (savedName && savedEmail && savedUserId) {
       setCustomerInfoSubmitted(true);

@@ -60,65 +60,87 @@ export default function QRCodeGenerator() {
   );
 
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchInitialData = async () => {
       try {
-        setIsLoading(true);
+        if (!isCancelled) setIsLoading(true);
         const result = await getRestaurants();
 
-        if (result.success) {
-          const restaurantData = result.data.map((r) => ({
-            id: r.id.toString(),
-            name: r.name,
-          }));
-          setRestaurants(restaurantData);
-        } else {
-          showError(result.error || "Failed to load restaurants");
+        if (!isCancelled) {
+          if (result.success) {
+            const restaurantData = result.data.map((r) => ({
+              id: r.id.toString(),
+              name: r.name,
+            }));
+            setRestaurants(restaurantData);
+          } else {
+            showError(result.error || "Failed to load restaurants");
+          }
         }
       } catch (error) {
-        console.error("Error fetching restaurants:", error);
-        showError("Failed to load restaurants");
+        if (!isCancelled) {
+          console.error("Error fetching restaurants:", error);
+          showError("Failed to load restaurants");
+        }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) setIsLoading(false);
       }
     };
 
     fetchInitialData();
-  }, []);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [showError]);
 
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchTables = async () => {
       if (!restaurantId) {
-        setTables([]);
-        setTableId(""); // Reset table selection
+        if (!isCancelled) {
+          setTables([]);
+          setTableId(""); // Reset table selection
+        }
         return;
       }
 
       try {
-        setIsLoadingTables(true);
+        if (!isCancelled) setIsLoadingTables(true);
         const { success, data, error } =
           await getRestaurantTables(restaurantId);
 
-        if (success && data) {
-          const tableData = data.map((t) => ({
-            id: t.id.toString(),
-            number: t.number,
-          }));
-          setTables(tableData);
-        } else {
-          showError(error || "Failed to fetch tables");
+        if (!isCancelled) {
+          if (success && data) {
+            const tableData = data.map((t) => ({
+              id: t.id.toString(),
+              number: t.number,
+            }));
+            setTables(tableData);
+          } else {
+            showError(error || "Failed to fetch tables");
+            setTables([]);
+          }
+          setTableId(""); // Reset table selection
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          console.error("Error fetching tables:", error);
+          showError("Failed to fetch tables");
           setTables([]);
         }
-        setTableId(""); // Reset table selection
-      } catch (error) {
-        console.error("Error fetching tables:", error);
-        showError("Failed to fetch tables");
-        setTables([]);
       } finally {
-        setIsLoadingTables(false);
+        if (!isCancelled) setIsLoadingTables(false);
       }
     };
 
     fetchTables();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [restaurantId, showError]);
 
   const generateTableQR = useCallback(() => {
