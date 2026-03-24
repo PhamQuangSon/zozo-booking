@@ -41,12 +41,14 @@ export function RestaurantCard({
 
         <div className="p-5">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-primary transition-colors">
+            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-orange-400 transition-colors">
               {name}
             </h3>
             <div className="flex items-center text-sm bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full">
               <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium">{rating.toFixed(1)}</span>
+              <span className="font-medium text-yellow-400">
+                {rating.toFixed(1)}
+              </span>
             </div>
           </div>
 

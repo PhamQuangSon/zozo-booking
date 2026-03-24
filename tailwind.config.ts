@@ -8,6 +8,17 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "*.{js,ts,jsx,tsx,mdx}"
   ],
+  safelist: [
+    'text-brand-primary',
+    'text-brand-secondary', 
+    'text-brand-accent',
+    'bg-brand-primary',
+    'bg-brand-secondary',
+    'bg-brand-accent',
+    'border-brand-primary',
+    'border-brand-secondary',
+    'border-brand-accent'
+  ],
   theme: {
   	extend: {
   		colors: {
@@ -51,6 +62,26 @@ const config: Config = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
+  			brand: {
+  				primary: 'hsl(var(--brand-primary))',
+  				'primary-foreground': 'hsl(var(--brand-primary-foreground))',
+  				secondary: 'hsl(var(--brand-secondary))',
+  				'secondary-foreground': 'hsl(var(--brand-secondary-foreground))',
+  				accent: 'hsl(var(--brand-accent))',
+  				'accent-foreground': 'hsl(var(--brand-accent-foreground))'
+  			},
+  			success: {
+  				DEFAULT: 'hsl(var(--success))',
+  				foreground: 'hsl(var(--success-foreground))'
+  			},
+  			warning: {
+  				DEFAULT: 'hsl(var(--warning))',
+  				foreground: 'hsl(var(--warning-foreground))'
+  			},
+  			info: {
+  				DEFAULT: 'hsl(var(--info))',
+  				foreground: 'hsl(var(--info-foreground))'
+  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
@@ -61,6 +92,10 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		fontFamily: {
+  			sans: ['var(--font-sans)'],
+  			mono: ['var(--font-mono)']
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

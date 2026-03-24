@@ -21,7 +21,7 @@ Cách chạy tại chế độ production:
 2. cài đặt thư viện: npm i
 3. Update file .env.production (nếu cần thiết)
 4. Build dự án: npm run build
-5. Chạy dự án: npm run preview
+5. Chạy dự án: npm run start
 
 Install database example: node --loader ts-node/esm prisma/seed.ts
 Not use: npx prisma db drop --force
@@ -31,13 +31,28 @@ Not use: npx prisma db drop --force
 
 ... fix eslint: pnpm exec eslint . --ext .js,.jsx,.ts,.tsx --fix
 
+===
+
+Code conventions (Zozo Booking):
+
+- Mặc định dùng Server Components trong `app/`; chỉ thêm `"use client"` khi cần.
+- Sử dụng TypeScript cho tất cả file mới; đặt type gần nơi dùng.
+- Dùng `cn` trong `lib/utils.ts` để gộp `className`.
+- UI dùng chung đặt trong `components/`; UI theo tính năng đặt gần route trong `app/`.
+- Truy cập database qua Prisma helpers trong `lib/` (ví dụ `lib/prisma.ts`).
+- API routes đặt trong `app/api` và validate input bằng `zod` khi phù hợp.
+- Ưu tiên component nhỏ, dễ test; tránh side effects trong render.
+
+Testing:
+- Chạy kiểm tra nhanh: `npm run test`
+
 ```
 📂 restaurant-ordering
 ├── 📂 app
 │   └── 📂 api
 │       ├── 📂 auth (Xử lý đăng nhập admin)
 │       ├── 📂 orders (CRUD đơn hàng)
-│       ├── 📂 resta    urants (Danh sách nhà hàng, menu)
+│       ├── 📂 restaurants (Danh sách nhà hàng, menu)
 │       └── 📂 likes (Thích và đánh giá món ăn)
 ├── 📂 components (Re-usable UI với ShadCN & Tailwind)
 ├── 📂 lib (Chứa Prisma client, helpers)

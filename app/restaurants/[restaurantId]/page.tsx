@@ -96,7 +96,7 @@ export default function RestaurantPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="flex flex-col min-h-screen bg-gradient-to-b from-secondary/20 to-background">
       {/* Table Selection Dialog */}
       <Dialog open={showTableDialog} onOpenChange={setShowTableDialog}>
         <DialogContent className="sm:max-w-md glass-card border-0">
@@ -127,7 +127,7 @@ export default function RestaurantPage() {
                   className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
                     table.status === "AVAILABLE"
                       ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
-                      : "bg-gray-100/50 backdrop-blur-sm"
+                      : "bg-secondary/50 backdrop-blur-sm"
                   }`}
                 >
                   <Table className="h-6 w-6" />
@@ -166,11 +166,11 @@ export default function RestaurantPage() {
           </div>
 
           <div className="relative z-20 container mx-auto h-full flex flex-col justify-center text-white pl-8">
-            <p className="text-red-500 font-medium mb-2">
+            <p className="text-destructive font-medium mb-2">
               WELCOME TO {restaurant.name.toUpperCase()}
             </p>
-            <h1 className="text-4xl font-bold mb-2">TODAY SPECIAL FOOD</h1>
-            <p className="text-amber-500 mb-4">Limited Time Offer</p>
+            <h1 className="text-4xl font-bold mb-2 text-brand-primary">TODAY SPECIAL FOOD</h1>
+            <p className="text-warning mb-4">Limited Time Offer</p>
             <Button
               onClick={handleViewMenu}
               className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white w-fit rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
@@ -194,7 +194,7 @@ export default function RestaurantPage() {
               <ChevronLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold ml-2">{restaurant.name}</h1>
+          <h1 className="text-2xl font-bold ml-2 text-brand-secondary">{restaurant.name}</h1>
         </div>
 
         <div className="flex items-center gap-4 mb-6">
@@ -202,7 +202,7 @@ export default function RestaurantPage() {
             {restaurant.cuisine}
           </Badge>
           <div className="flex items-center text-sm glass-card px-3 py-1 rounded-full">
-            <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
+            <Star className="mr-1 h-4 w-4 fill-warning text-warning" />
             {/* <span>{restaurant.rating?.toFixed(1) || "0.0"}</span> */}
           </div>
           <div className="flex items-center text-sm text-muted-foreground glass-card px-3 py-1 rounded-full">
@@ -213,7 +213,7 @@ export default function RestaurantPage() {
 
         {/* Table Selection Card */}
         <Card className="mb-8 glass-card border-0 overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-white/80 to-white/40 backdrop-blur-sm">
+          <CardHeader className="bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm">
             <CardTitle>Dining at {restaurant.name}</CardTitle>
             <CardDescription>
               Select a table to view the menu and place your order
@@ -241,7 +241,7 @@ export default function RestaurantPage() {
                     className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
                       table.status === "AVAILABLE"
                         ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
-                        : "bg-gray-100/50 backdrop-blur-sm"
+                        : "bg-secondary/50 backdrop-blur-sm"
                     }`}
                   >
                     <Table className="h-6 w-6" />
@@ -266,13 +266,13 @@ export default function RestaurantPage() {
       </div>
 
       {/* Restaurant Information Section */}
-      <div className="bg-gradient-to-b from-gray-50/50 to-white/80 backdrop-blur-sm flex-grow py-8">
+      <div className="bg-gradient-to-b from-secondary/20 to-background/80 backdrop-blur-sm flex-grow py-8">
         <div className="container mx-auto glass-card p-8 rounded-[40px] shadow-lg">
-          <div className="text-center mb-8 border-b border-white/20 pb-4">
+          <div className="text-center mb-8 border-b border-border/20 pb-4">
             <div className="flex justify-center items-center gap-2 mb-2">
-              <span className="text-amber-500">🍔 ABOUT US 🍕</span>
+              <span className="text-brand-primary">🍔 ABOUT US 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6">
+            <h2 className="text-3xl font-bold mb-6 text-brand-secondary">
               Welcome to {restaurant.name}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -318,7 +318,7 @@ export default function RestaurantPage() {
 
           {/* Call to Action */}
           <div className="text-center py-8">
-            <h3 className="text-2xl font-bold mb-4">Ready to Order?</h3>
+            <h3 className="text-2xl font-bold mb-4 text-brand-primary">Ready to Order?</h3>
             <p className="text-muted-foreground mb-6">
               Select a table to view our menu and place your order
             </p>

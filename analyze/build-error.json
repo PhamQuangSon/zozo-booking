@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-12-10T10:36:18.668Z",
+  "buildTime": 1719,
+  "error": "Command failed: ANALYZE=true npm run build\nWarning: You did not specify an output path for your `generator` in schema.prisma. This behavior is deprecated and will no longer be supported in Prisma 7.0.0. To learn more visit https://pris.ly/cli/output-path\n ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.\n We detected multiple lockfiles and selected the directory of /Users/yarn.lock as the root directory.\n To silence this warning, set `outputFileTracingRoot` in your Next.js config, or consider removing one of the lockfiles if it's not needed.\n   See https://nextjs.org/docs/app/api-reference/config/next-config-js/output#caveats for more information.\n Detected additional lockfiles: \n   * /Users/quangsonpham/Documents/git/zozo-booking/pnpm-lock.yaml\n   * /Users/quangsonpham/Documents/git/package-lock.json\n\n\n> Build error occurred\nReferenceError: require is not defined\n    at Object.webpack (next.config.mjs:33:22)\n",
+  "success": false
+}

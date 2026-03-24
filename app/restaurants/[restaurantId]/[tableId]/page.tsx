@@ -211,7 +211,7 @@ function TableOrderPageContent() {
 
   if (error || !tableData) {
     return (
-      <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-white to-gray-50">
+      <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Card className="glass-card border-none shadow-lg">
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">
@@ -237,7 +237,7 @@ function TableOrderPageContent() {
   return (
     <main className="min-h-screen flex flex-col">
       {/* Header Section */}
-      <div className="bg-gradient-to-b from-amber-50 to-white py-6">
+      <div className="bg-gradient-to-b from-brand-accent/10 to-background py-6">
         <div className="container mx-auto px-4">
           <Button variant="ghost" size="sm" asChild className="mb-4">
             <Link href={`/restaurants/${restaurantId}`}>
@@ -247,7 +247,7 @@ function TableOrderPageContent() {
           </Button>
 
           <div className="flex flex-col md:flex-row gap-6 items-center">
-            <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-lg">
+            <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-background shadow-lg">
               <Image
                 src={
                   restaurant?.imageUrl ||
@@ -261,13 +261,13 @@ function TableOrderPageContent() {
             </div>
 
             <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold animate animate-fade-up">
+              <h1 className="text-3xl font-bold text-brand-primary animate animate-fade-up">
                 {restaurant?.name}
               </h1>
               <p className="mt-2 text-muted-foreground max-w-md">
                 {restaurant?.description}
               </p>
-              <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-amber-100 text-amber-800 animate animate-fade-right">
+              <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/20 text-brand-accent-foreground animate animate-fade-right">
                 <span className="font-medium">Table {table?.number}</span>
               </div>
 
@@ -297,13 +297,13 @@ function TableOrderPageContent() {
           <CustomerInfoForm onSubmit={handleCustomerInfoSubmit} />
         </div>
       ) : (
-        <div className="bg-gray-50 flex-grow py-8">
+        <div className="bg-secondary/30 flex-grow py-8">
           {/* Food Menu Section */}
           <div className="container mx-auto bg-white p-4 md:p-8 glass-card border-none shadow-lg">
             <div className="flex justify-center items-center gap-2 mb-2">
-              <span className="text-amber-500">🍔 FOOD MENU 🍕</span>
+              <span className="text-brand-primary">🍔 FOOD MENU 🍕</span>
             </div>
-            <h2 className="text-3xl font-bold mb-6 text-center animate animate-fade-up">
+            <h2 className="text-3xl font-bold mb-6 text-center text-brand-secondary animate animate-fade-up">
               {restaurant?.name} Menu
             </h2>
 

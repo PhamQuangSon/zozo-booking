@@ -3,6 +3,7 @@
 import { type Currency, formatCurrency } from "@/lib/i18n";
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
+import { withRetry } from "@/lib/db-connection";
 
 export type Restaurant = {
   id: number;
@@ -24,19 +25,21 @@ export type GetRestaurantsResponse =
 // Get all restaurants
 export async function getRestaurants(): Promise<GetRestaurantsResponse> {
   try {
-    const restaurants = await prisma.restaurant.findMany({
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        imageUrl: true,
-        address: true,
-        phone: true,
-        email: true,
-        cuisine: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+    const restaurants = await withRetry(async () => {
+      return await prisma.restaurant.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          imageUrl: true,
+          address: true,
+          phone: true,
+          email: true,
+          cuisine: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
     });
 
     return { success: true, data: serializePrismaData(restaurants) };

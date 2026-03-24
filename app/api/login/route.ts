@@ -7,6 +7,14 @@ import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.NEXTAUTH_SECRET) {
+      console.error("Missing NEXTAUTH_SECRET");
+      return NextResponse.json(
+        errorResponse("Server misconfiguration"),
+        { status: 500 }
+      );
+    }
+
     const body = await request.json();
     const email = body?.email as string | undefined;
     const password = body?.password as string | undefined;
@@ -51,7 +59,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         role: user.role,
       },
-      process.env.NEXTAUTH_SECRET || "your-secret-key",
+      process.env.NEXTAUTH_SECRET,
       { expiresIn: "7d" }
     );
 

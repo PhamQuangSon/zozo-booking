@@ -83,10 +83,10 @@ export default function VerifyPage() {
               </p>
             </div>
           ) : verificationResult?.success ? (
-            <Alert className="bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-600">Success</AlertTitle>
-              <AlertDescription className="text-green-600">
+            <Alert className="bg-success/10 border-success/20">
+              <CheckCircle className="h-4 w-4 text-success" />
+              <AlertTitle className="text-success">Success</AlertTitle>
+              <AlertDescription className="text-success">
                 {verificationResult.message ||
                   "Your email has been verified successfully!"}
               </AlertDescription>
