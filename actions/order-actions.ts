@@ -1,19 +1,14 @@
 "use server";
 
+import {
+  areAllOrderItemsAtStatus,
+  orderItemStatusToOrderStatus,
+  shouldReleaseTableAfterItemStatusUpdate,
+} from "@/lib/order-status";
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
 import type { OrderWithRelations } from "@/types/menu-builder-types";
-import { OrderItemStatus, OrderStatus, type Prisma } from "@prisma/client";
-
-// Map order item status to order status
-const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
-  [OrderItemStatus.NEW]: OrderStatus.NEW,
-  [OrderItemStatus.PREPARING]: OrderStatus.PREPARING,
-  [OrderItemStatus.READY]: OrderStatus.PREPARING,
-  [OrderItemStatus.DELIVERED]: OrderStatus.PREPARING,
-  [OrderItemStatus.COMPLETED]: OrderStatus.COMPLETED,
-  [OrderItemStatus.CANCELLED]: OrderStatus.CANCELLED,
-};
+import type { OrderItemStatus, Prisma } from "@prisma/client";
 
 // Then fix the getRestaurantOrders function to properly handle the type conversion
 export async function getRestaurantOrders(
@@ -94,9 +89,9 @@ export async function updateOrderItemStatus(
         },
       });
 
-      // Check if all items in the order have the same status
-      const allItemsSameStatus = orderItem.order.orderItems.every(
-        (item) => item.status === newStatus
+      const allItemsSameStatus = areAllOrderItemsAtStatus(
+        orderItem.order.orderItems.map((item) => item.status),
+        newStatus
       );
 
       // If all items have the same status, update order status
@@ -108,11 +103,7 @@ export async function updateOrderItemStatus(
           data: { status: orderStatus },
         });
 
-        // If order is completed/cancelled & has a table, check if table can be freed
-        if (
-          (newStatus === "COMPLETED" || newStatus === "CANCELLED") &&
-          orderItem.order.table
-        ) {
+        if (orderItem.order.table) {
           const activeOrders = await tx.order.count({
             where: {
               tableId: orderItem.order.table.id,
@@ -121,8 +112,13 @@ export async function updateOrderItemStatus(
             },
           });
 
-          // If no other active orders, update table status
-          if (activeOrders === 0) {
+          if (
+            shouldReleaseTableAfterItemStatusUpdate({
+              newStatus,
+              activeOrdersCount: activeOrders,
+              hasTable: true,
+            })
+          ) {
             await tx.table.update({
               where: { id: orderItem.order.table.id },
               data: { status: "AVAILABLE" },

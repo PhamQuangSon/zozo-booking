@@ -143,13 +143,13 @@ export async function updateProfile(
       message: "Profile updated successfully!",
       image: image || updatedUser.image,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to update profile:", error);
     return {
       ...prevState,
       success: false,
       zodErrors: {
-        _form: error.message || "Something went wrong",
+        _form: error instanceof Error ? error.message : "Something went wrong",
       },
       message: "Failed to update profile",
     };
