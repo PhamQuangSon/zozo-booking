@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { updateOrderItemStatus } from "@/actions/order-actions";
 import { useReceiptPrinter } from "@/components/receipt-printer";
@@ -82,10 +82,7 @@ export function OrderActions({ order }: OrderActionsProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {getAvailableStatuses(order.status).map((status) => (
-            <DropdownMenuItem
-              key={status}
-              onClick={() => setShowStatusDialog(true)}
-            >
+            <DropdownMenuItem key={status} onClick={() => setShowStatusDialog(true)}>
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </DropdownMenuItem>
           ))}
@@ -97,8 +94,7 @@ export function OrderActions({ order }: OrderActionsProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Update Order Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update this order status? This action
-              cannot be undone.
+              Are you sure you want to update this order status? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

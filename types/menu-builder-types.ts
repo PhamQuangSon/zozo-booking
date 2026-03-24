@@ -31,19 +31,13 @@ export type MenuItemWithRelations = MenuItem & {
 };
 
 // Define OptionChoice ensuring priceAdjustment is a number for forms
-export type OptionChoiceWithNumericPrice = Omit<
-  OptionChoice,
-  "priceAdjustment"
-> & {
+export type OptionChoiceWithNumericPrice = Omit<OptionChoice, "priceAdjustment"> & {
   priceAdjustment: number;
 };
 
 // Define ItemOption ensuring OptionChoices AND the option itself have numeric price
 // Also make menuItem optional
-export type ItemOptionWithRelations = Omit<
-  MenuItemOption,
-  "optionChoices" | "priceAdjustment"
-> & {
+export type ItemOptionWithRelations = Omit<MenuItemOption, "optionChoices" | "priceAdjustment"> & {
   // Omit original priceAdjustment
   priceAdjustment: number; // Redefine priceAdjustment as number
   optionChoices: OptionChoiceWithNumericPrice[];

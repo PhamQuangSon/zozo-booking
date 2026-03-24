@@ -24,8 +24,7 @@ export async function getCategories() {
     console.error("Failed to fetch categories:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load categories",
+      error: error instanceof Error ? error.message : "Failed to load categories",
       data: [],
     };
   }
@@ -65,7 +64,7 @@ export async function updateCategory(
     restaurantId: number;
     displayOrder?: number;
     imageUrl?: string | null;
-  }
+  },
 ) {
   try {
     const category = await prisma.category.update({
@@ -98,10 +97,7 @@ export async function deleteCategory(id: number) {
 }
 
 // Update category display order
-export async function updateCategoryDisplayOrder(
-  categoryId: number,
-  targetCategoryId: number
-) {
+export async function updateCategoryDisplayOrder(categoryId: number, targetCategoryId: number) {
   try {
     // Get both categories to determine their current display orders
     const sourceCategory = await prisma.category.findUnique({
@@ -136,10 +132,7 @@ export async function updateCategoryDisplayOrder(
     console.error("Failed to update category display order:", error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to update category display order",
+      error: error instanceof Error ? error.message : "Failed to update category display order",
     };
   }
 }

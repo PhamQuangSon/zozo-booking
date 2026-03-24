@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -26,25 +26,16 @@ interface CarouselProps {
   className?: string;
 }
 
-export function Carousel({
-  items,
-  autoPlay = true,
-  interval = 5000,
-  className,
-}: CarouselProps) {
+export function Carousel({ items, autoPlay = true, interval = 5000, className }: CarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
 
   const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === items.length - 1 ? 0 : prevIndex + 1
-    );
+    setCurrentIndex((prevIndex) => (prevIndex === items.length - 1 ? 0 : prevIndex + 1));
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? items.length - 1 : prevIndex - 1
-    );
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? items.length - 1 : prevIndex - 1));
   };
 
   // const goToSlide = (index: number) => {
@@ -56,9 +47,7 @@ export function Carousel({
 
     const slideInterval = setInterval(() => {
       // nextSlide();
-      setCurrentIndex((prevIndex) =>
-        prevIndex === items.length - 1 ? 0 : prevIndex + 1
-      );
+      setCurrentIndex((prevIndex) => (prevIndex === items.length - 1 ? 0 : prevIndex + 1));
     }, interval);
 
     return () => clearInterval(slideInterval);
@@ -75,9 +64,7 @@ export function Carousel({
           <div
             key={item.id}
             className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentIndex
-                ? "opacity-100"
-                : "opacity-0 pointer-events-none"
+              index === currentIndex ? "opacity-100" : "opacity-0 pointer-events-none"
             }`}
           >
             <div className="relative h-full w-full bg-black">
@@ -90,7 +77,7 @@ export function Carousel({
                 priority={index === 0}
                 fetchPriority="high"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent" />
 
               <div className="absolute inset-0 flex items-center">
                 <div className="container mx-auto grid grid-cols-2 gap-4">
@@ -105,9 +92,7 @@ export function Carousel({
                       {item.subtitle}
                     </h2>
                     {item.description && (
-                      <p className="text-gray-200 mb-6 max-w-md">
-                        {item.description}
-                      </p>
+                      <p className="text-gray-200 mb-6 max-w-md">{item.description}</p>
                     )}
                     <Button
                       onClick={item.buttonAction}

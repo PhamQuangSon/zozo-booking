@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
+import { useState } from "react";
 
 import { MenuItem } from "@/components/menu-item";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,9 +27,7 @@ export function MenuCategory({
   const uniqueCategories =
     categories.length > 0
       ? categories
-      : Array.from(new Set(items.map((item) => item.categoryName))).map(
-          (name) => ({ name })
-        );
+      : Array.from(new Set(items.map((item) => item.categoryName))).map((name) => ({ name }));
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -42,17 +40,11 @@ export function MenuCategory({
   const filteredItems =
     selectedCategory === "all"
       ? items
-      : items.filter(
-          (item) =>
-            item.categoryName?.toLowerCase() === selectedCategory.toLowerCase()
-        );
+      : items.filter((item) => item.categoryName?.toLowerCase() === selectedCategory.toLowerCase());
 
   return (
     <div className="space-y-6">
-      <Tabs
-        defaultValue={selectedCategory}
-        onValueChange={handleCategoryChange}
-      >
+      <Tabs defaultValue={selectedCategory} onValueChange={handleCategoryChange}>
         <TabsList className="flex flex-wrap justify-center mb-6 bg-white/40 backdrop-blur-sm p-1">
           <TabsTrigger
             value="all"
@@ -69,9 +61,7 @@ export function MenuCategory({
             >
               <div className="relative h-4 w-4 flex-shrink-0 mr-2">
                 <Image
-                  src={
-                    category.imageUrl || "/placeholder.svg?height=100&width=100"
-                  }
+                  src={category.imageUrl || "/placeholder.svg?height=100&width=100"}
                   alt={category.name}
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
@@ -83,16 +73,9 @@ export function MenuCategory({
           ))}
         </TabsList>
 
-        <TabsContent
-          value={selectedCategory}
-          className="space-y-6 border-t p-4"
-        >
+        <TabsContent value={selectedCategory} className="space-y-6 border-t p-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            <MenuItem
-              items={filteredItems}
-              showAddToCart={true}
-              onItemClick={onItemClick}
-            />
+            <MenuItem items={filteredItems} showAddToCart={true} onItemClick={onItemClick} />
           </div>
         </TabsContent>
       </Tabs>

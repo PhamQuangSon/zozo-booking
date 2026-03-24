@@ -15,16 +15,8 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = authPaths.some((authPath) => path.startsWith(authPath));
 
   // Define paths that are public
-  const publicPaths = [
-    "/login",
-    "/register",
-    "/verify",
-    "/forgot-password",
-    "/reset-password",
-  ];
-  const isPublicPath = publicPaths.some((publicPath) =>
-    path.startsWith(publicPath)
-  );
+  const publicPaths = ["/login", "/register", "/verify", "/forgot-password", "/reset-password"];
+  const isPublicPath = publicPaths.some((publicPath) => path.startsWith(publicPath));
 
   // Redirect unauthenticated users to login
   if (isAuthPath && !session) {
@@ -34,12 +26,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from login/register pages
-  if (
-    isPublicPath &&
-    session &&
-    session.user.role !== "ADMIN" &&
-    session.user.role !== "STAFF"
-  ) {
+  if (isPublicPath && session && session.user.role !== "ADMIN" && session.user.role !== "STAFF") {
     console.log("Authenticated user trying to access public path:", path);
     return NextResponse.redirect(new URL("/admin/dashboard", request.url));
   }

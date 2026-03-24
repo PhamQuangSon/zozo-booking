@@ -8,8 +8,7 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
   const { restaurantId } = params;
 
   // Use the cached version of getRestaurantById
-  const { success, data: restaurant } =
-    await getCachedRestaurantById(restaurantId);
+  const { success, data: restaurant } = await getCachedRestaurantById(restaurantId);
   // const { data: restaurant, success, error } = await getRestaurantById(restaurantId)
 
   if (!success || !restaurant) {
@@ -37,8 +36,8 @@ export default async function RestaurantMenuPage({ params }: PageProps) {
                       ...choice,
                       priceAdjustment: Number(choice.priceAdjustment), // Convert Decimal to number
                     })),
-                  })) || []
-              ) || []
+                  })) || [],
+              ) || [],
           ) || []
         }
       />

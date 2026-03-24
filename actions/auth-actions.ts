@@ -33,10 +33,7 @@ export type RegisterState = {
 };
 
 // Login action
-export async function login(
-  prevState: AuthState,
-  formData: FormData
-): Promise<AuthState> {
+export async function login(prevState: AuthState, formData: FormData): Promise<AuthState> {
   try {
     const validatedFields = loginSchema.safeParse({
       email: formData.get("email"),
@@ -47,8 +44,7 @@ export async function login(
       console.log("Validation failed:", validatedFields.error.flatten());
       return {
         ...prevState,
-        zodErrors: validatedFields.error.flatten()
-          .fieldErrors as AuthState["zodErrors"],
+        zodErrors: validatedFields.error.flatten().fieldErrors as AuthState["zodErrors"],
         success: false,
         message: "Missing Fields. Failed to Login.",
       } as AuthState;
@@ -82,9 +78,7 @@ export async function login(
           success: false,
           zodErrors: {
             _form:
-              result.error === "CredentialsSignin"
-                ? "Invalid email or password"
-                : result.error,
+              result.error === "CredentialsSignin" ? "Invalid email or password" : result.error,
           },
         } as AuthState;
       }
@@ -101,8 +95,7 @@ export async function login(
         ...prevState,
         success: false,
         zodErrors: {
-          _form:
-            error instanceof Error ? error.message : "Authentication failed",
+          _form: error instanceof Error ? error.message : "Authentication failed",
         },
       } as AuthState;
     }
@@ -120,7 +113,7 @@ export async function login(
 // Register action
 export async function register(
   prevState: RegisterState,
-  formData: FormData
+  formData: FormData,
 ): Promise<RegisterState> {
   try {
     const validatedFields = registerSchema.safeParse({
@@ -134,8 +127,7 @@ export async function register(
       return {
         ...prevState,
         success: false,
-        zodErrors: validatedFields.error.flatten()
-          .fieldErrors as RegisterState["zodErrors"],
+        zodErrors: validatedFields.error.flatten().fieldErrors as RegisterState["zodErrors"],
         message: "Missing Fields. Failed to Register.",
       } as RegisterState;
     }
@@ -177,7 +169,7 @@ export async function register(
     // In a real app, you would send an email with the verification link
     // For now, we'll just return the token for redirection
     console.log(
-      `Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/auth/verify/${verificationToken}`
+      `Verification link: ${process.env.NEXT_PUBLIC_APP_URL}/auth/verify/${verificationToken}`,
     );
 
     return {

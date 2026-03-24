@@ -3,8 +3,8 @@ import { prisma } from "./prisma";
 // Helper để retry database operations khi connection bị đóng
 export async function withRetry<T>(
   operation: () => Promise<T>,
-  maxRetries: number = 3,
-  delay: number = 1000
+  maxRetries = 3,
+  delay = 1000,
 ): Promise<T> {
   let lastError: Error | null = null;
 
@@ -25,9 +25,7 @@ export async function withRetry<T>(
         throw error;
       }
 
-      console.warn(
-        `Database connection attempt ${attempt} failed, retrying in ${delay}ms...`
-      );
+      console.warn(`Database connection attempt ${attempt} failed, retrying in ${delay}ms...`);
 
       // Disconnect and reconnect
       try {

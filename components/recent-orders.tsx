@@ -60,9 +60,7 @@ export function RecentOrders() {
           </Avatar>
           <div className="ml-4 space-y-1">
             <p className="text-sm font-medium leading-none">{order.customer}</p>
-            <p className="text-sm text-muted-foreground">
-              {order.items.join(", ")}
-            </p>
+            <p className="text-sm text-muted-foreground">{order.items.join(", ")}</p>
           </div>
           <div className="ml-auto text-right">
             <Badge
@@ -76,9 +74,7 @@ export function RecentOrders() {
             >
               {order.status}
             </Badge>
-            <p className="text-sm text-muted-foreground">
-              ${order.total.toFixed(2)}
-            </p>
+            <p className="text-sm text-muted-foreground">${order.total.toFixed(2)}</p>
           </div>
         </div>
       ))}

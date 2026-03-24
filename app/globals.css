@@ -129,14 +129,14 @@
 
   /* Morphism styles */
   .morphism {
-    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-lg rounded-3xl;
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg rounded-3xl;
   }
 
   .glass-card {
-    @apply bg-gradient-to-b from-white/80 to-white/20 backdrop-blur-sm border border-white/20 shadow-lg rounded-3xl;
+    @apply bg-gradient-to-b from-card/90 to-card/70 backdrop-blur-sm border border-border/50 shadow-lg rounded-3xl dark:from-card/80 dark:to-card/60;
   }
 
   .glass-button {
-    @apply bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-all duration-300;
+    @apply bg-card/70 backdrop-blur-sm border border-border/60 hover:bg-card transition-all duration-300;
   }
 }

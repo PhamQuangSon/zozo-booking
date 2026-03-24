@@ -1,6 +1,6 @@
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { getRestaurantById } from "@/actions/restaurant-actions";
 import { getTablesByRestaurantId } from "@/actions/table-actions";
@@ -20,9 +20,7 @@ export default async function TablesPage({
   const restaurant = restaurantResult.data;
 
   // Fetch tables
-  const { data: tables = [], success } = await getTablesByRestaurantId(
-    params.restaurantId
-  );
+  const { data: tables = [], success } = await getTablesByRestaurantId(params.restaurantId);
   if (!success) {
     return <div>Failed to load Tables</div>;
   }

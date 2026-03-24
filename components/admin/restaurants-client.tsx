@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { PlusCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { PlusCircle } from "lucide-react";
+import { useState } from "react";
 
 import type { Restaurant } from "@/actions/restaurant-actions";
 import { deleteRestaurant } from "@/actions/restaurant-actions";
@@ -16,26 +16,19 @@ interface RestaurantsClientProps {
   restaurants: Restaurant[];
 }
 
-export function RestaurantsClient({
-  restaurants = [],
-}: RestaurantsClientProps) {
+export function RestaurantsClient({ restaurants = [] }: RestaurantsClientProps) {
   const router = useRouter();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRestaurant, setSelectedRestaurant] =
-    useState<Restaurant | null>(null);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter categories based on search query
   const filteredRestaurants = restaurants.filter(
     (restaurant) =>
       restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (restaurant.description &&
-        restaurant.description
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase())) ||
-      (restaurant.address &&
-        restaurant.address.toLowerCase().includes(searchQuery.toLowerCase()))
+      restaurant.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      restaurant.address?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const columns: ColumnDef<Restaurant>[] = [

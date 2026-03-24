@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +50,8 @@ export function MenuItemsTable({ menuItems }: MenuItemsTableProps) {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const sortedMenuItems = [...menuItems].sort((a, b) => {
-    let aValue, bValue;
+    let aValue;
+    let bValue;
 
     switch (sortColumn) {
       case "name":
@@ -97,43 +98,20 @@ export function MenuItemsTable({ menuItems }: MenuItemsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("name")}
-            >
-              Name{" "}
-              {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
+              Name {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("restaurant")}
-            >
-              Restaurant{" "}
-              {sortColumn === "restaurant" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("restaurant")}>
+              Restaurant {sortColumn === "restaurant" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("category")}
-            >
-              Category{" "}
-              {sortColumn === "category" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("category")}>
+              Category {sortColumn === "category" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("price")}
-            >
-              Price{" "}
-              {sortColumn === "price" && (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("price")}>
+              Price {sortColumn === "price" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("available")}
-            >
-              Available{" "}
-              {sortColumn === "available" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("available")}>
+              Available {sortColumn === "available" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
@@ -149,17 +127,13 @@ export function MenuItemsTable({ menuItems }: MenuItemsTableProps) {
             sortedMenuItems.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell>
-                  {item.menu_categories.menu.restaurant.name}
-                </TableCell>
+                <TableCell>{item.menu_categories.menu.restaurant.name}</TableCell>
                 <TableCell>{item.menu_categories.name}</TableCell>
                 <TableCell>{formatCurrency(item.price, "USD")}</TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
-                      item.is_available
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                      item.is_available ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
                     }`}
                   >
                     {item.is_available ? "Yes" : "No"}

@@ -1,6 +1,6 @@
 class WebSocketService {
   private socket: WebSocket | null = null;
-  private listeners: Map<string, Array<(payload: unknown) => void>> = new Map();
+  private listeners: Map<string, Array<(payload: any) => void>> = new Map();
 
   connect(url: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -42,7 +42,7 @@ class WebSocketService {
     }
   }
 
-  send(type: string, payload: unknown): void {
+  send(type: string, payload: any): void {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify({ type, payload }));
     } else {
@@ -50,7 +50,7 @@ class WebSocketService {
     }
   }
 
-  on(type: string, listener: (payload: unknown) => void): void {
+  on(type: string, listener: (payload: any) => void): void {
     if (!this.listeners.has(type)) {
       this.listeners.set(type, []);
     }
@@ -58,7 +58,7 @@ class WebSocketService {
     this.listeners.get(type)?.push(listener);
   }
 
-  off(type: string, listener: (payload: unknown) => void): void {
+  off(type: string, listener: (payload: any) => void): void {
     if (this.listeners.has(type)) {
       const listeners = this.listeners.get(type) || [];
       const index = listeners.indexOf(listener);

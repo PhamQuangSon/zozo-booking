@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { deleteTable } from "@/actions/table-actions";
 import { type ColumnDef, DataTable } from "@/components/admin/data-table";
@@ -19,11 +19,7 @@ interface TablesClientProps {
   initialTables: Table[];
 }
 
-export function TablesClient({
-  restaurantId,
-  restaurantName,
-  initialTables,
-}: TablesClientProps) {
+export function TablesClient({ restaurantId, restaurantName, initialTables }: TablesClientProps) {
   const [tables, setTables] = useState<Table[]>(initialTables);
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -31,9 +27,7 @@ export function TablesClient({
   const router = useRouter();
 
   // Filter tables based on search query
-  const filteredTables = tables.filter((table) =>
-    table.number.toString().includes(searchQuery)
-  );
+  const filteredTables = tables.filter((table) => table.number.toString().includes(searchQuery));
 
   // Handle edit table
   const handleEditTable = (table: Table) => {
@@ -49,9 +43,7 @@ export function TablesClient({
     if (updatedTable) {
       // If it's an edit, update the table in the list
       if (tables.some((t) => t.id === updatedTable.id)) {
-        setTables(
-          tables.map((t) => (t.id === updatedTable.id ? updatedTable : t))
-        );
+        setTables(tables.map((t) => (t.id === updatedTable.id ? updatedTable : t)));
       }
       // If it's a new table, add it to the list
       else {
@@ -107,9 +99,7 @@ export function TablesClient({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Tables for {restaurantName}
-        </h2>
+        <h2 className="text-3xl font-bold tracking-tight">Tables for {restaurantName}</h2>
         <Button onClick={() => setIsAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
           Add Table

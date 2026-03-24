@@ -10,11 +10,11 @@ export function serializePrismaData<T>(data: T): T {
   }
 
   if (data instanceof Prisma.Decimal) {
-    return data.toNumber() as unknown as T;
+    return data.toNumber() as any as T;
   }
 
   if (Array.isArray(data)) {
-    return data.map(serializePrismaData) as unknown as T;
+    return data.map(serializePrismaData) as any as T;
   }
 
   if (typeof data === "object" && data !== null) {
@@ -24,8 +24,8 @@ export function serializePrismaData<T>(data: T): T {
           return [key, value.toISOString()]; // Serialize Date fields
         }
         return [key, serializePrismaData(value)];
-      })
-    ) as unknown as T;
+      }),
+    ) as any as T;
   }
 
   return data;
@@ -35,9 +35,7 @@ export function serializePrismaData<T>(data: T): T {
  * Helper function to safely convert a Decimal to a number
  * Returns 0 if the value is null or undefined
  */
-export function decimalToNumber(
-  value: Prisma.Decimal | null | undefined
-): number {
+export function decimalToNumber(value: Prisma.Decimal | null | undefined): number {
   if (value === null || value === undefined) {
     return 0;
   }

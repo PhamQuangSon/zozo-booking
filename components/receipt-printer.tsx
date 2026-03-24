@@ -13,8 +13,7 @@ export function useReceiptPrinter() {
     if (!printWindow) {
       toast({
         title: "Error",
-        description:
-          "Unable to open print window. Please check your popup blocker settings.",
+        description: "Unable to open print window. Please check your popup blocker settings.",
         variant: "destructive",
       });
       return;
@@ -121,8 +120,7 @@ export function useReceiptPrinter() {
                     ? `<div style="padding-left: 10px; font-size: 12px;">
                     ${item.orderItemChoices
                       .map(
-                        (choice) =>
-                          `${choice.menuItemOption?.name}: ${choice.optionChoice?.name}`
+                        (choice) => `${choice.menuItemOption?.name}: ${choice.optionChoice?.name}`,
                       )
                       .join("<br>")}
                   </div>`
@@ -134,7 +132,7 @@ export function useReceiptPrinter() {
                 ${formatCurrency(Number(item.unitPrice) * item.quantity)}
               </div>
             </div>
-          `
+          `,
             )
             .join("")}
         </div>

@@ -1,12 +1,7 @@
 "use client";
 
+import { Check, ChevronsUpDown, CircleDollarSign, DollarSign } from "lucide-react";
 import React, { useEffect } from "react";
-import {
-  Check,
-  ChevronsUpDown,
-  CircleDollarSign,
-  DollarSign,
-} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,11 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { Currency } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useCurrencyStore } from "@/store/currency-store";
@@ -92,15 +83,13 @@ export function CurrencySelector() {
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      currency === item.value ? "opacity-100" : "opacity-0"
+                      currency === item.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <item.icon className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
                     <span>{item.label}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {item.description}
-                    </span>
+                    <span className="text-xs text-muted-foreground">{item.description}</span>
                   </div>
                 </CommandItem>
               ))}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +58,8 @@ export function ItemOptionsTable({ itemOptions }: ItemOptionsTableProps) {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const sortedItemOptions = [...itemOptions].sort((a, b) => {
-    let aValue, bValue;
+    let aValue;
+    let bValue;
 
     switch (sortColumn) {
       case "name":
@@ -105,44 +106,20 @@ export function ItemOptionsTable({ itemOptions }: ItemOptionsTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("name")}
-            >
-              Option Name{" "}
-              {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
+              Option Name {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("menuItem")}
-            >
-              Menu Item{" "}
-              {sortColumn === "menuItem" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("menuItem")}>
+              Menu Item {sortColumn === "menuItem" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("restaurant")}
-            >
-              Restaurant{" "}
-              {sortColumn === "restaurant" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("restaurant")}>
+              Restaurant {sortColumn === "restaurant" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("required")}
-            >
-              Required{" "}
-              {sortColumn === "required" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("required")}>
+              Required {sortColumn === "required" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("choices")}
-            >
-              Choices{" "}
-              {sortColumn === "choices" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("choices")}>
+              Choices {sortColumn === "choices" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
@@ -159,15 +136,11 @@ export function ItemOptionsTable({ itemOptions }: ItemOptionsTableProps) {
               <TableRow key={option.id}>
                 <TableCell className="font-medium">{option.name}</TableCell>
                 <TableCell>{option.menu_item.name}</TableCell>
-                <TableCell>
-                  {option.menu_item.menu_categories.menu.restaurant.name}
-                </TableCell>
+                <TableCell>{option.menu_item.menu_categories.menu.restaurant.name}</TableCell>
                 <TableCell>
                   <span
                     className={`px-2 py-1 rounded-full text-xs ${
-                      option.is_required
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-gray-100 text-gray-800"
+                      option.is_required ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"
                     }`}
                   >
                     {option.is_required ? "Required" : "Optional"}

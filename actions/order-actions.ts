@@ -12,7 +12,7 @@ import type { OrderItemStatus, Prisma } from "@prisma/client";
 
 // Then fix the getRestaurantOrders function to properly handle the type conversion
 export async function getRestaurantOrders(
-  restaurantId: string
+  restaurantId: string,
 ): Promise<{ success: boolean; data?: OrderWithRelations[]; error?: string }> {
   try {
     const orders = await prisma.order.findMany({
@@ -52,7 +52,7 @@ export async function getRestaurantOrders(
             email: null,
           },
         };
-      })
+      }),
     );
 
     // Fix the serialization and type casting
@@ -60,7 +60,7 @@ export async function getRestaurantOrders(
     // Use a type assertion that matches the structure from menu-builder-types.ts
     return {
       success: true,
-      data: serializedData as unknown as OrderWithRelations[],
+      data: serializedData as any as OrderWithRelations[],
     };
   } catch (error) {
     console.error("Failed to fetch orders:", error);
@@ -69,10 +69,7 @@ export async function getRestaurantOrders(
 }
 
 // Also fix the updateOrderItemStatus function to use the correct OrderItem type
-export async function updateOrderItemStatus(
-  orderItemId: number,
-  newStatus: OrderItemStatus
-) {
+export async function updateOrderItemStatus(orderItemId: number, newStatus: OrderItemStatus) {
   try {
     const updatedItem = await prisma.$transaction(async (tx) => {
       // Update the order item status
@@ -91,7 +88,7 @@ export async function updateOrderItemStatus(
 
       const allItemsSameStatus = areAllOrderItemsAtStatus(
         orderItem.order.orderItems.map((item) => item.status),
-        newStatus
+        newStatus,
       );
 
       // If all items have the same status, update order status
@@ -138,10 +135,7 @@ export async function updateOrderItemStatus(
     console.error("Failed to update order item status:", error);
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to update order item status",
+      error: error instanceof Error ? error.message : "Failed to update order item status",
     };
   }
 }
@@ -175,7 +169,7 @@ export async function updateOptionChoice(
   data: {
     name: string;
     priceAdjustment: number;
-  }
+  },
 ) {
   try {
     const choice = await prisma.optionChoice.update({
@@ -215,10 +209,7 @@ export async function updateMenuOrder(menuId: number, newOrder: number) {
   }
 }
 
-export async function updateCategoryOrder(
-  categoryId: number,
-  newOrder: number
-) {
+export async function updateCategoryOrder(categoryId: number, newOrder: number) {
   try {
     await prisma.$executeRaw`
       UPDATE "category"

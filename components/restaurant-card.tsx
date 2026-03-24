@@ -1,6 +1,6 @@
+import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -12,13 +12,7 @@ interface RestaurantCardProps {
   rating: number;
 }
 
-export function RestaurantCard({
-  id,
-  name,
-  image,
-  cuisine,
-  rating,
-}: RestaurantCardProps) {
+export function RestaurantCard({ id, name, image, cuisine, rating }: RestaurantCardProps) {
   return (
     <Link href={`/restaurants/${id}`} className="block group">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-white/80 to-white/20 backdrop-blur-sm border border-white/20 shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px]">
@@ -46,9 +40,7 @@ export function RestaurantCard({
             </h3>
             <div className="flex items-center text-sm bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full">
               <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-medium text-yellow-400">
-                {rating.toFixed(1)}
-              </span>
+              <span className="font-medium text-yellow-400">{rating.toFixed(1)}</span>
             </div>
           </div>
 
@@ -67,7 +59,7 @@ export function RestaurantCard({
                   fill="currentColor"
                   fillRule="evenodd"
                   clipRule="evenodd"
-                ></path>
+                />
               </svg>
             </div>
           </div>

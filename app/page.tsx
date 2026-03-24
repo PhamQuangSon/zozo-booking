@@ -15,8 +15,7 @@ const carouselItems = [
     id: 1,
     title: "CHICAGO DEEP",
     subtitle: "PIZZA KING",
-    description:
-      "Authentic deep dish pizza with premium toppings and our signature sauce",
+    description: "Authentic deep dish pizza with premium toppings and our signature sauce",
     image: "/bannerThumb1_1.png",
     discount: "50% OFF",
     buttonText: "ORDER NOW",
@@ -27,8 +26,7 @@ const carouselItems = [
     id: 2,
     title: "GOURMET",
     subtitle: "BURGER HOUSE",
-    description:
-      "Juicy, flame-grilled burgers made with 100% premium beef and fresh ingredients",
+    description: "Juicy, flame-grilled burgers made with 100% premium beef and fresh ingredients",
     image: "/bannerThumb1_2.png",
     discount: "30% OFF",
     buttonText: "VIEW MENU",
@@ -39,8 +37,7 @@ const carouselItems = [
     id: 3,
     title: "AUTHENTIC",
     subtitle: "PASTA PARADISE",
-    description:
-      "Hand-crafted Italian pasta made with traditional recipes and fresh ingredients",
+    description: "Hand-crafted Italian pasta made with traditional recipes and fresh ingredients",
     image: "/bannerThumb1_3.png",
     discount: "25% OFF",
     buttonText: "EXPLORE",
@@ -99,9 +96,7 @@ export default async function Home() {
                   <h2 className="text-3xl font-bold mb-2 text-orange-400 animate animate-fade-up">
                     Restaurants
                   </h2>
-                  <p className="text-muted-foreground">
-                    Discover our top-rated dining experiences
-                  </p>
+                  <p className="text-muted-foreground">Discover our top-rated dining experiences</p>
                 </div>
 
                 {error && (
@@ -117,10 +112,7 @@ export default async function Home() {
                         key={restaurant.id}
                         id={restaurant.id.toString()}
                         name={restaurant.name}
-                        image={
-                          restaurant.imageUrl ||
-                          "/placeholder.svg?height=200&width=300"
-                        }
+                        image={restaurant.imageUrl || "/placeholder.svg?height=200&width=300"}
                         cuisine={restaurant.cuisine || "Various"}
                         rating={4.5} // This should be calculated from reviews in a real app
                       />

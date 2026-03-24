@@ -3,10 +3,7 @@
 import { useState } from "react";
 import type React from "react";
 
-import {
-  createRestaurant,
-  updateRestaurant,
-} from "@/actions/restaurant-actions";
+import { createRestaurant, updateRestaurant } from "@/actions/restaurant-actions";
 import { ImageUpload } from "@/components/image-upload";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -20,10 +17,7 @@ interface RestaurantFormProps {
   onOpenChange: (refresh: boolean) => void;
 }
 
-export function RestaurantForm({
-  initialData,
-  onOpenChange,
-}: RestaurantFormProps) {
+export function RestaurantForm({ initialData, onOpenChange }: RestaurantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
@@ -36,9 +30,7 @@ export function RestaurantForm({
   });
   const { toast } = useToast();
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -88,13 +80,7 @@ export function RestaurantForm({
       <div className="grid gap-4 py-4">
         <div className="space-y-2">
           <Label htmlFor="name">Name *</Label>
-          <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          <Input id="name" name="name" value={formData.name} onChange={handleChange} required />
         </div>
 
         <ImageUpload
@@ -116,32 +102,17 @@ export function RestaurantForm({
 
         <div className="space-y-2">
           <Label htmlFor="cuisine">Cuisine</Label>
-          <Input
-            id="cuisine"
-            name="cuisine"
-            value={formData.cuisine}
-            onChange={handleChange}
-          />
+          <Input id="cuisine" name="cuisine" value={formData.cuisine} onChange={handleChange} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-            />
+            <Input id="address" name="address" value={formData.address} onChange={handleChange} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-            />
+            <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} />
           </div>
         </div>
 
@@ -166,11 +137,7 @@ export function RestaurantForm({
           Cancel
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? "Saving..."
-            : initialData
-              ? "Update Restaurant"
-              : "Create Restaurant"}
+          {isSubmitting ? "Saving..." : initialData ? "Update Restaurant" : "Create Restaurant"}
         </Button>
       </DialogFooter>
     </form>

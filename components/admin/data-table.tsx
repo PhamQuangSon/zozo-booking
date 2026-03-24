@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import type React from "react";
 
 import {
@@ -37,7 +37,7 @@ import { toast } from "@/components/ui/use-toast";
 export type ColumnDef<T> = {
   id: string;
   header: string;
-  accessorKey: string | ((row: T) => any);
+  accessorKey: string | ((row: T) => unknown);
   cell?: (value: any, row: T) => React.ReactNode;
   sortable?: boolean;
 };
@@ -68,7 +68,8 @@ export function DataTable<T extends { id: number | string }>({
     const column = columns.find((col) => col.id === sortColumn);
     if (!column) return 0;
 
-    let aValue, bValue;
+    let aValue;
+    let bValue;
 
     if (typeof column.accessorKey === "function") {
       aValue = column.accessorKey(a);
@@ -156,10 +157,7 @@ export function DataTable<T extends { id: number | string }>({
     if (!path) return obj;
 
     const keys = path.split(".");
-    return keys.reduce(
-      (o, key) => (o && o[key] !== undefined ? o[key] : null),
-      obj
-    );
+    return keys.reduce((o, key) => (o && o[key] !== undefined ? o[key] : null), obj);
   }
 
   return (
@@ -176,15 +174,11 @@ export function DataTable<T extends { id: number | string }>({
                 >
                   {column.header}
                   {column.sortable && sortColumn === column.id && (
-                    <span className="ml-1">
-                      {sortDirection === "asc" ? "↑" : "↓"}
-                    </span>
+                    <span className="ml-1">{sortDirection === "asc" ? "↑" : "↓"}</span>
                   )}
                 </TableHead>
               ))}
-              {(editPath || deleteAction) && (
-                <TableHead className="w-[100px]">Actions</TableHead>
-              )}
+              {(editPath || deleteAction) && <TableHead className="w-[100px]">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -201,9 +195,7 @@ export function DataTable<T extends { id: number | string }>({
               sortedData.map((row) => (
                 <TableRow key={row.id}>
                   {columns.map((column) => (
-                    <TableCell key={`${row.id}-${column.id}`}>
-                      {renderCell(row, column)}
-                    </TableCell>
+                    <TableCell key={`${row.id}-${column.id}`}>{renderCell(row, column)}</TableCell>
                   ))}
                   {editPath || onEdit ? (
                     <TableCell>
@@ -243,16 +235,12 @@ export function DataTable<T extends { id: number | string }>({
         </Table>
       </div>
 
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this
-              item.
+              This action cannot be undone. This will permanently delete this item.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

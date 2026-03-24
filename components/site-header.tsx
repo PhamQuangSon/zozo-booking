@@ -1,6 +1,6 @@
+import { Menu, Search, ShoppingCart, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, Search, ShoppingCart, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,26 +43,15 @@ export function SiteHeader() {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="relative h-8 w-8">
-              <Image
-                src="/logo.png"
-                alt="Zozo Booking"
-                fill
-                className="object-contain"
-                priority
-              />
+              <Image src="/logo.png" alt="Zozo Booking" fill className="object-contain" priority />
             </div>
-            <span className="hidden font-bold sm:inline-block">
-              Zozo Booking
-            </span>
+            <span className="hidden font-bold sm:inline-block">Zozo Booking</span>
           </Link>
         </div>
 
         {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
+          <Link href="/" className="text-sm font-medium transition-colors hover:text-primary">
             Home
           </Link>
           <Link
@@ -71,10 +60,7 @@ export function SiteHeader() {
           >
             Restaurants
           </Link>
-          <Link
-            href="/about"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
+          <Link href="/about" className="text-sm font-medium transition-colors hover:text-primary">
             About
           </Link>
           <Link

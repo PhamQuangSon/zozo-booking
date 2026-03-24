@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { PlusCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { PlusCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { deleteMenuItem } from "@/actions/menu-item-actions";
 import { type ColumnDef, DataTable } from "@/components/admin/data-table";
@@ -26,8 +26,9 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] =
-    useState<MenuItemWithRelationsClient | null>(null);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemWithRelationsClient | null>(
+    null,
+  );
   const [categories, setCategories] = useState<any[]>([]);
   const [restaurants, setRestaurants] = useState<any[]>([]);
 
@@ -61,15 +62,9 @@ export function MenuItemsClient({ menuItems = [] }: MenuItemsClientProps) {
   const filteredMenuItems = menuItems.filter(
     (item) =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.description?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (item.categoryName?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (item.restaurantName?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      )
+      (item.description?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (item.categoryName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (item.restaurantName?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
   );
 
   const columns: ColumnDef<MenuItemWithRelationsClient>[] = [

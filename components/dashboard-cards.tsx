@@ -26,12 +26,8 @@ export function DashboardCards({
           <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            {formatCurrency(revenue, currency)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            +20.1% from last month
-          </p>
+          <div className="text-2xl font-bold">{formatCurrency(revenue, currency)}</div>
+          <p className="text-xs text-muted-foreground">+20.1% from last month</p>
         </CardContent>
       </Card>
       <Card>
@@ -40,9 +36,7 @@ export function DashboardCards({
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">+{orders}</div>
-          <p className="text-xs text-muted-foreground">
-            +12.2% from last month
-          </p>
+          <p className="text-xs text-muted-foreground">+12.2% from last month</p>
         </CardContent>
       </Card>
       <Card>

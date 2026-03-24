@@ -1,10 +1,7 @@
 "use client";
 
 import { getRestaurantById } from "@/actions/restaurant-actions";
-import {
-  getTableFullData,
-  getTablesByRestaurantId,
-} from "@/actions/table-actions";
+import { getTableFullData, getTablesByRestaurantId } from "@/actions/table-actions";
 import { useQuery } from "@tanstack/react-query";
 
 // Hook for fetching restaurant data at app/restaurants/[restaurantId]/page.tsx data not order
@@ -38,11 +35,7 @@ export function useRestaurantTables(restaurantId: string) {
 // Hook for fetching full table data (including menu items) att app/restaurants/[restaurantId]/[tableId]/page.tsx full has orders
 // and cart
 // This is used in the table page to get the full data for a specific table
-export function useTableFullData(
-  restaurantId: string,
-  tableId: string,
-  isSocketConnected = false
-) {
+export function useTableFullData(restaurantId: string, tableId: string, isSocketConnected = false) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["tableData", restaurantId, tableId],
     queryFn: async () => {

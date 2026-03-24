@@ -26,18 +26,10 @@ interface CartState {
   addToCart: (item: CartItem) => void;
   removeItem: (id: string, userId?: string) => void;
   updateQuantity: (id: string, quantity: number, userId?: string) => void;
-  markItemsAsSubmitted: (
-    restaurantId: string,
-    tableId: string,
-    orderId: number
-  ) => void;
+  markItemsAsSubmitted: (restaurantId: string, tableId: string, orderId: number) => void;
   getSubmittedItems: (restaurantId: string, tableId: string) => CartItem[];
   getPendingItems: (restaurantId: string, tableId: string) => CartItem[];
-  syncServerOrders: (
-    restaurantId: string,
-    tableId: string,
-    orders: any[]
-  ) => void;
+  syncServerOrders: (restaurantId: string, tableId: string, orders: any[]) => void;
   mergeExternalCart: (userId: string, externalCart: CartItem[]) => void;
   setCollaborativeMode: (enabled: boolean) => void;
   clearCart: () => void;
@@ -69,8 +61,7 @@ export const useCartStore = create<CartState>()(
             i.restaurantId === item.restaurantId &&
             i.tableId === item.tableId &&
             i.userId === item.userId &&
-            JSON.stringify(i.selectedOptions) ===
-              JSON.stringify(item.selectedOptions) &&
+            JSON.stringify(i.selectedOptions) === JSON.stringify(item.selectedOptions) &&
             !i.submitted; // Only match non-submitted items
 
           const existingItemIndex = state.cart.findIndex(isSameItem);
@@ -84,10 +75,9 @@ export const useCartStore = create<CartState>()(
               timestamp: item.timestamp || Date.now(),
             };
             return { cart: updatedCart };
-          } else {
-            // Add new item
-            return { cart: [...state.cart, itemWithTimestamp] };
           }
+          // Add new item
+          return { cart: [...state.cart, itemWithTimestamp] };
         }),
 
       removeItem: (id, userId) =>
@@ -96,16 +86,13 @@ export const useCartStore = create<CartState>()(
           if (userId) {
             return {
               cart: state.cart.filter(
-                (item) =>
-                  !(item.id === id && item.userId === userId && !item.submitted)
+                (item) => !(item.id === id && item.userId === userId && !item.submitted),
               ),
             };
           }
           // Otherwise, remove all matching non-submitted items
           return {
-            cart: state.cart.filter(
-              (item) => !(item.id === id && !item.submitted)
-            ),
+            cart: state.cart.filter((item) => !(item.id === id && !item.submitted)),
           };
         }),
 
@@ -114,11 +101,7 @@ export const useCartStore = create<CartState>()(
           return {
             cart: state.cart.map((item) => {
               // Only update if id matches and either userId matches or userId is not provided
-              if (
-                item.id === id &&
-                (!userId || item.userId === userId) &&
-                !item.submitted
-              ) {
+              if (item.id === id && (!userId || item.userId === userId) && !item.submitted) {
                 return { ...item, quantity, timestamp: Date.now() };
               }
               return item;
@@ -129,11 +112,9 @@ export const useCartStore = create<CartState>()(
       markItemsAsSubmitted: (restaurantId, tableId, orderId) =>
         set((state) => ({
           cart: state.cart.map((item) =>
-            item.restaurantId === restaurantId &&
-            item.tableId === tableId &&
-            !item.submitted
+            item.restaurantId === restaurantId && item.tableId === tableId && !item.submitted
               ? { ...item, submitted: true, orderId, timestamp: Date.now() }
-              : item
+              : item,
           ),
         })),
 
@@ -142,19 +123,13 @@ export const useCartStore = create<CartState>()(
           // Get existing non-submitted items for this restaurant/table
           const existingPendingItems = state.cart.filter(
             (item) =>
-              item.restaurantId === restaurantId &&
-              item.tableId === tableId &&
-              !item.submitted
+              item.restaurantId === restaurantId && item.tableId === tableId && !item.submitted,
           );
 
           // Get existing submitted items for other restaurant/tables
           const otherItems = state.cart.filter(
             (item) =>
-              !(
-                item.restaurantId === restaurantId &&
-                item.tableId === tableId &&
-                item.submitted
-              )
+              !(item.restaurantId === restaurantId && item.tableId === tableId && item.submitted),
           );
 
           // Convert server orders to cart items
@@ -182,27 +157,23 @@ export const useCartStore = create<CartState>()(
                 userId: order.user?.id || undefined,
                 userName:
                   order.user?.name ||
-                  (order.notes &&
-                    order.notes.split("Customer Info:")[1].trim()) ||
+                  order.notes?.split("Customer Info:")[1].trim() ||
                   "Anonymous 5",
                 // timestamp: new Date(order.createdAt || Date.now()).getTime(),
                 selectedOptions: item.orderItemChoices?.reduce(
                   (acc: Record<string, any>, choice: any) => {
-                    if (!choice.menuItemOption || !choice.optionChoice)
-                      return acc;
+                    if (!choice.menuItemOption || !choice.optionChoice) return acc;
 
                     return {
                       ...acc,
                       [choice.menuItemOption.id]: {
                         id: String(choice.optionChoice.id),
                         name: choice.optionChoice.name,
-                        priceAdjustment: Number(
-                          choice.optionChoice.priceAdjustment
-                        ),
+                        priceAdjustment: Number(choice.optionChoice.priceAdjustment),
                       },
                     };
                   },
-                  {}
+                  {},
                 ),
               };
 
@@ -265,7 +236,7 @@ export const useCartStore = create<CartState>()(
           (item) =>
             item.restaurantId === restaurantId &&
             item.tableId === tableId &&
-            item.submitted === true
+            item.submitted === true,
         );
 
         // Sort by timestamp
@@ -277,7 +248,7 @@ export const useCartStore = create<CartState>()(
           (item) =>
             item.restaurantId === restaurantId &&
             item.tableId === tableId &&
-            (item.submitted === false || item.submitted === undefined)
+            (item.submitted === false || item.submitted === undefined),
         );
 
         // Sort by timestamp
@@ -296,6 +267,6 @@ export const useCartStore = create<CartState>()(
         }
         return persistedState as CartState;
       },
-    }
-  )
+    },
+  ),
 );

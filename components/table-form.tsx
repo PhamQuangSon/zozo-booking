@@ -25,11 +25,7 @@ interface TableFormProps {
   onSuccess: () => void;
 }
 
-export function TableForm({
-  restaurantId,
-  initialData,
-  onSuccess,
-}: TableFormProps) {
+export function TableForm({ restaurantId, initialData, onSuccess }: TableFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     number: initialData?.number || 0,
@@ -72,9 +68,7 @@ export function TableForm({
       if (result.success) {
         toast({
           title: "Success",
-          description: initialData
-            ? "Table updated successfully"
-            : "Table created successfully",
+          description: initialData ? "Table updated successfully" : "Table created successfully",
         });
         onSuccess();
       } else {
@@ -112,11 +106,7 @@ export function TableForm({
           />
         </div>
 
-        <ImageUpload
-          value={formData.imageUrl}
-          onChange={handleImageChange}
-          label="Table Image"
-        />
+        <ImageUpload value={formData.imageUrl} onChange={handleImageChange} label="Table Image" />
 
         <div className="space-y-2">
           <Label htmlFor="capacity">Capacity *</Label>
@@ -151,11 +141,7 @@ export function TableForm({
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting
-            ? "Saving..."
-            : initialData
-              ? "Update Table"
-              : "Create Table"}
+          {isSubmitting ? "Saving..." : initialData ? "Update Table" : "Create Table"}
         </Button>
       </DialogFooter>
     </form>

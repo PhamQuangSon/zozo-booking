@@ -1,9 +1,9 @@
 "use server";
 
+import { withRetry } from "@/lib/db-connection";
 import { type Currency, formatCurrency } from "@/lib/i18n";
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
-import { withRetry } from "@/lib/db-connection";
 
 export type Restaurant = {
   id: number;
@@ -47,8 +47,7 @@ export async function getRestaurants(): Promise<GetRestaurantsResponse> {
     console.error("Failed to fetch restaurants:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load restaurants",
+      error: error instanceof Error ? error.message : "Failed to load restaurants",
     };
   }
 }
@@ -91,8 +90,7 @@ export async function getRestaurantById(id: string) {
     console.error("Failed to fetch restaurant:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load restaurant",
+      error: error instanceof Error ? error.message : "Failed to load restaurant",
     };
   }
 }
@@ -125,8 +123,7 @@ export async function createRestaurant(data: {
     console.error("Failed to create restaurant:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to create restaurant",
+      error: error instanceof Error ? error.message : "Failed to create restaurant",
     };
   }
 }
@@ -142,7 +139,7 @@ export async function updateRestaurant(
     email?: string;
     imageUrl?: string;
     cuisine?: string;
-  }
+  },
 ) {
   try {
     const restaurant = await prisma.restaurant.update({
@@ -163,8 +160,7 @@ export async function updateRestaurant(
     console.error(`Failed to update restaurant with ID ${id}:`, error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to update restaurant",
+      error: error instanceof Error ? error.message : "Failed to update restaurant",
     };
   }
 }
@@ -181,17 +177,13 @@ export async function deleteRestaurant(id: number) {
     console.error(`Failed to delete restaurant with ID ${id}:`, error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to delete restaurant",
+      error: error instanceof Error ? error.message : "Failed to delete restaurant",
     };
   }
 }
 
 // Format menu items with proper currency
-export async function formatMenuItems(
-  menuItems: any[],
-  currency: Currency = "USD"
-) {
+export async function formatMenuItems(menuItems: any[], currency: Currency = "USD") {
   if (!menuItems || !Array.isArray(menuItems)) return [];
 
   // First serialize any Decimal values
@@ -205,10 +197,7 @@ export async function formatMenuItems(
 }
 
 // Add a new function for formatting item options
-export async function formatItemOptions(
-  itemOptions: any[],
-  currency: Currency = "USD"
-) {
+export async function formatItemOptions(itemOptions: any[], currency: Currency = "USD") {
   if (!itemOptions || !Array.isArray(itemOptions)) return [];
 
   // First serialize any Decimal values
@@ -218,22 +207,14 @@ export async function formatItemOptions(
   return serializedOptions.map((option) => {
     const formattedOption = {
       ...option,
-      formattedPriceAdjustment: formatCurrency(
-        option.priceAdjustment || 0,
-        currency
-      ),
+      formattedPriceAdjustment: formatCurrency(option.priceAdjustment || 0, currency),
     };
 
     if (option.optionChoices && Array.isArray(option.optionChoices)) {
-      formattedOption.optionChoices = option.optionChoices.map(
-        (choice: any) => ({
-          ...choice,
-          formattedPriceAdjustment: formatCurrency(
-            choice.priceAdjustment || 0,
-            currency
-          ),
-        })
-      );
+      formattedOption.optionChoices = option.optionChoices.map((choice: any) => ({
+        ...choice,
+        formattedPriceAdjustment: formatCurrency(choice.priceAdjustment || 0, currency),
+      }));
     } else {
       formattedOption.optionChoices = [];
     }

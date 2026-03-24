@@ -10,9 +10,7 @@ export const itemOptionSchema = z.object({
   name: z.string().min(1, "Name is required"),
   isRequired: z.boolean().default(false),
   menuItemId: z.number().int().positive("Menu item is required"),
-  optionChoices: z
-    .array(optionChoiceSchema)
-    .min(1, "At least one option choice is required"),
+  optionChoices: z.array(optionChoiceSchema).min(1, "At least one option choice is required"),
 });
 
 export type ItemOptionFormValues = z.infer<typeof itemOptionSchema>;

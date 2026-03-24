@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { sign } from "jsonwebtoken";
+import { type NextRequest, NextResponse } from "next/server";
 
 import { errorResponse, successResponse } from "@/lib/apiResponse";
 import prisma from "@/lib/prisma";
@@ -9,10 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     if (!process.env.NEXTAUTH_SECRET) {
       console.error("Missing NEXTAUTH_SECRET");
-      return NextResponse.json(
-        errorResponse("Server misconfiguration"),
-        { status: 500 }
-      );
+      return NextResponse.json(errorResponse("Server misconfiguration"), { status: 500 });
     }
 
     const body = await request.json();
@@ -37,10 +34,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!user.emailVerified) {
-      return NextResponse.json(
-        errorResponse("Please verify your email before logging in"),
-        { status: 401 }
-      );
+      return NextResponse.json(errorResponse("Please verify your email before logging in"), {
+        status: 401,
+      });
     }
 
     // Verify password
@@ -60,7 +56,7 @@ export async function POST(request: NextRequest) {
         role: user.role,
       },
       process.env.NEXTAUTH_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
     // Create the response

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { updateOrderItemStatus } from "@/actions/order-actions";
 import { Badge } from "@/components/ui/badge";
@@ -27,9 +27,7 @@ export function OrderItemActions({ item }: OrderItemActionsProps) {
   const [loading, setLoading] = useState(false);
 
   // Available status transitions
-  const getAvailableStatuses = (
-    currentStatus: OrderItemStatus
-  ): OrderItemStatus[] => {
+  const getAvailableStatuses = (currentStatus: OrderItemStatus): OrderItemStatus[] => {
     switch (currentStatus) {
       case "NEW":
         return ["PREPARING", "CANCELLED"];

@@ -14,7 +14,7 @@ export async function GET() {
       successResponse({
         success: true,
         message: "Socket server already running",
-      })
+      }),
     );
   }
   // Create a new Socket.IO server
@@ -66,6 +66,6 @@ export async function GET() {
     successResponse({
       success: true,
       message: "Socket server started",
-    })
+    }),
   );
 }

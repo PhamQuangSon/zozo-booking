@@ -16,6 +16,6 @@ export const useCurrencyStore = create<CurrencyState>()(
     }),
     {
       name: "currency-store",
-    }
-  )
+    },
+  ),
 );

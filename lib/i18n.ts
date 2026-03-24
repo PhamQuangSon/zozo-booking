@@ -5,10 +5,7 @@ const EXCHANGE_RATES = {
 
 export type Currency = "USD" | "VND";
 
-export function formatCurrency(
-  amount: number,
-  currency: Currency = "USD"
-): string {
+export function formatCurrency(amount: number, currency: Currency = "USD"): string {
   // Convert amount to the target currency
   const convertedAmount = amount * EXCHANGE_RATES[currency];
 
@@ -22,10 +19,7 @@ export function formatCurrency(
 }
 
 // Format currency without the currency symbol
-export function formatCurrencyValue(
-  amount: number,
-  currency: Currency = "USD"
-): string {
+export function formatCurrencyValue(amount: number, currency: Currency = "USD"): string {
   const convertedAmount = amount * EXCHANGE_RATES[currency];
 
   return new Intl.NumberFormat(currency === "USD" ? "en-US" : "vi-VN", {
@@ -38,11 +32,10 @@ export function formatCurrencyValue(
 export function convertCurrency(
   amount: number,
   fromCurrency: Currency,
-  toCurrency: Currency
+  toCurrency: Currency,
 ): number {
   // First convert to USD (base currency)
-  const amountInUSD =
-    fromCurrency === "USD" ? amount : amount / EXCHANGE_RATES[fromCurrency];
+  const amountInUSD = fromCurrency === "USD" ? amount : amount / EXCHANGE_RATES[fromCurrency];
   // Then convert to target currency
   return amountInUSD * EXCHANGE_RATES[toCurrency];
 }

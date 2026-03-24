@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { ArrowRight, ChevronLeft, ShoppingCart, Users } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useSession } from "next-auth/react";
-import { ArrowRight, ChevronLeft, ShoppingCart, Users } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 import Loading from "@/app/loading";
 import { CustomerInfoForm } from "@/components/customer-info-form";
@@ -15,12 +15,7 @@ import { OrderCart } from "@/components/order-cart";
 import { ScrollingBanner } from "@/components/scrolling-banner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
   Sheet,
@@ -54,8 +49,7 @@ function TableOrderPageContent() {
   const [customerInfoSubmitted, setCustomerInfoSubmitted] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [selectedMenuItem, setSelectedMenuItem] =
-    useState<MenuItemWithRelations | null>(null);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemWithRelations | null>(null);
   const [showItemDetail, setShowItemDetail] = useState(false);
 
   const {
@@ -67,10 +61,7 @@ function TableOrderPageContent() {
   } = useCartStore();
 
   // Use our real-time cart hook
-  const { isConnected, otherUserCarts } = useRealTimeCart(
-    restaurantId,
-    tableId
-  );
+  const { isConnected, otherUserCarts } = useRealTimeCart(restaurantId, tableId);
 
   // Fetch table data using custom hook with React Query - pass isConnected to control refetch behavior
   const {
@@ -158,8 +149,7 @@ function TableOrderPageContent() {
     activeCategory === "all"
       ? allItems
       : allItems.filter(
-          (item) =>
-            item.categoryName?.toLowerCase() === activeCategory.toLowerCase()
+          (item) => item.categoryName?.toLowerCase() === activeCategory.toLowerCase(),
         );
 
   // Handle menu item selection
@@ -173,14 +163,10 @@ function TableOrderPageContent() {
     item: any,
     options: any,
     quantity: number,
-    specialInstructions: string
+    specialInstructions: string,
   ) => {
-    const userId =
-      session?.user?.id || localStorage.getItem("customerUserId") || "";
-    const userName =
-      session?.user?.name ||
-      localStorage.getItem("customerName") ||
-      "Anonymous 1";
+    const userId = session?.user?.id || localStorage.getItem("customerUserId") || "";
+    const userName = session?.user?.name || localStorage.getItem("customerName") || "Anonymous 1";
 
     addToCart({
       id: item.id.toString(),
@@ -214,9 +200,7 @@ function TableOrderPageContent() {
       <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Card className="glass-card border-none shadow-lg">
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              Table not found or unavailable
-            </p>
+            <p className="text-center text-muted-foreground">Table not found or unavailable</p>
             <div className="flex justify-center mt-4">
               <Button
                 asChild
@@ -264,9 +248,7 @@ function TableOrderPageContent() {
               <h1 className="text-3xl font-bold text-brand-primary animate animate-fade-up">
                 {restaurant?.name}
               </h1>
-              <p className="mt-2 text-muted-foreground max-w-md">
-                {restaurant?.description}
-              </p>
+              <p className="mt-2 text-muted-foreground max-w-md">{restaurant?.description}</p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/20 text-brand-accent-foreground animate animate-fade-right">
                 <span className="font-medium">Table {table?.number}</span>
               </div>
@@ -278,13 +260,9 @@ function TableOrderPageContent() {
                   checked={collaborativeMode}
                   onCheckedChange={setCollaborativeMode}
                 />
-                <Label
-                  htmlFor="collaborative-mode"
-                  className="text-sm flex items-center gap-1"
-                >
+                <Label htmlFor="collaborative-mode" className="text-sm flex items-center gap-1">
                   <Users className="h-4 w-4" />
-                  Collaborative Mode{" "}
-                  {isConnected ? "(Connected)" : "(Connecting...)"}
+                  Collaborative Mode {isConnected ? "(Connected)" : "(Connecting...)"}
                 </Label>
               </div>
             </div>
@@ -293,13 +271,13 @@ function TableOrderPageContent() {
       </div>
 
       {showCustomerForm && !customerInfoSubmitted ? (
-        <div className="container mx-auto my-6 bg-white p-4 md:p-8 rounded-t-3xl shadow-lg w-96 h-[400px]">
+        <div className="container mx-auto my-6 h-[400px] w-96 rounded-t-3xl border border-border/50 bg-card/90 p-4 shadow-lg backdrop-blur-sm md:p-8">
           <CustomerInfoForm onSubmit={handleCustomerInfoSubmit} />
         </div>
       ) : (
         <div className="bg-secondary/30 flex-grow py-8">
           {/* Food Menu Section */}
-          <div className="container mx-auto bg-white p-4 md:p-8 glass-card border-none shadow-lg">
+          <div className="container mx-auto border-none p-4 shadow-lg glass-card md:p-8">
             <div className="flex justify-center items-center gap-2 mb-2">
               <span className="text-brand-primary">🍔 FOOD MENU 🍕</span>
             </div>
@@ -328,12 +306,7 @@ function TableOrderPageContent() {
             <MenuItemDetail
               item={selectedMenuItem}
               onAddToCart={(options, quantity, specialInstructions) =>
-                handleAddToCart(
-                  selectedMenuItem,
-                  options,
-                  quantity,
-                  specialInstructions
-                )
+                handleAddToCart(selectedMenuItem, options, quantity, specialInstructions)
               }
             />
           )}

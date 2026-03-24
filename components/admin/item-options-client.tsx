@@ -1,31 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { PlusCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { deleteItemOption } from "@/actions/item-option-actions";
 import { type ColumnDef, DataTable } from "@/components/admin/data-table";
 import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type {
-  ItemOptionWithRelations,
-  MenuItemWithRelations,
-} from "@/types/menu-builder-types";
+import type { ItemOptionWithRelations, MenuItemWithRelations } from "@/types/menu-builder-types";
 
 // Define props interface
 interface ItemOptionsClientProps {
   itemOptions: ItemOptionWithRelations[];
 }
 
-export function ItemOptionsClient({
-  itemOptions = [],
-}: ItemOptionsClientProps) {
+export function ItemOptionsClient({ itemOptions = [] }: ItemOptionsClientProps) {
   // Use the interface
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItemOption, setSelectedItemOption] =
-    useState<ItemOptionWithRelations | null>(null);
+  const [selectedItemOption, setSelectedItemOption] = useState<ItemOptionWithRelations | null>(
+    null,
+  );
   const [menuItems, setMenuItems] = useState<MenuItemWithRelations[]>([]);
 
   // Fetch menu items on component mount
@@ -53,12 +49,8 @@ export function ItemOptionsClient({
   const filteredItemOptions = itemOptions.filter(
     (option) =>
       option.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (option.menuItemName?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      ) ||
-      (option.restaurantName?.toLowerCase() || "").includes(
-        searchTerm.toLowerCase()
-      )
+      (option.menuItemName?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (option.restaurantName?.toLowerCase() || "").includes(searchTerm.toLowerCase()),
   );
 
   const columns: ColumnDef<ItemOptionWithRelations>[] = [

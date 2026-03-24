@@ -1,9 +1,6 @@
 import type { OrderItemStatus, OrderStatus } from "@prisma/client";
 
-export const orderItemStatusToOrderStatus: Record<
-  OrderItemStatus,
-  OrderStatus
-> = {
+export const orderItemStatusToOrderStatus: Record<OrderItemStatus, OrderStatus> = {
   NEW: "NEW",
   PREPARING: "PREPARING",
   READY: "PREPARING",
@@ -14,7 +11,7 @@ export const orderItemStatusToOrderStatus: Record<
 
 export function areAllOrderItemsAtStatus(
   statuses: OrderItemStatus[],
-  target: OrderItemStatus
+  target: OrderItemStatus,
 ): boolean {
   return statuses.length > 0 && statuses.every((status) => status === target);
 }
@@ -24,8 +21,7 @@ export function shouldReleaseTableAfterItemStatusUpdate(params: {
   activeOrdersCount: number;
   hasTable: boolean;
 }): boolean {
-  const isTerminalStatus =
-    params.newStatus === "COMPLETED" || params.newStatus === "CANCELLED";
+  const isTerminalStatus = params.newStatus === "COMPLETED" || params.newStatus === "CANCELLED";
 
   return isTerminalStatus && params.hasTable && params.activeOrdersCount === 0;
 }

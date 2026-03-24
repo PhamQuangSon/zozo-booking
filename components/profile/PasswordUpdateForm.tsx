@@ -1,8 +1,8 @@
 // components/profile/PasswordUpdateForm.tsx
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
+import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
 import { type PasswordState, updatePassword } from "@/actions/user-actions";
@@ -50,10 +50,7 @@ function PasswordSubmitButton() {
 }
 
 export function PasswordUpdateForm() {
-  const [passwordState, passwordAction] = useActionState(
-    updatePassword,
-    initialPasswordState
-  );
+  const [passwordState, passwordAction] = useActionState(updatePassword, initialPasswordState);
   const formRef = useRef<HTMLFormElement>(null); // Ref for resetting the form
 
   // Reset password form on success
@@ -68,9 +65,7 @@ export function PasswordUpdateForm() {
     <Card>
       <CardHeader>
         <CardTitle>Change Password</CardTitle>
-        <CardDescription>
-          Update your password to keep your account secure
-        </CardDescription>
+        <CardDescription>Update your password to keep your account secure</CardDescription>
       </CardHeader>
       {/* Use the action prop and add ref */}
       <form action={passwordAction} ref={formRef}>
@@ -95,37 +90,18 @@ export function PasswordUpdateForm() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                required
-              />
-              <ZodErrors
-                error={passwordState?.zodErrors?.currentPassword ?? []}
-              />
+              <Input id="currentPassword" name="currentPassword" type="password" required />
+              <ZodErrors error={passwordState?.zodErrors?.currentPassword ?? []} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                required
-              />
+              <Input id="newPassword" name="newPassword" type="password" required />
               <ZodErrors error={passwordState?.zodErrors?.newPassword ?? []} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-              />
-              <ZodErrors
-                error={passwordState?.zodErrors?.confirmPassword ?? []}
-              />
+              <Input id="confirmPassword" name="confirmPassword" type="password" required />
+              <ZodErrors error={passwordState?.zodErrors?.confirmPassword ?? []} />
             </div>
           </div>
         </CardContent>

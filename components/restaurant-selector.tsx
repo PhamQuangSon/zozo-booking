@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Store } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { getRestaurants } from "@/actions/restaurant-actions";
 import {
@@ -45,9 +45,7 @@ export function RestaurantSelector() {
         const result = await getRestaurants();
         if (!isCancelled) {
           if (result.success) {
-            setRestaurants(
-              result.data.map((r) => ({ id: r.id.toString(), name: r.name }))
-            );
+            setRestaurants(result.data.map((r) => ({ id: r.id.toString(), name: r.name })));
           } else {
             toast({
               title: "Error",
@@ -58,8 +56,7 @@ export function RestaurantSelector() {
 
           // Check if we have a saved default restaurant
           const savedRestaurant = safeLocalStorage.getItem("defaultRestaurant");
-          const fallback =
-            mockRestaurants.length > 0 ? mockRestaurants[0] : null;
+          const fallback = mockRestaurants.length > 0 ? mockRestaurants[0] : null;
 
           if (savedRestaurant) {
             const parsed = safeParseJSON(savedRestaurant, fallback);

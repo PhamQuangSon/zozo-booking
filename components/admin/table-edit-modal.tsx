@@ -94,9 +94,7 @@ export function TableEditModal({
       if (result.success) {
         toast({
           title: "Success",
-          description: initialData
-            ? "Table updated successfully"
-            : "Table created successfully",
+          description: initialData ? "Table updated successfully" : "Table created successfully",
         });
         onSuccess(result.data);
       } else {
@@ -183,11 +181,7 @@ export function TableEditModal({
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Saving..."
-                : initialData
-                  ? "Update Table"
-                  : "Create Table"}
+              {isSubmitting ? "Saving..." : initialData ? "Update Table" : "Create Table"}
             </Button>
           </DialogFooter>
         </form>

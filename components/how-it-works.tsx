@@ -9,14 +9,12 @@ const steps = [
   {
     icon: <Clock className="h-10 w-10" />,
     title: "Place Order",
-    description:
-      "Select your items, customize as needed, and place your order.",
+    description: "Select your items, customize as needed, and place your order.",
   },
   {
     icon: <Check className="h-10 w-10" />,
     title: "Enjoy Your Meal",
-    description:
-      "Sit back and relax while your food is prepared and served to your table.",
+    description: "Sit back and relax while your food is prepared and served to your table.",
   },
 ];
 
@@ -28,9 +26,7 @@ export function HowItWorks() {
           <h2 className="text-3xl font-bold text-orange-400 mb-2 animate animate-fade-up">
             How It Works
           </h2>
-          <p className="text-muted-foreground">
-            Simple steps to order food with Zozo Booking
-          </p>
+          <p className="text-muted-foreground">Simple steps to order food with Zozo Booking</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

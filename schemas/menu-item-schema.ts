@@ -7,10 +7,7 @@ export const menuItemSchema = z.object({
   categoryId: z.number().int().positive("Category is required"),
   restaurantId: z.number().int().positive("Restaurant is required"),
   isAvailable: z.boolean().default(true),
-  displayOrder: z
-    .number()
-    .int()
-    .nonnegative("Display order must be a positive number"),
+  displayOrder: z.number().int().nonnegative("Display order must be a positive number"),
   imageUrl: z.string().nullable().optional(),
 });
 

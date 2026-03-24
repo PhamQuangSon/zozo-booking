@@ -1,5 +1,5 @@
-import Image from "next/image";
 import { Star } from "lucide-react";
+import Image from "next/image";
 
 const testimonials = [
   {
@@ -59,9 +59,7 @@ export function Testimonials() {
                 </div>
                 <div>
                   <h3 className="font-semibold">{testimonial.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {testimonial.role}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                 </div>
               </div>
 
@@ -70,9 +68,7 @@ export function Testimonials() {
                   <Star
                     key={i}
                     className={`h-4 w-4 ${
-                      i < testimonial.rating
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                      i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
                     }`}
                   />
                 ))}

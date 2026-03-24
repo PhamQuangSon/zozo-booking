@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { verifyEmail } from "@/actions/auth-actions";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -77,7 +77,7 @@ export default function VerifyPage() {
         <CardContent>
           {isVerifying ? (
             <div className="flex flex-col items-center justify-center py-4">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               <p className="mt-4 text-center text-sm text-muted-foreground">
                 Verifying your email...
               </p>
@@ -87,8 +87,7 @@ export default function VerifyPage() {
               <CheckCircle className="h-4 w-4 text-success" />
               <AlertTitle className="text-success">Success</AlertTitle>
               <AlertDescription className="text-success">
-                {verificationResult.message ||
-                  "Your email has been verified successfully!"}
+                {verificationResult.message || "Your email has been verified successfully!"}
               </AlertDescription>
             </Alert>
           ) : (
@@ -96,8 +95,7 @@ export default function VerifyPage() {
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>
-                {verificationResult?.error ||
-                  "Failed to verify your email. Please try again."}
+                {verificationResult?.error || "Failed to verify your email. Please try again."}
               </AlertDescription>
             </Alert>
           )}

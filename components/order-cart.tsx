@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
 import { Clock, RefreshCw, Trash2, User } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 
 import { createTableOrder } from "@/actions/table-actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,32 +22,23 @@ interface OrderCartProps {
   collaborativeMode?: boolean;
 }
 
-export function OrderCart({
-  restaurantId,
-  tableId,
-  collaborativeMode = false,
-}: OrderCartProps) {
+export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: OrderCartProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const { currency } = useCurrencyStore();
   const { data: session } = useSession();
-  const {
-    removeItem,
-    markItemsAsSubmitted,
-    getSubmittedItems,
-    getPendingItems,
-  } = useCartStore();
+  const { removeItem, markItemsAsSubmitted, getSubmittedItems, getPendingItems } = useCartStore();
 
   // Use our real-time cart hook
-  const { isConnected, notifyOrderSubmitted, fetchLatestOrders } =
-    useRealTimeCart(restaurantId, tableId);
+  const { isConnected, notifyOrderSubmitted, fetchLatestOrders } = useRealTimeCart(
+    restaurantId,
+    tableId,
+  );
 
   // Get pending and submitted items
-  const pendingItems =
-    restaurantId && tableId ? getPendingItems(restaurantId, tableId) : [];
-  const submittedItems =
-    restaurantId && tableId ? getSubmittedItems(restaurantId, tableId) : [];
+  const pendingItems = restaurantId && tableId ? getPendingItems(restaurantId, tableId) : [];
+  const submittedItems = restaurantId && tableId ? getSubmittedItems(restaurantId, tableId) : [];
 
   // Group items by user if in collaborative mode
   const groupedPendingItems = collaborativeMode
@@ -60,7 +51,7 @@ export function OrderCart({
           acc[userId].push(item);
           return acc;
         },
-        {} as Record<string, CartItem[]>
+        {} as Record<string, CartItem[]>,
       )
     : { current: pendingItems };
 
@@ -115,34 +106,33 @@ export function OrderCart({
         quantity: item.quantity,
         notes: item.specialInstructions,
         choices: item.selectedOptions
-          ? Object.entries(item.selectedOptions).map(
-              ([optionId, choice]: [string, any]) => {
-                // Handle both single selection (radio) and multiple selection (checkbox) cases
-                let choiceId;
+          ? Object.entries(item.selectedOptions).map(([optionId, choice]: [string, any]) => {
+              // Handle both single selection (radio) and multiple selection (checkbox) cases
+              let choiceId;
 
-                if (choice.id) {
-                  // Single selection case (radio buttons)
-                  choiceId = Number(choice.id);
-                } else if (typeof choice === "object") {
-                  // Multiple selection case (checkboxes)
-                  // Get the first choice ID from the object
-                  const firstChoiceId = Object.keys(choice)[0];
-                  choiceId = firstChoiceId ? Number(firstChoiceId) : 0;
-                } else {
-                  choiceId = 0; // Fallback
-                }
-
-                return {
-                  optionId: Number(optionId),
-                  choiceId: choiceId || 0, // Ensure we have a valid number
-                };
+              if (choice.id) {
+                // Single selection case (radio buttons)
+                choiceId = Number(choice.id);
+              } else if (choice && typeof choice === "object") {
+                // Multiple selection case (checkboxes)
+                // Get the first choice ID from the object
+                const firstChoiceId = Object.keys(choice)[0];
+                choiceId = firstChoiceId ? Number(firstChoiceId) : 0;
+              } else {
+                choiceId = 0; // Fallback
               }
-            )
+
+              return {
+                optionId: Number(optionId),
+                choiceId: choiceId || 0, // Ensure we have a valid number
+              };
+            })
           : [],
       }));
 
       // Get customer info from localStorage if user is not authenticated
-      let customerName, customerEmail;
+      let customerName;
+      let customerEmail;
       if (!session?.user) {
         customerName = localStorage.getItem("customerName") || undefined;
         customerEmail = localStorage.getItem("customerEmail") || undefined;
@@ -224,77 +214,60 @@ export function OrderCart({
               )}
 
               {/* Display selected options */}
-              {item.selectedOptions &&
-                Object.entries(item.selectedOptions).length > 0 && (
-                  <div className="ml-6 text-sm text-muted-foreground">
-                    {Object.entries(item.selectedOptions).map(
-                      ([optionId, optionValue], groupIndex) => {
-                        // Handle different option structures
-                        if (
-                          typeof optionValue === "object" &&
-                          optionValue !== null
-                        ) {
-                          if ("name" in optionValue) {
-                            // Single option case
-                            return (
-                              <div
-                                key={`option-${optionId}-${groupIndex}`}
-                                className="mb-2"
-                              >
-                                <strong>{optionValue.name}</strong>
-                                {optionValue.priceAdjustment > 0 &&
-                                  ` (+${formatCurrency(optionValue.priceAdjustment, currency)})`}
-                              </div>
-                            );
-                          } else {
-                            // Multiple options case
-                            return (
-                              <div
-                                key={`option-group-${optionId}-${groupIndex}`}
-                                className="mb-2"
-                              >
-                                {Object.entries(optionValue).map(
-                                  (
-                                    [choiceId, choice]: [string, any],
-                                    choiceIndex
-                                  ) => {
-                                    if (choice?.name) {
-                                      return (
-                                        <div
-                                          key={`choice-${choiceId}-${choiceIndex}`}
-                                          className="text-sm pl-4 border-l-2 border-gray-200"
-                                        >
-                                          {choice.name}
-                                          {choice.priceAdjustment > 0 &&
-                                            ` (+${formatCurrency(choice.priceAdjustment, currency)})`}
-                                        </div>
-                                      );
-                                    }
-                                    return null;
-                                  }
-                                )}
-                              </div>
-                            );
-                          }
+              {item.selectedOptions && Object.entries(item.selectedOptions).length > 0 && (
+                <div className="ml-6 text-sm text-muted-foreground">
+                  {Object.entries(item.selectedOptions).map(
+                    ([optionId, optionValue], groupIndex) => {
+                      // Handle different option structures
+                      if (typeof optionValue === "object" && optionValue !== null) {
+                        if ("name" in optionValue) {
+                          // Single option case
+                          return (
+                            <div key={`option-${optionId}-${groupIndex}`} className="mb-2">
+                              <strong>{optionValue.name}</strong>
+                              {optionValue.priceAdjustment > 0 &&
+                                ` (+${formatCurrency(optionValue.priceAdjustment, currency)})`}
+                            </div>
+                          );
                         }
-                        return null;
+                        // Multiple options case
+                        return (
+                          <div key={`option-group-${optionId}-${groupIndex}`} className="mb-2">
+                            {Object.entries(optionValue).map(
+                              ([choiceId, choice]: [string, any], choiceIndex) => {
+                                if (choice?.name) {
+                                  return (
+                                    <div
+                                      key={`choice-${choiceId}-${choiceIndex}`}
+                                      className="text-sm pl-4 border-l-2 border-gray-200"
+                                    >
+                                      {choice.name}
+                                      {choice.priceAdjustment > 0 &&
+                                        ` (+${formatCurrency(choice.priceAdjustment, currency)})`}
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              },
+                            )}
+                          </div>
+                        );
                       }
-                    )}
-                  </div>
-                )}
+                      return null;
+                    },
+                  )}
+                </div>
+              )}
 
               {/* Display special instructions */}
               {item.specialInstructions && (
                 <div className="ml-6 text-sm text-muted-foreground">
-                  Special Instructions:{" "}
-                  <span className="italic">{item.specialInstructions}</span>
+                  Special Instructions: <span className="italic">{item.specialInstructions}</span>
                 </div>
               )}
             </div>
             <div className="flex items-start space-x-2">
-              <span>
-                {formatCurrency(item.price * item.quantity, currency)}
-              </span>
+              <span>{formatCurrency(item.price * item.quantity, currency)}</span>
               {/* Only show remove button for pending items */}
               {!item.submitted && (
                 <Button
@@ -319,8 +292,7 @@ export function OrderCart({
         {Object.entries(groupedPendingItems).map(([userId, items]) => {
           const userName = items[0]?.userName || "Anonymous 2";
           const isCurrentUser =
-            userId === session?.user?.id ||
-            (userId === "anonymous" && !session?.user?.id);
+            userId === session?.user?.id || (userId === "anonymous" && !session?.user?.id);
 
           return (
             <div key={userId} className="space-y-2">
@@ -347,7 +319,7 @@ export function OrderCart({
     subtotal: number,
     tax: number,
     total: number,
-    isSubmitted: boolean
+    isSubmitted: boolean,
   ) => {
     if (subtotal === 0) return null;
 
@@ -391,9 +363,7 @@ export function OrderCart({
           disabled={isRefreshing}
           className="flex items-center gap-1 text-xs"
         >
-          <RefreshCw
-            className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`}
-          />
+          <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
@@ -419,9 +389,7 @@ export function OrderCart({
         </TabsList>
 
         <TabsContent value="current" className="flex-1 overflow-auto">
-          {collaborativeMode
-            ? renderCollaborativeCartItems()
-            : renderCartItems(pendingItems)}
+          {collaborativeMode ? renderCollaborativeCartItems() : renderCartItems(pendingItems)}
           {renderOrderSummary(pendingSubtotal, pendingTax, pendingTotal, false)}
         </TabsContent>
 
@@ -433,12 +401,7 @@ export function OrderCart({
             </div>
           )}
           {renderCartItems(submittedItems, collaborativeMode)}
-          {renderOrderSummary(
-            submittedSubtotal,
-            submittedTax,
-            submittedTotal,
-            true
-          )}
+          {renderOrderSummary(submittedSubtotal, submittedTax, submittedTotal, true)}
         </TabsContent>
       </Tabs>
     </div>

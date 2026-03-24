@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Image from "next/image";
 import { Upload, X } from "lucide-react";
+import Image from "next/image";
+import { useRef, useState } from "react";
 import type React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,7 @@ interface ImageUploadProps {
   label?: string;
 }
 
-export function ImageUpload({
-  value,
-  onChange,
-  label = "Image",
-}: ImageUploadProps) {
+export function ImageUpload({ value, onChange, label = "Image" }: ImageUploadProps) {
   const [preview, setPreview] = useState<string | null>(value || null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -93,9 +89,7 @@ export function ImageUpload({
             onClick={handleButtonClick}
           >
             <Upload className="mb-2 h-10 w-10 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              Click to upload an image
-            </p>
+            <p className="text-sm text-muted-foreground">Click to upload an image</p>
           </div>
         )}
         <Input
@@ -106,9 +100,7 @@ export function ImageUpload({
           onChange={handleFileChange}
           disabled={isUploading}
         />
-        {isUploading && (
-          <p className="text-sm text-muted-foreground">Uploading...</p>
-        )}
+        {isUploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
       </div>
     </div>
   );

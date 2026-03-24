@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import { QrCode } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -77,9 +77,7 @@ export function QrCodeButton({ restaurantId }: QrCodeButtonProps) {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Table {tableNumber}
-              </p>
+              <p className="text-sm text-muted-foreground">Table {tableNumber}</p>
             </div>
           )}
         </div>

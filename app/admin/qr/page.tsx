@@ -1,18 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 
 import { getRestaurants } from "@/actions/restaurant-actions";
 import { getRestaurantTables } from "@/actions/table-actions";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -56,7 +50,7 @@ export default function QRCodeGenerator() {
         variant: "destructive",
       });
     },
-    [toast]
+    [toast],
   );
 
   useEffect(() => {
@@ -109,8 +103,7 @@ export default function QRCodeGenerator() {
 
       try {
         if (!isCancelled) setIsLoadingTables(true);
-        const { success, data, error } =
-          await getRestaurantTables(restaurantId);
+        const { success, data, error } = await getRestaurantTables(restaurantId);
 
         if (!isCancelled) {
           if (success && data) {
@@ -207,17 +200,10 @@ export default function QRCodeGenerator() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="restaurant">Restaurant</Label>
-                  <Select
-                    value={restaurantId}
-                    onValueChange={handleRestaurantChange}
-                  >
+                  <Select value={restaurantId} onValueChange={handleRestaurantChange}>
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={
-                          isLoading
-                            ? "Loading restaurants..."
-                            : "Select restaurant"
-                        }
+                        placeholder={isLoading ? "Loading restaurants..." : "Select restaurant"}
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -272,17 +258,10 @@ export default function QRCodeGenerator() {
             <TabsContent value="restaurant" className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="restaurant">Restaurant</Label>
-                <Select
-                  value={restaurantId}
-                  onValueChange={handleRestaurantChange}
-                >
+                <Select value={restaurantId} onValueChange={handleRestaurantChange}>
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={
-                        isLoading
-                          ? "Loading restaurants..."
-                          : "Select restaurant"
-                      }
+                      placeholder={isLoading ? "Loading restaurants..." : "Select restaurant"}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -295,10 +274,7 @@ export default function QRCodeGenerator() {
                 </Select>
               </div>
 
-              <Button
-                onClick={generateQRCode}
-                disabled={!restaurantId || isLoading}
-              >
+              <Button onClick={generateQRCode} disabled={!restaurantId || isLoading}>
                 Generate QR Code
               </Button>
             </TabsContent>

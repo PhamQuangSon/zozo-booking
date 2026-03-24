@@ -44,7 +44,7 @@ describe("shouldReleaseTableAfterItemStatusUpdate", () => {
         newStatus: "COMPLETED" as OrderItemStatus,
         hasTable: true,
         activeOrdersCount: 0,
-      })
+      }),
     ).toBe(true);
   });
 
@@ -54,7 +54,7 @@ describe("shouldReleaseTableAfterItemStatusUpdate", () => {
         newStatus: "PREPARING" as OrderItemStatus,
         hasTable: true,
         activeOrdersCount: 0,
-      })
+      }),
     ).toBe(false);
   });
 
@@ -64,7 +64,7 @@ describe("shouldReleaseTableAfterItemStatusUpdate", () => {
         newStatus: "CANCELLED" as OrderItemStatus,
         hasTable: true,
         activeOrdersCount: 2,
-      })
+      }),
     ).toBe(false);
   });
 });

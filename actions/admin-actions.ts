@@ -17,8 +17,7 @@ export async function deleteMenuItem(id: number) {
     console.error("Failed to delete menu item:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to delete menu item",
+      error: error instanceof Error ? error.message : "Failed to delete menu item",
     };
   }
 }
@@ -36,8 +35,7 @@ export async function deleteItemOption(id: number) {
     console.error("Failed to delete item option:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to delete item option",
+      error: error instanceof Error ? error.message : "Failed to delete item option",
     };
   }
 }

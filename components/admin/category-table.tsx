@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +44,8 @@ export function CategoryTable({ categories }: CategoryTableProps) {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const sortedCategories = [...categories].sort((a, b) => {
-    let aValue, bValue;
+    let aValue;
+    let bValue;
 
     switch (sortColumn) {
       case "name":
@@ -87,34 +88,17 @@ export function CategoryTable({ categories }: CategoryTableProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("name")}
-            >
-              Name{" "}
-              {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("name")}>
+              Name {sortColumn === "name" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("restaurant")}
-            >
-              Restaurant{" "}
-              {sortColumn === "restaurant" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("restaurant")}>
+              Restaurant {sortColumn === "restaurant" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("menu")}
-            >
-              Menu{" "}
-              {sortColumn === "menu" && (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("menu")}>
+              Menu {sortColumn === "menu" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("order")}
-            >
-              Display Order{" "}
-              {sortColumn === "order" && (sortDirection === "asc" ? "↑" : "↓")}
+            <TableHead className="cursor-pointer" onClick={() => handleSort("order")}>
+              Display Order {sortColumn === "order" && (sortDirection === "asc" ? "↑" : "↓")}
             </TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>

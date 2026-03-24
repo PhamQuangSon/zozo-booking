@@ -5,6 +5,7 @@ import type React from "react";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { NextAuthProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/config/auth";
 
@@ -37,6 +38,9 @@ export default async function RootLayout({
               disableTransitionOnChange
             >
               {children}
+              <div className="fixed bottom-4 right-4 z-[100]">
+                <ThemeToggle />
+              </div>
               <Toaster />
             </ThemeProvider>
           </QueryProvider>

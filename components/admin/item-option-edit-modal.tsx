@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 
-import {
-  createItemOption,
-  updateItemOption,
-} from "@/actions/item-option-actions";
+import { createItemOption, updateItemOption } from "@/actions/item-option-actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,10 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import {
-  type ItemOptionFormValues,
-  itemOptionSchema,
-} from "@/schemas/item-option-schema";
+import { type ItemOptionFormValues, itemOptionSchema } from "@/schemas/item-option-schema";
 import type { ItemOptionEditModalProps } from "@/types/menu-builder-types"; // Import shared props type
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { MenuItem, Restaurant } from "@prisma/client"; // Keep base types if needed elsewhere
@@ -59,9 +53,7 @@ export function ItemOptionEditModal({
   // Using imported props type
   const [isLoading, setIsLoading] = useState(false);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [selectedRestaurantId, setSelectedRestaurantId] = useState<
-    number | null
-  >(null);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
   const [filteredMenuItems, setFilteredMenuItems] =
     useState<(MenuItem & { restaurant: Restaurant })[]>(menuItems);
 
@@ -127,10 +119,8 @@ export function ItemOptionEditModal({
       });
 
       // Set selected restaurant
-      const menuItem = menuItems.find(
-        (item) => item.id === itemOption.menuItemId
-      );
-      if (menuItem && menuItem.restaurant) {
+      const menuItem = menuItems.find((item) => item.id === itemOption.menuItemId);
+      if (menuItem?.restaurant) {
         setSelectedRestaurantId(menuItem.restaurantId);
       }
     } else if (mode === "create") {
@@ -153,9 +143,7 @@ export function ItemOptionEditModal({
   // Filter menu items based on selected restaurant
   useEffect(() => {
     if (selectedRestaurantId && menuItems.length > 0) {
-      setFilteredMenuItems(
-        menuItems.filter((item) => item.restaurantId === selectedRestaurantId)
-      );
+      setFilteredMenuItems(menuItems.filter((item) => item.restaurantId === selectedRestaurantId));
     } else {
       setFilteredMenuItems(menuItems);
     }
@@ -165,11 +153,7 @@ export function ItemOptionEditModal({
     setIsLoading(true);
     try {
       // Validate that we have at least one option choice with a name
-      if (
-        !data.optionChoices ||
-        data.optionChoices.length === 0 ||
-        !data.optionChoices[0].name
-      ) {
+      if (!data.optionChoices || data.optionChoices.length === 0 || !data.optionChoices[0].name) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -186,7 +170,7 @@ export function ItemOptionEditModal({
           ...data,
           optionChoices: data.optionChoices.map((choice) => ({
             ...choice,
-            priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+            priceAdjustment: Number.parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
           })),
         });
       } else if (itemOption) {
@@ -194,7 +178,7 @@ export function ItemOptionEditModal({
           ...data,
           optionChoices: data.optionChoices.map((choice) => ({
             ...choice,
-            priceAdjustment: parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+            priceAdjustment: Number.parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
           })),
         });
       }
@@ -213,9 +197,7 @@ export function ItemOptionEditModal({
           title: "Error",
           description:
             result?.error ||
-            (isCreating
-              ? "Failed to create item option"
-              : "Failed to update item option"),
+            (isCreating ? "Failed to create item option" : "Failed to update item option"),
         });
       }
     } catch (error) {
@@ -236,13 +218,12 @@ export function ItemOptionEditModal({
     // Reset menu item if it doesn't belong to the selected restaurant
     const currentMenuItemId = form.getValues("menuItemId");
     const menuItemBelongsToRestaurant = menuItems.some(
-      (item) =>
-        item.id === currentMenuItemId && item.restaurantId === restaurantId
+      (item) => item.id === currentMenuItemId && item.restaurantId === restaurantId,
     );
 
     if (!menuItemBelongsToRestaurant) {
       const firstMenuItemForRestaurant = menuItems.find(
-        (item) => item.restaurantId === restaurantId
+        (item) => item.restaurantId === restaurantId,
       );
       form.setValue("menuItemId", firstMenuItemForRestaurant?.id || 0);
     }
@@ -265,11 +246,7 @@ export function ItemOptionEditModal({
                     <FormItem>
                       <FormLabel>Option Name</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Option name"
-                          disabled={isLoading}
-                        />
+                        <Input {...field} placeholder="Option name" disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -299,9 +276,7 @@ export function ItemOptionEditModal({
                   <FormLabel>Restaurant</FormLabel>
                   <Select
                     value={selectedRestaurantId?.toString() || ""}
-                    onValueChange={(value) =>
-                      handleRestaurantChange(Number.parseInt(value))
-                    }
+                    onValueChange={(value) => handleRestaurantChange(Number.parseInt(value))}
                     disabled={isLoading}
                   >
                     <SelectTrigger>
@@ -310,17 +285,12 @@ export function ItemOptionEditModal({
                     <SelectContent>
                       {restaurants.length > 0 ? (
                         restaurants.map((restaurant) => (
-                          <SelectItem
-                            key={restaurant.id}
-                            value={restaurant.id.toString()}
-                          >
+                          <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
                             {restaurant.name}
                           </SelectItem>
                         ))
                       ) : (
-                        <SelectItem value="no-restaurants">
-                          No restaurants available
-                        </SelectItem>
+                        <SelectItem value="no-restaurants">No restaurants available</SelectItem>
                       )}
                     </SelectContent>
                   </Select>
@@ -334,9 +304,7 @@ export function ItemOptionEditModal({
                       <FormLabel>Menu Item</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) =>
-                          field.onChange(Number.parseInt(value))
-                        }
+                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
                         disabled={isLoading || filteredMenuItems.length === 0}
                       >
                         <FormControl>
@@ -353,17 +321,12 @@ export function ItemOptionEditModal({
                         <SelectContent>
                           {filteredMenuItems.length > 0 ? (
                             filteredMenuItems.map((item) => (
-                              <SelectItem
-                                key={item.id}
-                                value={item.id.toString()}
-                              >
+                              <SelectItem key={item.id} value={item.id.toString()}>
                                 {item.name}
                               </SelectItem>
                             ))
                           ) : (
-                            <SelectItem value="no-menu-items">
-                              No menu items available
-                            </SelectItem>
+                            <SelectItem value="no-menu-items">No menu items available</SelectItem>
                           )}
                         </SelectContent>
                       </Select>
@@ -402,11 +365,7 @@ export function ItemOptionEditModal({
                             <FormItem>
                               <FormLabel>Choice Name</FormLabel>
                               <FormControl>
-                                <Input
-                                  {...field}
-                                  placeholder="Choice name"
-                                  disabled={isLoading}
-                                />
+                                <Input {...field} placeholder="Choice name" disabled={isLoading} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -428,11 +387,7 @@ export function ItemOptionEditModal({
                                   {...field}
                                   onChange={(e) => {
                                     const value = e.target.value;
-                                    field.onChange(
-                                      value === ""
-                                        ? 0
-                                        : Number.parseFloat(value)
-                                    );
+                                    field.onChange(value === "" ? 0 : Number.parseFloat(value));
                                   }}
                                   disabled={isLoading}
                                 />

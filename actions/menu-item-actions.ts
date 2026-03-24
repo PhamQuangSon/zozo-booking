@@ -30,8 +30,7 @@ export async function getMenuItems() {
     console.error("Failed to fetch menu items:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load menu items",
+      error: error instanceof Error ? error.message : "Failed to load menu items",
       data: [],
     };
   }
@@ -53,7 +52,7 @@ export async function createMenuItem(data: {
       data: {
         name: data.name,
         description: data.description,
-        price: parseFloat(data.price.toFixed(2)),
+        price: Number.parseFloat(data.price.toFixed(2)),
         categoryId: data.categoryId,
         restaurantId: data.restaurantId,
         isAvailable: data.isAvailable,
@@ -80,7 +79,7 @@ export async function updateMenuItem(
     isAvailable: boolean;
     displayOrder?: number;
     imageUrl?: string | null;
-  }
+  },
 ) {
   try {
     const menuItem = await prisma.menuItem.update({
@@ -88,7 +87,7 @@ export async function updateMenuItem(
       data: {
         name: data.name,
         description: data.description,
-        price: parseFloat(data.price.toFixed(2)),
+        price: Number.parseFloat(data.price.toFixed(2)),
         categoryId: data.categoryId,
         restaurantId: data.restaurantId,
         isAvailable: data.isAvailable,

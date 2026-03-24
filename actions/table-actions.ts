@@ -44,10 +44,7 @@ export async function getRestaurantTables(restaurantId: string) {
 
     return { success: true, data: serializedTables };
   } catch (error) {
-    console.error(
-      `Failed to fetch tables for restaurant ${restaurantId}:`,
-      error
-    );
+    console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error);
     return { success: false, error: "Failed to load tables" };
   }
 }
@@ -68,10 +65,7 @@ export async function getTablesByRestaurantId(restaurantId: string) {
 
     return { success: true, data: serializedTables };
   } catch (error) {
-    console.error(
-      `Failed to fetch tables for restaurant ${restaurantId}:`,
-      error
-    );
+    console.error(`Failed to fetch tables for restaurant ${restaurantId}:`, error);
     return { success: false, error: "Failed to load tables" };
   }
 }
@@ -126,7 +120,7 @@ export async function updateTable(
     status?: string;
     restaurantId: number;
     imageUrl?: string | null;
-  }
+  },
 ) {
   try {
     // Check if table number already exists for this restaurant (excluding this table)
@@ -195,7 +189,7 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
           return { ...order, user };
         }
         return { ...order, user: null };
-      })
+      }),
     );
 
     // Fix the serialization and type casting
@@ -223,10 +217,7 @@ export async function deleteTable(id: number) {
 }
 
 // Format menu items with proper currency
-export async function formatTableMenuItems(
-  menuCategories: any[],
-  currency: Currency
-) {
+export async function formatTableMenuItems(menuCategories: any[], currency: Currency) {
   return menuCategories.map((category) => ({
     ...category,
     menu_items: category.menu_items.map((item: any) => ({
@@ -237,10 +228,7 @@ export async function formatTableMenuItems(
         ...option,
         optionChoices: option.optionChoices.map((choice: any) => ({
           ...choice,
-          formattedPriceAdjustment: formatCurrency(
-            choice.priceAdjustment,
-            currency
-          ),
+          formattedPriceAdjustment: formatCurrency(choice.priceAdjustment, currency),
           priceAdjustment: Number(choice.priceAdjustment),
         })),
       })),
@@ -299,9 +287,7 @@ export async function createTableOrder(data: {
 
     // Calculate total amount
     for (const orderItem of data.items) {
-      const menuItem = menuItems.find(
-        (item) => item.id === orderItem.menuItemId
-      );
+      const menuItem = menuItems.find((item) => item.id === orderItem.menuItemId);
       if (!menuItem) continue;
 
       let itemPrice = Number(menuItem.price);
@@ -309,14 +295,10 @@ export async function createTableOrder(data: {
       // Add price adjustments for choices if any
       if (orderItem.choices && orderItem.choices.length > 0) {
         for (const choice of orderItem.choices) {
-          const option = menuItem.menuItemOptions.find(
-            (opt) => opt.id === choice.optionId
-          );
+          const option = menuItem.menuItemOptions.find((opt) => opt.id === choice.optionId);
           if (!option) continue;
 
-          const selectedChoice = option.optionChoices.find(
-            (ch) => ch.id === choice.choiceId
-          );
+          const selectedChoice = option.optionChoices.find((ch) => ch.id === choice.choiceId);
           if (selectedChoice) {
             itemPrice += Number(selectedChoice.priceAdjustment);
           }
@@ -481,7 +463,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
           return { ...order, user };
         }
         return { ...order, user: null };
-      })
+      }),
     );
 
     // Return all data in one response
@@ -497,8 +479,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
     console.error("Failed to fetch table data:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load table data",
+      error: error instanceof Error ? error.message : "Failed to load table data",
     };
   }
 }

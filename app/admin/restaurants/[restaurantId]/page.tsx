@@ -1,18 +1,12 @@
+import { Edit, Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Edit, Plus } from "lucide-react";
 
 import { MenuItem } from "@/components/menu-item";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCachedRestaurantById } from "@/lib/restaurant-cache";
 import type { PageProps } from "@/types/page-props";
 import { tableStatusColors } from "@/types/status-colors";
@@ -20,8 +14,7 @@ import { tableStatusColors } from "@/types/status-colors";
 export default async function RestaurantDetailPage({ params }: PageProps) {
   const { restaurantId } = params;
   // Fetch restaurant details
-  const { success, data: restaurant } =
-    await getCachedRestaurantById(restaurantId);
+  const { success, data: restaurant } = await getCachedRestaurantById(restaurantId);
 
   if (!success || !restaurant) {
     notFound();
@@ -46,9 +39,7 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
           <Card>
             <CardHeader>
               <CardTitle>Restaurant Details</CardTitle>
-              <CardDescription>
-                Basic information about the restaurant
-              </CardDescription>
+              <CardDescription>Basic information about the restaurant</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4 flex justify-center">
@@ -72,27 +63,19 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
 
               <dl className="grid grid-cols-2 gap-4">
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    Cuisine
-                  </dt>
+                  <dt className="text-sm font-medium text-muted-foreground">Cuisine</dt>
                   <dd>{restaurant.cuisine || "Not specified"}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    Address
-                  </dt>
+                  <dt className="text-sm font-medium text-muted-foreground">Address</dt>
                   <dd>{restaurant.address || "Not specified"}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    Phone
-                  </dt>
+                  <dt className="text-sm font-medium text-muted-foreground">Phone</dt>
                   <dd>{restaurant.phone || "Not specified"}</dd>
                 </div>
                 <div>
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    Email
-                  </dt>
+                  <dt className="text-sm font-medium text-muted-foreground">Email</dt>
                   <dd>{restaurant.email || "Not specified"}</dd>
                 </div>
               </dl>
@@ -114,29 +97,18 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent>
               {tables.length === 0 ? (
-                <p className="text-center text-muted-foreground">
-                  No tables added yet
-                </p>
+                <p className="text-center text-muted-foreground">No tables added yet</p>
               ) : (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   {tables.slice(0, 6).map((table) => (
                     <div key={table.id} className="rounded-md border p-3">
                       <div className="flex items-center justify-between">
-                        <span className="font-medium">
-                          Table {table.number}
-                        </span>
-                        <Badge
-                          className={
-                            tableStatusColors[table.status] || "bg-gray-500"
-                          }
-                        >
-                          {table.status.charAt(0) +
-                            table.status.slice(1).toLowerCase()}
+                        <span className="font-medium">Table {table.number}</span>
+                        <Badge className={tableStatusColors[table.status] || "bg-gray-500"}>
+                          {table.status.charAt(0) + table.status.slice(1).toLowerCase()}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Capacity: {table.capacity}
-                      </p>
+                      <p className="text-sm text-muted-foreground">Capacity: {table.capacity}</p>
                     </div>
                   ))}
                   {tables.length > 6 && (
@@ -158,9 +130,7 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Menu</CardTitle>
-                <CardDescription>
-                  Menu items for this restaurant
-                </CardDescription>
+                <CardDescription>Menu items for this restaurant</CardDescription>
               </div>
               <Button asChild size="sm">
                 <Link href={`/admin/restaurants/${restaurantId}/menu`}>
@@ -179,10 +149,7 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
                           {category.name}
                         </h3>
                         <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                          <MenuItem
-                            items={category.items.slice(0, 3)}
-                            showAddToCart={false}
-                          />
+                          <MenuItem items={category.items.slice(0, 3)} showAddToCart={false} />
                           {category.items.length > 3 && (
                             <div className="rounded-md border p-2 text-center text-sm text-muted-foreground">
                               {category.items.length - 3} more items
@@ -193,9 +160,7 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No categories in this menu
-                  </p>
+                  <p className="text-sm text-muted-foreground">No categories in this menu</p>
                 )}
               </div>
             </CardContent>

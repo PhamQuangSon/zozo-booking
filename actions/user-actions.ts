@@ -1,9 +1,9 @@
 "use server";
 
+import fs from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import bcrypt from "bcryptjs";
-import fs from "fs";
-import { writeFile } from "fs/promises";
-import { join } from "path";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 
@@ -45,9 +45,7 @@ const updateProfileSchema = z.object({
 const updatePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: z
-      .string()
-      .min(6, "New password must be at least 6 characters"),
+    newPassword: z.string().min(6, "New password must be at least 6 characters"),
     confirmPassword: z.string().min(1, "Please confirm your new password"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -82,7 +80,7 @@ async function saveImage(file: File): Promise<string> {
 // Update profile action
 export async function updateProfile(
   prevState: ProfileState,
-  formData: FormData
+  formData: FormData,
 ): Promise<ProfileState> {
   try {
     const session = await auth();
@@ -159,7 +157,7 @@ export async function updateProfile(
 // Update password action
 export async function updatePassword(
   prevState: PasswordState,
-  formData: FormData
+  formData: FormData,
 ): Promise<PasswordState> {
   try {
     const session = await auth();
@@ -194,10 +192,7 @@ export async function updatePassword(
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
       return { success: false, message: "Current password is incorrect" };
     }
@@ -223,8 +218,7 @@ export async function updatePassword(
       ...prevState,
       success: false,
       zodErrors: {
-        _form:
-          error instanceof Error ? error.message : "Failed to update password",
+        _form: error instanceof Error ? error.message : "Failed to update password",
       },
       message: "Failed to update password",
     };

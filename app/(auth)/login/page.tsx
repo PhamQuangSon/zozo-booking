@@ -1,8 +1,8 @@
 "use client";
-import { useActionState, useLayoutEffect } from "react";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle } from "lucide-react";
+import { useActionState, useLayoutEffect } from "react";
 import { useFormStatus } from "react-dom";
 
 // Import type
@@ -61,9 +61,7 @@ export default function LoginPage() {
       <Card className="mx-auto w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
+          <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <form action={formAction} method="POST">
           <CardContent className="space-y-4">

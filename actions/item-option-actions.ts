@@ -45,8 +45,7 @@ export async function getItemOptions() {
     console.error("Failed to fetch item options:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load item options",
+      error: error instanceof Error ? error.message : "Failed to load item options",
       data: [],
     };
   }
@@ -71,8 +70,7 @@ export async function getMenuItemsForOptions() {
     console.error("Failed to fetch menu items:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to load menu items",
+      error: error instanceof Error ? error.message : "Failed to load menu items",
       data: [],
     };
   }
@@ -100,8 +98,7 @@ export async function createItemOption(data: ItemOptionFormValues) {
           await prisma.optionChoice.create({
             data: {
               name: choice.name,
-              priceAdjustment:
-                parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+              priceAdjustment: Number.parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
               menuItemOptionId: itemOption.id,
             },
           });
@@ -135,9 +132,7 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
     });
 
     // Create a map of existing choices by ID for quick lookup
-    const existingChoicesMap = new Map(
-      existingChoices.map((choice) => [choice.id, choice])
-    );
+    const existingChoicesMap = new Map(existingChoices.map((choice) => [choice.id, choice]));
 
     // Process each option choice
     if (Array.isArray(data.optionChoices)) {
@@ -148,8 +143,7 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
             where: { id: choice.id },
             data: {
               name: choice.name,
-              priceAdjustment:
-                parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+              priceAdjustment: Number.parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
             },
           });
           // Remove from map to track which ones were processed
@@ -159,8 +153,7 @@ export async function updateItemOption(id: number, data: ItemOptionFormValues) {
           await prisma.optionChoice.create({
             data: {
               name: choice.name,
-              priceAdjustment:
-                parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
+              priceAdjustment: Number.parseFloat(choice.priceAdjustment.toFixed(2)) || 0,
               menuItemOptionId: id,
             },
           });

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { ArrowRight, ChevronLeft, MapPin, Star, Table } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowRight, ChevronLeft, MapPin, Star, Table } from "lucide-react";
+import { useState } from "react";
 
 import Loading from "@/app/loading";
 import { ScrollingBanner } from "@/components/scrolling-banner";
@@ -51,7 +51,7 @@ export default function RestaurantPage() {
         ...item,
         categoryName: category.name,
         categoryId: category.id,
-      }))
+      })),
     ) || [];
 
   // Find a random item to feature as special
@@ -109,7 +109,7 @@ export default function RestaurantPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
             {restaurantLoading ? (
               <div className="col-span-full flex justify-center py-8">
-                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
               </div>
             ) : tables.length === 0 ? (
               <div className="col-span-full text-center py-4">
@@ -119,9 +119,7 @@ export default function RestaurantPage() {
               tables.map((table) => (
                 <Button
                   key={table.id}
-                  variant={
-                    table.status === "AVAILABLE" ? "outline" : "secondary"
-                  }
+                  variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                   disabled={table.status !== "AVAILABLE"}
                   onClick={() => handleTableSelect(table.id)}
                   className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
@@ -145,7 +143,7 @@ export default function RestaurantPage() {
       {/* Hero Section with Today's Special */}
       {specialItem && (
         <div className="relative w-full h-[300px] bg-black overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-transparent z-10" />
           <Image
             src={"/special-bg.jpg?height=400&width=600"}
             alt="Special food background"
@@ -215,15 +213,13 @@ export default function RestaurantPage() {
         <Card className="mb-8 glass-card border-0 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm">
             <CardTitle>Dining at {restaurant.name}</CardTitle>
-            <CardDescription>
-              Select a table to view the menu and place your order
-            </CardDescription>
+            <CardDescription>Select a table to view the menu and place your order</CardDescription>
           </CardHeader>
           <CardContent className="bg-white/30 backdrop-blur-sm">
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
               {restaurantLoading ? (
                 <div className="col-span-full flex justify-center py-8">
-                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                  <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
                 </div>
               ) : tables.length === 0 ? (
                 <div className="col-span-full text-center py-4">
@@ -233,9 +229,7 @@ export default function RestaurantPage() {
                 tables.slice(0, 6).map((table) => (
                   <Button
                     key={table.id}
-                    variant={
-                      table.status === "AVAILABLE" ? "outline" : "secondary"
-                    }
+                    variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                     disabled={table.status !== "AVAILABLE"}
                     onClick={() => handleTableSelect(table.id)}
                     className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${

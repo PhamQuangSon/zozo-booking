@@ -1,10 +1,6 @@
 import bcrypt from "bcryptjs";
 
-import {
-  type OrderStatus,
-  PrismaClient,
-  type TableStatus,
-} from "@prisma/client";
+import { type OrderStatus, PrismaClient, type TableStatus } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -101,8 +97,8 @@ async function main() {
           capacity: num === 5 ? 8 : 4,
           status: "AVAILABLE" as TableStatus,
         },
-      })
-    )
+      }),
+    ),
   );
 
   // Create tables for restaurant 2
@@ -115,8 +111,8 @@ async function main() {
           capacity: 4,
           status: "AVAILABLE" as TableStatus,
         },
-      })
-    )
+      }),
+    ),
   );
 
   console.log("Created tables");
@@ -180,8 +176,7 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Spaghetti Carbonara",
-        description:
-          "Spaghetti with pancetta, eggs, Parmesan, and black pepper",
+        description: "Spaghetti with pancetta, eggs, Parmesan, and black pepper",
         price: 15.99,
         categoryId: pasta1.id,
         restaurantId: restaurant1.id,
@@ -206,8 +201,7 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Tiramisu",
-        description:
-          "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone",
+        description: "Classic Italian dessert with coffee-soaked ladyfingers and mascarpone",
         price: 7.99,
         categoryId: desserts1.id,
         restaurantId: restaurant1.id,
@@ -268,8 +262,7 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Classic Burger",
-        description:
-          "Beef patty with lettuce, tomato, onion, and special sauce",
+        description: "Beef patty with lettuce, tomato, onion, and special sauce",
         price: 12.99,
         categoryId: burgers2.id,
         restaurantId: restaurant2.id,
@@ -281,8 +274,7 @@ async function main() {
     await prisma.menuItem.create({
       data: {
         name: "Cheese Burger",
-        description:
-          "Beef patty with cheddar cheese, lettuce, tomato, and onion",
+        description: "Beef patty with cheddar cheese, lettuce, tomato, and onion",
         price: 13.99,
         categoryId: burgers2.id,
         restaurantId: restaurant2.id,

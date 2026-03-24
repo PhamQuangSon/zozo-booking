@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Plus } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -63,18 +63,14 @@ export function MenuSelector({
                   <div>
                     <h4 className="font-medium">{option.name}</h4>
                     {option.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {option.description}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{option.description}</p>
                     )}
                   </div>
                 </div>
               ))
             ) : (
               <div className="flex flex-col items-center justify-center py-6">
-                <p className="text-sm text-muted-foreground mb-4">
-                  No items available
-                </p>
+                <p className="text-sm text-muted-foreground mb-4">No items available</p>
                 <Button onClick={onCreateNew}>
                   <Plus className="mr-2 h-4 w-4" />
                   {createButtonText}

@@ -1,9 +1,9 @@
 // components/profile/ProfileUpdateForm.tsx
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { AlertCircle, Camera, Check, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useActionState, useEffect, useState } from "react";
 import type React from "react";
 import { useFormStatus } from "react-dom";
 
@@ -61,10 +61,7 @@ export function ProfileUpdateForm() {
   const [bio, setBio] = useState<string>(""); // Keep for controlled input
 
   // Use useActionState for the profile form
-  const [profileState, profileAction] = useActionState(
-    updateProfile,
-    initialProfileState
-  );
+  const [profileState, profileAction] = useActionState(updateProfile, initialProfileState);
 
   // Initialize form fields from session
   useEffect(() => {
@@ -74,7 +71,7 @@ export function ProfileUpdateForm() {
       } else if (session.user?.name) {
         // Generate fallback avatar URL only if no image exists
         setAvatarUrl(
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`
+          `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`,
         );
       } else {
         setAvatarUrl(null); // Ensure null if no image or name
@@ -86,9 +83,7 @@ export function ProfileUpdateForm() {
   // Handle session update after successful profile change
   useEffect(() => {
     if (profileState.success) {
-      console.log(
-        "Profile update successful, triggering client session update..."
-      );
+      console.log("Profile update successful, triggering client session update...");
       updateSession(); // Trigger client-side session refresh
       // Optionally show a success message that disappears or reset form state if needed
     }
@@ -120,15 +115,10 @@ export function ProfileUpdateForm() {
             <div className="relative group">
               <Avatar className="h-24 w-24">
                 {avatarUrl ? (
-                  <AvatarImage
-                    src={avatarUrl}
-                    alt={session?.user?.name || "User"}
-                  />
+                  <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
                 ) : (
                   <AvatarFallback>
-                    {session?.user?.name?.charAt(0) ||
-                      session?.user?.email?.charAt(0) ||
-                      "U"}
+                    {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || "U"}
                   </AvatarFallback>
                 )}
               </Avatar>
@@ -153,12 +143,8 @@ export function ProfileUpdateForm() {
             </div>
             <div className="space-y-1 text-center sm:text-left">
               <h3 className="text-lg font-medium">{session?.user?.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                {session?.user?.email}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Role: {session?.user?.role || "User"}
-              </p>
+              <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
+              <p className="text-xs text-muted-foreground">Role: {session?.user?.role || "User"}</p>
             </div>
           </div>
           {/* Display Zod error for avatar if any */}
@@ -169,9 +155,7 @@ export function ProfileUpdateForm() {
           {profileState.success && profileState.message && (
             <Alert className="bg-green-50 border-green-200">
               <Check className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-600">
-                {profileState.message}
-              </AlertDescription>
+              <AlertDescription className="text-green-600">{profileState.message}</AlertDescription>
             </Alert>
           )}
 
@@ -204,9 +188,7 @@ export function ProfileUpdateForm() {
                 placeholder="Your email"
                 disabled // Keep disabled
               />
-              <p className="text-xs text-muted-foreground">
-                Email cannot be changed
-              </p>
+              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
           </div>
 

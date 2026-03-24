@@ -1,21 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { ChevronDown, ChevronRight, GripVertical, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import {
-  ChevronDown,
-  ChevronRight,
-  GripVertical,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { updateCategoryDisplayOrder } from "@/actions/category-actions";
 import { deleteItemOption } from "@/actions/item-option-actions";
-import {
-  deleteMenuItem,
-  updateMenuItemOrder,
-} from "@/actions/menu-item-actions";
+import { deleteMenuItem, updateMenuItemOrder } from "@/actions/menu-item-actions";
 import { ItemOptionEditModal } from "@/components/admin/item-option-edit-modal";
 import { MenuItemEditModal } from "@/components/admin/menu-item-edit-modal";
 import { Button } from "@/components/ui/button";
@@ -26,19 +17,14 @@ import type {
   MenuItemWithRelations,
   RestaurantMenuClientProps, // Import props type
 } from "@/types/menu-builder-types";
-import type {
-  DragEndEvent,
-  DragStartEvent,
-  DropAnimation,
-  UniqueIdentifier,
-} from "@dnd-kit/core";
+import type { DragEndEvent, DragStartEvent, DropAnimation, UniqueIdentifier } from "@dnd-kit/core";
 import {
-  closestCorners,
-  defaultDropAnimationSideEffects,
   DndContext,
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
+  closestCorners,
+  defaultDropAnimationSideEffects,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -72,22 +58,18 @@ export function RestaurantMenuClient({
   // State for modals
   const [menuItemModalOpen, setMenuItemModalOpen] = useState(false);
   const [itemOptionModalOpen, setItemOptionModalOpen] = useState(false);
-  const [selectedMenuItem, setSelectedMenuItem] =
-    useState<MenuItemWithRelations | null>(null);
-  const [selectedItemOption, setSelectedItemOption] =
-    useState<ItemOptionWithRelations | null>(null);
+  const [selectedMenuItem, setSelectedMenuItem] = useState<MenuItemWithRelations | null>(null);
+  const [selectedItemOption, setSelectedItemOption] = useState<ItemOptionWithRelations | null>(
+    null,
+  );
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
 
   // State for expanded categories and items
-  const [expandedCategories, setExpandedCategories] = useState<
-    Record<number, boolean>
-  >({});
+  const [expandedCategories, setExpandedCategories] = useState<Record<number, boolean>>({});
   // const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
   //   null
   // );
-  const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(
-    null
-  );
+  const [selectedMenuItemId, setSelectedMenuItemId] = useState<number | null>(null);
 
   // Drag and drop state
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -119,9 +101,7 @@ export function RestaurantMenuClient({
 
       // Filter menu items for this restaurant
       const filteredMenuItems = Array.isArray(allMenuItems)
-        ? allMenuItems.filter(
-            (item) => item && item.restaurantId === Number(restaurantId)
-          )
+        ? allMenuItems.filter((item) => item && item.restaurantId === Number(restaurantId))
         : [];
       setMenuItems(filteredMenuItems);
 
@@ -155,7 +135,7 @@ export function RestaurantMenuClient({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Toggle category expansion
@@ -327,10 +307,7 @@ export function RestaurantMenuClient({
     }
 
     // Handle menu item reordering
-    if (
-      active.id.toString().startsWith("item-") &&
-      over.id.toString().startsWith("item-")
-    ) {
+    if (active.id.toString().startsWith("item-") && over.id.toString().startsWith("item-")) {
       const activeId = Number.parseInt(active.id.toString().split("-")[1]);
       const overId = Number.parseInt(over.id.toString().split("-")[1]);
 
@@ -368,14 +345,7 @@ export function RestaurantMenuClient({
 
   // Sortable item components
   const SortableCategory = ({ category }: { category: Category }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: generateItemId("category", category.id),
     });
 
@@ -386,9 +356,7 @@ export function RestaurantMenuClient({
     };
 
     const isExpanded = expandedCategories[category.id] || false;
-    const categoryItems = menuItems.filter(
-      (item) => item.categoryId === category.id
-    );
+    const categoryItems = menuItems.filter((item) => item.categoryId === category.id);
 
     return (
       <div className="border-b last:border-b-0">
@@ -412,16 +380,10 @@ export function RestaurantMenuClient({
               )}
               <span className="font-medium">{category.name}</span>
             </button>
-            <span className="text-sm text-gray-500">
-              • {categoryItems.length} items
-            </span>
+            <span className="text-sm text-gray-500">• {categoryItems.length} items</span>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddMenuItem(category.id)}
-            >
+            <Button variant="outline" size="sm" onClick={() => handleAddMenuItem(category.id)}>
               Add Item
             </Button>
             <Button
@@ -436,9 +398,7 @@ export function RestaurantMenuClient({
 
         {isExpanded && (
           <SortableContext
-            items={categoryItems.map((category) =>
-              generateItemId("category", category.id)
-            )}
+            items={categoryItems.map((category) => generateItemId("category", category.id))}
             strategy={verticalListSortingStrategy}
           >
             <div className="pl-8">
@@ -453,14 +413,7 @@ export function RestaurantMenuClient({
   };
 
   const SortableMenuItem = ({ item }: { item: MenuItemWithRelations }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: generateItemId("item", item.id),
     });
 
@@ -470,9 +423,7 @@ export function RestaurantMenuClient({
       opacity: isDragging ? 0.5 : 1,
     };
 
-    const itemOptions = allItemOptions.filter(
-      (option) => option.menuItemId === item.id
-    );
+    const itemOptions = allItemOptions.filter((option) => option.menuItemId === item.id);
     const isExpanded = selectedMenuItemId === item.id;
 
     return (
@@ -515,18 +466,10 @@ export function RestaurantMenuClient({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleAddItemOption(item)}
-            >
+            <Button variant="outline" size="sm" onClick={() => handleAddItemOption(item)}>
               Add Option
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleEditMenuItem(item)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => handleEditMenuItem(item)}>
               <Plus className="h-4 w-4" />
             </Button>
             <Button
@@ -546,9 +489,7 @@ export function RestaurantMenuClient({
               <SortableItemOption key={option.id} option={option} />
             ))}
             {itemOptions.length === 0 && (
-              <div className="p-4 text-center text-gray-500 text-sm">
-                No options for this item
-              </div>
+              <div className="p-4 text-center text-gray-500 text-sm">No options for this item</div>
             )}
           </div>
         )}
@@ -561,14 +502,7 @@ export function RestaurantMenuClient({
   }: {
     option: ItemOptionWithRelations;
   }) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: generateItemId("option", option.id),
     });
 
@@ -595,33 +529,25 @@ export function RestaurantMenuClient({
             </div>
 
             {/* Option Choices */}
-            {Array.isArray(option.optionChoices) &&
-              option.optionChoices.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {option.optionChoices.map((choice) => (
-                    <div
-                      key={choice.id}
-                      className="text-sm pl-4 border-l-2 border-gray-200"
-                    >
-                      <span className="font-medium">{choice.name}</span>
-                      {Number(choice.priceAdjustment) > 0 && (
-                        <span className="text-gray-500">
-                          {" "}
-                          (+${Number(choice.priceAdjustment).toFixed(2)})
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+            {Array.isArray(option.optionChoices) && option.optionChoices.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {option.optionChoices.map((choice) => (
+                  <div key={choice.id} className="text-sm pl-4 border-l-2 border-gray-200">
+                    <span className="font-medium">{choice.name}</span>
+                    {Number(choice.priceAdjustment) > 0 && (
+                      <span className="text-gray-500">
+                        {" "}
+                        (+${Number(choice.priceAdjustment).toFixed(2)})
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleEditItemOption(option)}
-          >
+          <Button variant="ghost" size="icon" onClick={() => handleEditItemOption(option)}>
             <Plus className="h-4 w-4" />
           </Button>
           <Button
@@ -659,9 +585,7 @@ export function RestaurantMenuClient({
         )}
         <div>
           <div className="font-medium">{item.name}</div>
-          <div className="text-sm text-gray-500">
-            ${Number(item.price).toFixed(2)}
-          </div>
+          <div className="text-sm text-gray-500">${Number(item.price).toFixed(2)}</div>
         </div>
       </div>
     </div>
@@ -671,9 +595,7 @@ export function RestaurantMenuClient({
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Menu Management</h1>
-        <p className="text-gray-500">
-          Drag and drop to organize your menu structure
-        </p>
+        <p className="text-gray-500">Drag and drop to organize your menu structure</p>
       </div>
 
       <Card>
@@ -703,11 +625,9 @@ export function RestaurantMenuClient({
               {activeId && activeItem?.type === "item" && activeItem.item && (
                 <MenuItemDragPreview item={activeItem.item} />
               )}
-              {activeId &&
-                activeItem?.type === "category" &&
-                activeItem.item && (
-                  <CategoryDragPreview category={activeItem.item} />
-                )}
+              {activeId && activeItem?.type === "category" && activeItem.item && (
+                <CategoryDragPreview category={activeItem.item} />
+              )}
             </DragOverlay>
           </DndContext>
         </CardContent>

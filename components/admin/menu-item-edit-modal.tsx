@@ -32,10 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import {
-  type MenuItemFormValues,
-  menuItemSchema,
-} from "@/schemas/menu-item-schema";
+import { type MenuItemFormValues, menuItemSchema } from "@/schemas/menu-item-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category, MenuItem, Restaurant } from "@prisma/client";
 
@@ -63,18 +60,14 @@ export function MenuItemEditModal({
   mode = "edit",
 }: MenuItemEditModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>(
-    categories || []
-  ); // Add default empty array
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>(categories || []); // Add default empty array
 
   const isCreating = mode === "create";
   const title = isCreating ? "Add Menu Item" : "Edit Menu Item";
   const buttonText = isCreating ? "Create" : "Save changes";
 
   const defaultRestaurantId = restaurants?.[0]?.id;
-  const defaultCategoryId = categories?.find(
-    (c) => c.restaurantId === defaultRestaurantId
-  )?.id;
+  const defaultCategoryId = categories?.find((c) => c.restaurantId === defaultRestaurantId)?.id;
 
   const form = useForm<MenuItemFormValues>({
     resolver: zodResolver(menuItemSchema),
@@ -97,9 +90,7 @@ export function MenuItemEditModal({
   useEffect(() => {
     if (currentRestaurantId && categories?.length) {
       setFilteredCategories(
-        categories.filter(
-          (category) => category.restaurantId === currentRestaurantId
-        )
+        categories.filter((category) => category.restaurantId === currentRestaurantId),
       );
     } else {
       setFilteredCategories(categories || []);
@@ -113,9 +104,7 @@ export function MenuItemEditModal({
         name: menuItem.name,
         description: menuItem.description,
         price:
-          typeof menuItem.price === "number"
-            ? menuItem.price
-            : Number(menuItem.price.toString()),
+          typeof menuItem.price === "number" ? menuItem.price : Number(menuItem.price.toString()),
         categoryId: menuItem.categoryId,
         restaurantId: menuItem.restaurantId,
         isAvailable: menuItem.isAvailable,
@@ -125,8 +114,7 @@ export function MenuItemEditModal({
     } else if (mode === "create") {
       const defaultRestaurantId = restaurants?.[0]?.id || 0;
       const defaultCategoryId =
-        categories?.find((c) => c.restaurantId === defaultRestaurantId)?.id ||
-        0;
+        categories?.find((c) => c.restaurantId === defaultRestaurantId)?.id || 0;
 
       form.reset({
         name: "",
@@ -150,7 +138,7 @@ export function MenuItemEditModal({
         const payload = {
           name: data.name,
           description: data.description ?? null,
-          price: parseFloat(data.price.toFixed(2)),
+          price: Number.parseFloat(data.price.toFixed(2)),
           categoryId: Number(data.categoryId),
           restaurantId: Number(data.restaurantId),
           isAvailable: Boolean(data.isAvailable),
@@ -162,7 +150,7 @@ export function MenuItemEditModal({
         const payload = {
           name: data.name,
           description: data.description ?? null,
-          price: parseFloat(data.price.toFixed(2)),
+          price: Number.parseFloat(data.price.toFixed(2)),
           categoryId: Number(data.categoryId),
           restaurantId: Number(data.restaurantId),
           isAvailable: Boolean(data.isAvailable),
@@ -186,9 +174,7 @@ export function MenuItemEditModal({
           title: "Error",
           description:
             result?.error ||
-            (isCreating
-              ? "Failed to create menu item"
-              : "Failed to update menu item"),
+            (isCreating ? "Failed to create menu item" : "Failed to update menu item"),
         });
       }
     } catch (error) {
@@ -209,14 +195,11 @@ export function MenuItemEditModal({
     // Reset category if it doesn't belong to the selected restaurant
     const currentCategoryId = form.getValues("categoryId");
     const categoryBelongsToRestaurant =
-      categories?.some(
-        (c) => c.id === currentCategoryId && c.restaurantId === restaurantId
-      ) || false;
+      categories?.some((c) => c.id === currentCategoryId && c.restaurantId === restaurantId) ||
+      false;
 
     if (!categoryBelongsToRestaurant) {
-      const firstCategoryForRestaurant = categories?.find(
-        (c) => c.restaurantId === restaurantId
-      );
+      const firstCategoryForRestaurant = categories?.find((c) => c.restaurantId === restaurantId);
       form.setValue("categoryId", firstCategoryForRestaurant?.id || 0);
     }
   };
@@ -238,11 +221,7 @@ export function MenuItemEditModal({
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Menu item name"
-                          disabled={isLoading}
-                        />
+                        <Input {...field} placeholder="Menu item name" disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -301,9 +280,7 @@ export function MenuItemEditModal({
                       <FormLabel>Restaurant</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) =>
-                          handleRestaurantChange(Number.parseInt(value))
-                        }
+                        onValueChange={(value) => handleRestaurantChange(Number.parseInt(value))}
                         disabled={isLoading}
                       >
                         <FormControl>
@@ -313,17 +290,10 @@ export function MenuItemEditModal({
                         </FormControl>
                         <SelectContent>
                           {restaurants?.map((restaurant) => (
-                            <SelectItem
-                              key={restaurant.id}
-                              value={restaurant.id.toString()}
-                            >
+                            <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
                               {restaurant.name}
                             </SelectItem>
-                          )) || (
-                            <SelectItem value="none">
-                              No restaurants available
-                            </SelectItem>
-                          )}
+                          )) || <SelectItem value="none">No restaurants available</SelectItem>}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -339,9 +309,7 @@ export function MenuItemEditModal({
                       <FormLabel>Category</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) =>
-                          field.onChange(Number.parseInt(value))
-                        }
+                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
                         disabled={isLoading || filteredCategories.length === 0}
                       >
                         <FormControl>
@@ -357,10 +325,7 @@ export function MenuItemEditModal({
                         </FormControl>
                         <SelectContent>
                           {filteredCategories.map((category) => (
-                            <SelectItem
-                              key={category.id}
-                              value={category.id.toString()}
-                            >
+                            <SelectItem key={category.id} value={category.id.toString()}>
                               {category.name}
                             </SelectItem>
                           ))}
@@ -382,11 +347,7 @@ export function MenuItemEditModal({
                           <Input
                             type="number"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(
-                                Number.parseInt(e.target.value) || 0
-                              )
-                            }
+                            onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
                             min={0}
                             disabled={isLoading}
                           />
@@ -408,9 +369,7 @@ export function MenuItemEditModal({
                             disabled={isLoading}
                           />
                         </FormControl>
-                        <FormLabel className="cursor-pointer">
-                          Available
-                        </FormLabel>
+                        <FormLabel className="cursor-pointer">Available</FormLabel>
                       </FormItem>
                     )}
                   />

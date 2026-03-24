@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { useState } from "react";
 
 import { deleteCategory } from "@/actions/category-actions";
 import type { Restaurant } from "@/actions/restaurant-actions";
@@ -26,15 +26,11 @@ interface CategoriesClientProps {
   restaurants: Restaurant[];
 }
 
-export function CategoriesClient({
-  initialCategories,
-  restaurants,
-}: CategoriesClientProps) {
+export function CategoriesClient({ initialCategories, restaurants }: CategoriesClientProps) {
   const router = useRouter();
   // const [categories, setCategories] =
   //   useState<CategoryWithRestaurant[]>(initialCategories);
-  const [selectedCategory, setSelectedCategory] =
-    useState<CategoryWithRestaurant | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryWithRestaurant | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,7 +39,7 @@ export function CategoriesClient({
   const filteredCategories = initialCategories.filter(
     (category) =>
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase())
+      category.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const columns: ColumnDef<Category & { restaurant: { name: string } }>[] = [

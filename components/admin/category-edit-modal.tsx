@@ -32,10 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import {
-  type CategoryFormValues,
-  categorySchema,
-} from "@/schemas/category-schema";
+import { type CategoryFormValues, categorySchema } from "@/schemas/category-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Category } from "@prisma/client";
 
@@ -137,9 +134,7 @@ export function CategoryEditModal({
           title: "Error",
           description:
             result?.error ||
-            (isCreating
-              ? "Failed to create category"
-              : "Failed to update category"),
+            (isCreating ? "Failed to create category" : "Failed to update category"),
         });
       }
     } catch (error) {
@@ -170,11 +165,7 @@ export function CategoryEditModal({
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input
-                          {...field}
-                          placeholder="Category name"
-                          disabled={isLoading}
-                        />
+                        <Input {...field} placeholder="Category name" disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -209,9 +200,7 @@ export function CategoryEditModal({
                       <FormLabel>Restaurant</FormLabel>
                       <Select
                         value={field.value?.toString() || ""}
-                        onValueChange={(value) =>
-                          field.onChange(Number.parseInt(value))
-                        }
+                        onValueChange={(value) => field.onChange(Number.parseInt(value))}
                         disabled={isLoading}
                       >
                         <FormControl>
@@ -221,10 +210,7 @@ export function CategoryEditModal({
                         </FormControl>
                         <SelectContent>
                           {restaurants.map((restaurant) => (
-                            <SelectItem
-                              key={restaurant.id}
-                              value={restaurant.id.toString()}
-                            >
+                            <SelectItem key={restaurant.id} value={restaurant.id.toString()}>
                               {restaurant.name}
                             </SelectItem>
                           ))}
@@ -245,9 +231,7 @@ export function CategoryEditModal({
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(Number.parseInt(e.target.value) || 0)
-                          }
+                          onChange={(e) => field.onChange(Number.parseInt(e.target.value) || 0)}
                           min={0}
                           disabled={isLoading}
                         />

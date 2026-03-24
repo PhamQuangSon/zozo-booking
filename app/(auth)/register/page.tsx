@@ -1,8 +1,8 @@
 "use client";
-import { useActionState, useLayoutEffect } from "react";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertCircle } from "lucide-react";
+import { useActionState, useLayoutEffect } from "react";
 import { useFormStatus } from "react-dom";
 
 // Import type
@@ -63,9 +63,7 @@ export default function RegisterPage() {
       <Card className="mx-auto w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">Create an Account</CardTitle>
-          <CardDescription>
-            Enter your details to create a new account
-          </CardDescription>
+          <CardDescription>Enter your details to create a new account</CardDescription>
         </CardHeader>
         <form action={formAction} method="POST">
           <CardContent className="space-y-4">
@@ -78,13 +76,7 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="John Doe"
-                required
-              />
+              <Input id="name" name="name" type="text" placeholder="John Doe" required />
               <ZodErrors error={formState?.zodErrors?.name ?? []} />
             </div>
 
@@ -108,12 +100,7 @@ export default function RegisterPage() {
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-              />
+              <Input id="confirmPassword" name="confirmPassword" type="password" required />
               <ZodErrors error={formState?.zodErrors?.confirmPassword ?? []} />
             </div>
           </CardContent>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 
 export function SessionDebug() {
   const { data: session, status } = useSession();
@@ -23,9 +23,7 @@ export function SessionDebug() {
       <h3 className="font-bold mb-2">Session Debug</h3>
       <p>Status: {status}</p>
       {session ? (
-        <pre className="mt-2 overflow-auto">
-          {JSON.stringify(session, null, 2)}
-        </pre>
+        <pre className="mt-2 overflow-auto">{JSON.stringify(session, null, 2)}</pre>
       ) : (
         <p className="mt-2">No session data</p>
       )}
