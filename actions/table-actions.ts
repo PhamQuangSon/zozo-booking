@@ -5,7 +5,7 @@ import { type Currency, formatCurrency } from "@/lib/i18n";
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
 import { attachUsersToOrders } from "@/lib/order-helpers";
-import { type TableStatus } from "@prisma/client";
+import type { TableStatus } from "@prisma/client";
 
 // Get table details
 export async function getTableDetails(tableId: string) {

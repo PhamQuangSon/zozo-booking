@@ -42,7 +42,7 @@ export default function ErrorBoundary({
         <Button 
           variant="outline" 
           size="lg"
-          onClick={() => window.location.href = "/"}
+          onClick={() => { window.location.href = "/"; }}
         >
           Return to Home
         </Button>

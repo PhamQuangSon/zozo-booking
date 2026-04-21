@@ -171,14 +171,14 @@ export const useCartStore = create<CartState>()(
                 name: item.menuItem.name,
                 price: Number(item.unitPrice),
                 quantity: item.quantity,
-                imageUrl: item.menuItem.imageUrl,
+                imageUrl: item.menuItem.imageUrl || undefined,
                 restaurantId,
                 tableId,
                 submitted: true,
                 orderId: order.id,
                 orderItemId: item.id,
-                specialInstructions: item.notes,
-                userId: order.user?.id || undefined,
+                specialInstructions: item.notes || undefined,
+                userId: order.user?.id || null,
                 userName:
                   order.user?.name ||
                   order.notes?.split("Customer Info:")[1].trim() ||
