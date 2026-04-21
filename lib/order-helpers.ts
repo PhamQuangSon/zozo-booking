@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 
 export async function attachUsersToOrders<T extends { userId: string | null }>(
   orders: T[]
-): Promise<(T & { user: { name: string | null; email: string | null } | null })[]> {
+): Promise<(T & { user: { id: string; name: string | null; email: string | null } | null })[]> {
   // Extract unique user IDs
   const orderUserIds = orders
     .map((order) => order.userId)
@@ -28,7 +28,7 @@ export async function attachUsersToOrders<T extends { userId: string | null }>(
       const user = userMap.get(order.userId);
       return {
         ...order,
-        user: user ? { name: user.name, email: user.email } : null,
+        user: user ? { id: user.id, name: user.name, email: user.email } : null,
       };
     }
     return { ...order, user: null };

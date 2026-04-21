@@ -3,7 +3,7 @@ import { persist } from "zustand/middleware";
 
 export interface ServerOrder {
   id: number;
-  user?: { id: string; name: string | null } | null;
+  user?: { id: string; name: string | null; email: string | null } | null;
   notes?: string | null;
   createdAt?: string | Date;
   orderItems?: ServerOrderItem[];
@@ -11,7 +11,7 @@ export interface ServerOrder {
 
 export interface ServerOrderItem {
   id: number;
-  unitPrice: number | string;
+  unitPrice: number | string | any; // allow Prisma.Decimal inference
   quantity: number;
   notes?: string | null;
   menuItem?: {
@@ -21,7 +21,7 @@ export interface ServerOrderItem {
   };
   orderItemChoices?: Array<{
     menuItemOption?: { id: number };
-    optionChoice?: { id: number; name: string; priceAdjustment: number | string };
+    optionChoice?: { id: number; name: string; priceAdjustment: number | string | any };
   }>;
 }
 

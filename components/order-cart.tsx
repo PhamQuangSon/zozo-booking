@@ -156,8 +156,8 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
         markItemsAsSubmitted(restaurantId, tableId, Number(result.data?.id));
 
         // Notify other users about the order using the provided function
-        if (notifyOrderSubmitted) {
-          notifyOrderSubmitted(result.data);
+        if (notifyOrderSubmitted && result.data) {
+          notifyOrderSubmitted(result.data as unknown as { id?: number; [key: string]: unknown });
         }
       } else {
         toast({
