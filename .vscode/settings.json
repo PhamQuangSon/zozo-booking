@@ -1,0 +1,6 @@
+{
+  "antigravity.systemPrompt": "Context path: Please always read .memory/MEMORY.md first. Follow the coding standards defined in .memory/rules.md.",
+  "antigravity.memory.enabled": true,
+  "antigravity.memory.contextPath": ".memory/MEMORY.md",
+  "antigravity.memory.rulesPath": ".memory/rules.md"
+}
