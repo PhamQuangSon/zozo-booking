@@ -7,6 +7,7 @@ import {
 } from "@/lib/order-status";
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
+import { attachUsersToOrders } from "@/lib/order-helpers";
 import type { OrderWithRelations } from "@/types/menu-builder-types";
 import type { OrderItemStatus, Prisma } from "@prisma/client";
 
@@ -36,24 +37,7 @@ export async function getRestaurantOrders(
       orderBy: { createdAt: "desc" },
     });
 
-    const ordersWithUser = await Promise.all(
-      orders.map(async (order) => {
-        if (order.userId) {
-          const user = await prisma.user.findUnique({
-            where: { id: order.userId },
-            select: { name: true, email: true },
-          });
-          return { ...order, user };
-        }
-        return {
-          ...order,
-          user: {
-            name: null,
-            email: null,
-          },
-        };
-      }),
-    );
+    const ordersWithUser = await attachUsersToOrders(orders);
 
     // Fix the serialization and type casting
     const serializedData = serializePrismaData(ordersWithUser);

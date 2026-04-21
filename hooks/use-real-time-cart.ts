@@ -10,8 +10,8 @@ import { useQueryClient } from "@tanstack/react-query";
 export function useRealTimeCart(restaurantId: string, tableId: string) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [otherUserCarts, setOtherUserCarts] = useState<Record<string, any>>({});
-  const [lastOrderUpdate, setLastOrderUpdate] = useState<any>(null);
+  const [otherUserCarts, setOtherUserCarts] = useState<Record<string, { cart: any[], userName: string }>>({});
+  const [lastOrderUpdate, setLastOrderUpdate] = useState<unknown>(null);
 
   const { cart, markItemsAsSubmitted } = useCartStore();
   const { data: session } = useSession();
@@ -131,7 +131,7 @@ export function useRealTimeCart(restaurantId: string, tableId: string) {
 
   // Function to notify others when an order is submitted
   const notifyOrderSubmitted = useCallback(
-    (order: any) => {
+    (order: { id?: number; [key: string]: unknown }) => {
       if (socket && isConnected) {
         // Mark items as submitted in the local cart
         if (order.id) {

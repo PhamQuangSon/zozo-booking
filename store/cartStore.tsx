@@ -1,6 +1,30 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export interface ServerOrder {
+  id: number;
+  user?: { id: string; name: string | null } | null;
+  notes?: string | null;
+  createdAt?: string | Date;
+  orderItems?: ServerOrderItem[];
+}
+
+export interface ServerOrderItem {
+  id: number;
+  unitPrice: number | string;
+  quantity: number;
+  notes?: string | null;
+  menuItem?: {
+    id: number;
+    name: string;
+    imageUrl?: string | null;
+  };
+  orderItemChoices?: Array<{
+    menuItemOption?: { id: number };
+    optionChoice?: { id: number; name: string; priceAdjustment: number | string };
+  }>;
+}
+
 export interface CartItem {
   id: string;
   name: string;
@@ -11,7 +35,7 @@ export interface CartItem {
   tableId: string;
   categoryName?: string;
   specialInstructions?: string;
-  selectedOptions?: Record<string, any>;
+  selectedOptions?: Record<string, { id: string; name: string; priceAdjustment: number }>;
   submitted?: boolean; // Flag to track if the item has been submitted
   orderId?: number; // Reference to server order if item was synced
   orderItemId?: number; // Reference to server order item if item was synced
@@ -29,7 +53,7 @@ interface CartState {
   markItemsAsSubmitted: (restaurantId: string, tableId: string, orderId: number) => void;
   getSubmittedItems: (restaurantId: string, tableId: string) => CartItem[];
   getPendingItems: (restaurantId: string, tableId: string) => CartItem[];
-  syncServerOrders: (restaurantId: string, tableId: string, orders: any[]) => void;
+  syncServerOrders: (restaurantId: string, tableId: string, orders: ServerOrder[]) => void;
   mergeExternalCart: (userId: string, externalCart: CartItem[]) => void;
   setCollaborativeMode: (enabled: boolean) => void;
   clearCart: () => void;
@@ -139,7 +163,7 @@ export const useCartStore = create<CartState>()(
           orders.forEach((order) => {
             if (!order.orderItems || !Array.isArray(order.orderItems)) return;
 
-            order.orderItems.forEach((item: any) => {
+            order.orderItems.forEach((item) => {
               if (!item.menuItem) return;
 
               const cartItem: CartItem = {
@@ -161,7 +185,7 @@ export const useCartStore = create<CartState>()(
                   "Anonymous 5",
                 // timestamp: new Date(order.createdAt || Date.now()).getTime(),
                 selectedOptions: item.orderItemChoices?.reduce(
-                  (acc: Record<string, any>, choice: any) => {
+                  (acc: Record<string, { id: string; name: string; priceAdjustment: number }>, choice) => {
                     if (!choice.menuItemOption || !choice.optionChoice) return acc;
 
                     return {
@@ -260,7 +284,7 @@ export const useCartStore = create<CartState>()(
       // Add a version number to the storage to handle migrations
       version: 2,
       // Add a migration function to handle old data
-      migrate: (persistedState: any, version: number) => {
+      migrate: (persistedState: unknown, version: number) => {
         if (version === 0 || version === 1) {
           // Clear the cart to avoid any issues with old data structure
           return { cart: [], collaborativeMode: true };

@@ -4,6 +4,8 @@ import { auth } from "@/config/auth";
 import { type Currency, formatCurrency } from "@/lib/i18n";
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
+import { attachUsersToOrders } from "@/lib/order-helpers";
+import { type TableStatus } from "@prisma/client";
 
 // Get table details
 export async function getTableDetails(tableId: string) {
@@ -99,7 +101,7 @@ export async function createTable(data: {
         restaurantId: data.restaurantId,
         number: data.number,
         capacity: data.capacity,
-        status: (data.status as any) || "AVAILABLE",
+        status: (data.status as TableStatus) || "AVAILABLE",
         imageUrl: data.imageUrl,
       },
     });
@@ -144,7 +146,7 @@ export async function updateTable(
       data: {
         number: data.number,
         capacity: data.capacity,
-        status: (data.status as any) || "AVAILABLE",
+        status: (data.status as TableStatus) || "AVAILABLE",
         imageUrl: data.imageUrl,
       },
     });
@@ -179,18 +181,7 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
       },
     });
 
-    const ordersWithUser = await Promise.all(
-      orders.map(async (order) => {
-        if (order.userId) {
-          const user = await prisma.user.findUnique({
-            where: { id: order.userId },
-            select: { name: true, email: true },
-          });
-          return { ...order, user };
-        }
-        return { ...order, user: null };
-      }),
-    );
+    const ordersWithUser = await attachUsersToOrders(orders);
 
     // Fix the serialization and type casting
     const serializedData = serializePrismaData(ordersWithUser);
@@ -216,19 +207,24 @@ export async function deleteTable(id: number) {
   }
 }
 
+type RawOptionChoice = { id: number; name: string; priceAdjustment: number | string; [key: string]: unknown };
+type RawMenuItemOption = { id: number; name: string; optionChoices: RawOptionChoice[]; [key: string]: unknown };
+type RawMenuItem = { id: number; name: string; price: number | string; menuItemOptions: RawMenuItemOption[]; [key: string]: unknown };
+type RawCategory = { id: number; name: string; menu_items: RawMenuItem[]; [key: string]: unknown };
+
 // Format menu items with proper currency
-export async function formatTableMenuItems(menuCategories: any[], currency: Currency) {
+export async function formatTableMenuItems(menuCategories: RawCategory[], currency: Currency) {
   return menuCategories.map((category) => ({
     ...category,
-    menu_items: category.menu_items.map((item: any) => ({
+    menu_items: category.menu_items.map((item) => ({
       ...item,
-      formattedPrice: formatCurrency(item.price, currency),
+      formattedPrice: formatCurrency(Number(item.price), currency),
       price: Number(item.price),
-      menuItemOptions: item.menuItemOptions.map((option: any) => ({
+      menuItemOptions: item.menuItemOptions.map((option) => ({
         ...option,
-        optionChoices: option.optionChoices.map((choice: any) => ({
+        optionChoices: option.optionChoices.map((choice) => ({
           ...choice,
-          formattedPriceAdjustment: formatCurrency(choice.priceAdjustment, currency),
+          formattedPriceAdjustment: formatCurrency(Number(choice.priceAdjustment), currency),
           priceAdjustment: Number(choice.priceAdjustment),
         })),
       })),
@@ -453,18 +449,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
       },
     });
 
-    const ordersWithUser = await Promise.all(
-      orders.map(async (order) => {
-        if (order.userId) {
-          const user = await prisma.user.findUnique({
-            where: { id: order.userId },
-            select: { name: true, email: true },
-          });
-          return { ...order, user };
-        }
-        return { ...order, user: null };
-      }),
-    );
+    const ordersWithUser = await attachUsersToOrders(orders);
 
     // Return all data in one response
     return {
