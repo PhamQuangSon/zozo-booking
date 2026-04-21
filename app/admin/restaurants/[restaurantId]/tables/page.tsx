@@ -10,17 +10,18 @@ import { Button } from "@/components/ui/button";
 export default async function TablesPage({
   params,
 }: {
-  params: { restaurantId: string };
+  params: Promise<{ restaurantId: string }>;
 }) {
+  const { restaurantId } = await params;
   // Fetch restaurant details
-  const restaurantResult = await getRestaurantById(params.restaurantId);
+  const restaurantResult = await getRestaurantById(restaurantId);
   if (!restaurantResult.success || !restaurantResult.data) {
     notFound();
   }
   const restaurant = restaurantResult.data;
 
   // Fetch tables
-  const { data: tables = [], success } = await getTablesByRestaurantId(params.restaurantId);
+  const { data: tables = [], success } = await getTablesByRestaurantId(restaurantId);
   if (!success) {
     return <div>Failed to load Tables</div>;
   }
@@ -37,7 +38,7 @@ export default async function TablesPage({
       </div>
 
       <TablesClient
-        restaurantId={params.restaurantId}
+        restaurantId={restaurantId}
         restaurantName={restaurant.name}
         initialTables={tables}
       />

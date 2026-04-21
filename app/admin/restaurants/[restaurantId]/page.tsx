@@ -12,7 +12,7 @@ import type { PageProps } from "@/types/page-props";
 import { tableStatusColors } from "@/types/status-colors";
 
 export default async function RestaurantDetailPage({ params }: PageProps) {
-  const { restaurantId } = params;
+  const { restaurantId } = await params;
   // Fetch restaurant details
   const { success, data: restaurant } = await getCachedRestaurantById(restaurantId);
 

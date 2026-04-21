@@ -5,7 +5,7 @@ import { getCachedRestaurantById } from "@/lib/restaurant-cache";
 import type { PageProps } from "@/types/page-props";
 
 export default async function RestaurantMenuPage({ params }: PageProps) {
-  const { restaurantId } = params;
+  const { restaurantId } = await params;
 
   // Use the cached version of getRestaurantById
   const { success, data: restaurant } = await getCachedRestaurantById(restaurantId);

@@ -14,7 +14,7 @@ import { OrderActions } from "./order-actions";
 import { OrderItemActions } from "./order-item-actions";
 
 export default async function RestaurantOrdersPage({ params }: PageProps) {
-  const { restaurantId } = params;
+  const { restaurantId } = await params;
 
   // Get restaurant orders
   const ordersResult = await getRestaurantOrders(restaurantId);

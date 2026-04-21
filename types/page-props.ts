@@ -1,3 +1,3 @@
 export type PageProps = {
-  params: { restaurantId: string };
+  params: Promise<{ restaurantId: string; tableId?: string }>;
 };

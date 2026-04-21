@@ -17,6 +17,13 @@
 - [x] **WebSocket Reliability** <!-- id: 5 -->
     - [x] Add reconnection logic
     - [x] Add heartbeat mechanism
+- [x] **Next.js 15 Compatibility Fixes** <!-- id: 6 -->
+    - [x] Refactor dynamic routing async `params` to `await params` in `[restaurantId]` admin routes
+    - [x] Update Next.js `PageProps` interface for async routing
+- [x] **Prisma Strict Typings & ESLint rules** <!-- id: 7 -->
+    - [x] Adjust types handling `decimal` mapping to numbers inside `ServerOrderItem`
+    - [x] Nullish fallback conversions enforcing strict schema types on UI Cart Interface
+    - [x] Resolve `useImportType` and side effect free biome validations
 
 ## New Features (Backlog)
 - [ ] Push Notifications
