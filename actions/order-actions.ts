@@ -8,6 +8,8 @@ import {
 import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
 import { attachUsersToOrders } from "@/lib/order-helpers";
+import { safePublishEvent } from "@/lib/kafka/producer";
+import { KAFKA_TOPICS } from "@/lib/kafka/topics";
 import type { OrderWithRelations } from "@/types/menu-builder-types";
 import type { OrderItemStatus, Prisma } from "@prisma/client";
 
@@ -111,6 +113,25 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
       return orderItem;
     });
 
+    // ── Publish to Kafka ────────────────────────────────────────────────────
+    // DB cascade (Order status + Table release) is already done ABOVE inside
+    // the Prisma transaction (ACID-safe, synchronous).
+    //
+    // This event's ONLY purpose: the Kafka consumer worker picks it up and
+    // emits a Socket.IO notification to browser clients in real-time.
+    // The worker does NOT touch the DB — no double-write.
+    await safePublishEvent(KAFKA_TOPICS.ORDER_ITEM_STATUS_UPDATED, {
+      type: "order.item.status.updated",
+      payload: {
+        orderItemId,
+        orderId: updatedItem.order.id,
+        restaurantId: updatedItem.order.restaurantId,
+        tableId: updatedItem.order.tableId ?? null,
+        newStatus,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+
     return {
       success: true,
       data: serializePrismaData(updatedItem),
@@ -120,6 +141,72 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to update order item status",
+    };
+  }
+}
+
+/**
+ * Create a new order and emit an order.created Kafka event so the kitchen
+ * dashboard receives a real-time notification.
+ */
+export async function createOrder(data: {
+  restaurantId: number;
+  tableId: number;
+  userId?: string | null;
+  totalAmount: number;
+  notes?: string;
+  orderItems: Array<{
+    menuItemId: number;
+    quantity: number;
+    unitPrice: number;
+    notes?: string;
+  }>;
+}) {
+  try {
+    const order = await prisma.order.create({
+      data: {
+        restaurantId: data.restaurantId,
+        tableId: data.tableId,
+        userId: data.userId ?? null,
+        totalAmount: data.totalAmount,
+        notes: data.notes,
+        orderItems: {
+          create: data.orderItems.map((item) => ({
+            menuItemId: item.menuItemId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            notes: item.notes,
+          })),
+        },
+      },
+      include: { orderItems: true, table: true },
+    });
+
+    // Mark the table as OCCUPIED
+    await prisma.table.update({
+      where: { id: data.tableId },
+      data: { status: "OCCUPIED" },
+    });
+
+    // Publish event to Kafka
+    await safePublishEvent(KAFKA_TOPICS.ORDER_CREATED, {
+      type: "order.created",
+      payload: {
+        orderId: order.id,
+        restaurantId: order.restaurantId,
+        tableId: order.tableId,
+        totalAmount: Number(order.totalAmount),
+        userId: order.userId,
+        createdAt: order.createdAt.toISOString(),
+      },
+    });
+
+    return { success: true, data: serializePrismaData(order) };
+  } catch (error) {
+    console.error("Failed to create order:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to create order",
     };
   }
 }

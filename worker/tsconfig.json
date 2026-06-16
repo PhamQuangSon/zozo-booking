@@ -1,0 +1,15 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "outDir": "../dist/worker",
+    "rootDir": "..",
+    "paths": {
+      "@/*": ["../*"]
+    }
+  },
+  "include": ["**/*.ts", "../lib/kafka/**/*.ts"],
+  "exclude": ["../node_modules", "../.next"]
+}

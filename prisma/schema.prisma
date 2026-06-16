@@ -18,6 +18,7 @@ model User {
   image             String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+  refreshTokens     RefreshToken[]
   verificationToken String?   @unique
   resetToken        String?   @unique
   resetTokenExpiry  DateTime?
@@ -25,6 +26,19 @@ model User {
   likes             Like[]
 
   @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isUsed    Boolean  @default(false)
+  isRevoked Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Restaurant {
