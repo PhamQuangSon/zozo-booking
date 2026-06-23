@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { updateOrderItemStatus } from "@/actions/order-actions";
+import { updateOrderStatus } from "@/actions/order-actions";
 import { useReceiptPrinter } from "@/components/receipt-printer";
 import {
   AlertDialog,
@@ -32,6 +32,7 @@ interface OrderActionsProps {
 export function OrderActions({ order }: OrderActionsProps) {
   const router = useRouter();
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const { printReceipt } = useReceiptPrinter();
 
@@ -54,13 +55,14 @@ export function OrderActions({ order }: OrderActionsProps) {
   const handleStatusUpdate = async (newStatus: OrderStatus) => {
     try {
       setLoading(true);
-      const result = await updateOrderItemStatus(order.id, newStatus);
+      const result = await updateOrderStatus(order.id, newStatus);
       if (result.success) {
         router.refresh();
       }
     } finally {
       setLoading(false);
       setShowStatusDialog(false);
+      setSelectedStatus(null);
     }
   };
 
@@ -82,32 +84,46 @@ export function OrderActions({ order }: OrderActionsProps) {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {getAvailableStatuses(order.status).map((status) => (
-            <DropdownMenuItem key={status} onClick={() => setShowStatusDialog(true)}>
+            <DropdownMenuItem
+              key={status}
+              onClick={() => {
+                setSelectedStatus(status);
+                setShowStatusDialog(true);
+              }}
+            >
               {status.charAt(0) + status.slice(1).toLowerCase()}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
+      <AlertDialog
+        open={showStatusDialog}
+        onOpenChange={(open) => {
+          setShowStatusDialog(open);
+          if (!open) setSelectedStatus(null);
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Update Order Status</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to update this order status? This action cannot be undone.
+              Are you sure you want to update this order status to{" "}
+              <span className="font-semibold text-foreground">
+                {selectedStatus ? selectedStatus.charAt(0) + selectedStatus.slice(1).toLowerCase() : ""}
+              </span>? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            {getAvailableStatuses(order.status).map((status) => (
+            <AlertDialogCancel onClick={() => setSelectedStatus(null)}>Cancel</AlertDialogCancel>
+            {selectedStatus && (
               <AlertDialogAction
-                key={status}
-                onClick={() => handleStatusUpdate(status)}
+                onClick={() => handleStatusUpdate(selectedStatus)}
                 disabled={loading}
               >
-                Update to {status.charAt(0) + status.slice(1).toLowerCase()}
+                Update to {selectedStatus.charAt(0) + selectedStatus.slice(1).toLowerCase()}
               </AlertDialogAction>
-            ))}
+            )}
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -9,7 +9,7 @@ import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
 import { attachUsersToOrders } from "@/lib/order-helpers";
 import type { OrderWithRelations } from "@/types/menu-builder-types";
-import type { OrderItemStatus, Prisma } from "@prisma/client";
+import type { OrderItemStatus, OrderStatus, Prisma } from "@prisma/client";
 
 // Then fix the getRestaurantOrders function to properly handle the type conversion
 export async function getRestaurantOrders(
@@ -123,6 +123,75 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
     };
   }
 }
+
+export async function updateOrderStatus(orderId: number, newStatus: OrderStatus) {
+  try {
+    const updatedOrder = await prisma.$transaction(async (tx) => {
+      // Get the order with its table to check if we need to release it
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { table: true },
+      });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      // Update the order status
+      const updated = await tx.order.update({
+        where: { id: orderId },
+        data: { status: newStatus },
+      });
+
+      // Update all items in this order to have the corresponding status
+      let itemStatus: OrderItemStatus = "NEW";
+      if (newStatus === "PREPARING") {
+        itemStatus = "PREPARING";
+      } else if (newStatus === "COMPLETED") {
+        itemStatus = "COMPLETED";
+      } else if (newStatus === "CANCELLED") {
+        itemStatus = "CANCELLED";
+      }
+
+      await tx.orderItem.updateMany({
+        where: { orderId },
+        data: { status: itemStatus },
+      });
+
+      // Release table if status is terminal and no other active orders on this table
+      if (order.table && (newStatus === "COMPLETED" || newStatus === "CANCELLED")) {
+        const activeOrders = await tx.order.count({
+          where: {
+            tableId: order.table.id,
+            status: { notIn: ["COMPLETED", "CANCELLED"] },
+            id: { not: orderId },
+          },
+        });
+
+        if (activeOrders === 0) {
+          await tx.table.update({
+            where: { id: order.table.id },
+            data: { status: "AVAILABLE" },
+          });
+        }
+      }
+
+      return updated;
+    });
+
+    return {
+      success: true,
+      data: serializePrismaData(updatedOrder),
+    };
+  } catch (error) {
+    console.error("Failed to update order status:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update order status",
+    };
+  }
+}
+
 
 // Option Choice CRUD
 export async function createOptionChoice(data: {
