@@ -3,6 +3,7 @@
 import { Clock, RefreshCw, Trash2, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { createTableOrder } from "@/actions/table-actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,6 +24,7 @@ interface OrderCartProps {
 }
 
 export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: OrderCartProps) {
+  const t = useTranslations("Cart");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
@@ -182,11 +184,11 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
     if (items.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <p className="mb-2 text-lg font-medium">No items</p>
+          <p className="mb-2 text-lg font-medium">{t("no_items")}</p>
           <p className="text-sm text-muted-foreground">
             {items === pendingItems
-              ? "Add items from the menu to get started"
-              : "No orders have been submitted yet"}
+              ? t("no_items_desc")
+              : t("no_submitted_items_desc")}
           </p>
         </div>
       );
@@ -262,7 +264,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
               {/* Display special instructions */}
               {item.specialInstructions && (
                 <div className="ml-6 text-sm text-muted-foreground">
-                  Special Instructions: <span className="italic">{item.specialInstructions}</span>
+                  {t("special_instructions")}: <span className="italic">{item.specialInstructions}</span>
                 </div>
               )}
             </div>
@@ -302,7 +304,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
                   <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <span className={isCurrentUser ? "font-medium" : ""}>
-                  {isCurrentUser ? "Your items" : `${userName}'s items`}
+                  {isCurrentUser ? t("your_items") : t("user_items", { user: userName })}
                 </span>
               </div>
 
@@ -328,15 +330,15 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
         <Separator />
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span>Subtotal</span>
+            <span>{t("subtotal")}</span>
             <span>{formatCurrency(subtotal, currency)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span>Tax (8%)</span>
+            <span>{t("tax")} (8%)</span>
             <span>{formatCurrency(tax, currency)}</span>
           </div>
           <div className="flex justify-between font-medium">
-            <span>Total</span>
+            <span>{t("total")}</span>
             <span>{formatCurrency(total, currency)}</span>
           </div>
         </div>
@@ -346,7 +348,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
             onClick={handleSubmitOrder}
             disabled={isSubmitting || pendingItems.length === 0}
           >
-            {isSubmitting ? "Submitting..." : "Place Order"}
+            {isSubmitting ? t("submitting_btn") : t("place_order_btn")}
           </Button>
         )}
       </div>
@@ -364,14 +366,14 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
           className="flex items-center gap-1 text-xs"
         >
           <RefreshCw className={`h-3 w-3 ${isRefreshing ? "animate-spin" : ""}`} />
-          Refresh
+          {t("refresh")}
         </Button>
       </div>
 
       <Tabs defaultValue="current" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-4">
           <TabsTrigger value="current" className="relative">
-            Current Order
+            {t("current_order")}
             {pendingItems.length > 0 && (
               <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">
                 {pendingItems.length}
@@ -379,7 +381,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
             )}
           </TabsTrigger>
           <TabsTrigger value="submitted" className="relative">
-            Submitted
+            {t("submitted")}
             {submittedItems.length > 0 && (
               <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">
                 {submittedItems.length}
@@ -397,7 +399,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
           {submittedItems.length > 0 && (
             <div className="bg-muted p-2 rounded-md mb-4 flex items-center text-sm">
               <Clock className="h-4 w-4 mr-2" />
-              <span>These items have been sent to the kitchen</span>
+              <span>{t("sent_to_kitchen")}</span>
             </div>
           )}
           {renderCartItems(submittedItems, collaborativeMode)}

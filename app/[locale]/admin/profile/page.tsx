@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import Loading from "@/app/loading";
+import Loading from "@/app/[locale]/loading";
 import { PasswordUpdateForm } from "@/components/profile/PasswordUpdateForm";
 import { ProfileUpdateForm } from "@/components/profile/ProfileUpdateForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

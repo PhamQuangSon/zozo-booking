@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
-import Loading from "@/app/loading";
+import Loading from "@/app/[locale]/loading";
 import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollingBanner } from "@/components/scrolling-banner";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ import {
 import { useRestaurantData } from "@/hooks/use-restaurant-data";
 
 export default function RestaurantPage() {
+  const t = useTranslations("Restaurant");
   const params = useParams();
   const router = useRouter();
   const restaurantId = params.restaurantId as string;
@@ -59,9 +61,9 @@ export default function RestaurantPage() {
   const specialItem =
     allMenuItems.length > 0
       ? {
-          ...allMenuItems[Math.floor(Math.random() * allMenuItems.length)],
-          discountPercentage: 45,
-        }
+        ...allMenuItems[Math.floor(Math.random() * allMenuItems.length)],
+        discountPercentage: 45,
+      }
       : null;
 
   const handleTableSelect = (tableId: number) => {
@@ -81,14 +83,14 @@ export default function RestaurantPage() {
       <div className="container mx-auto py-10">
         <Card className="glass-card overflow-hidden">
           <CardHeader>
-            <CardTitle>Restaurant Not Found</CardTitle>
+            <CardTitle>{t("not_found_title")}</CardTitle>
             <CardDescription>
-              The restaurant you&apos;re looking for doesn&apos;t exist
+              {t("not_found_desc")}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="rounded-full glass-button">
-              <Link href="/restaurants">Back to Restaurants</Link>
+              <Link href="/restaurants">{t("back_btn")}</Link>
             </Button>
           </CardContent>
         </Card>
@@ -102,9 +104,9 @@ export default function RestaurantPage() {
       <Dialog open={showTableDialog} onOpenChange={setShowTableDialog}>
         <DialogContent className="sm:max-w-md glass-card border-0">
           <DialogHeader>
-            <DialogTitle>Select a Table</DialogTitle>
+            <DialogTitle>{t("select_table_title")}</DialogTitle>
             <DialogDescription>
-              Choose a table to view the menu and place your order.
+              {t("select_table_desc")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
@@ -114,7 +116,7 @@ export default function RestaurantPage() {
               </div>
             ) : tables.length === 0 ? (
               <div className="col-span-full text-center py-4">
-                <p className="text-muted-foreground">No tables available</p>
+                <p className="text-muted-foreground">{t("no_tables")}</p>
               </div>
             ) : (
               tables.map((table) => (
@@ -123,16 +125,15 @@ export default function RestaurantPage() {
                   variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                   disabled={table.status !== "AVAILABLE"}
                   onClick={() => handleTableSelect(table.id)}
-                  className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
-                    table.status === "AVAILABLE"
+                  className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${table.status === "AVAILABLE"
                       ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
                       : "bg-secondary/50 backdrop-blur-sm"
-                  }`}
+                    }`}
                 >
                   <Table className="h-6 w-6" />
-                  <span>Table {table.number}</span>
+                  <span>{t("table")} {table.number}</span>
                   <span className="text-xs text-muted-foreground">
-                    {table.status === "AVAILABLE" ? "Available" : "Occupied"}
+                    {table.status === "AVAILABLE" ? t("available") : t("occupied")}
                   </span>
                 </Button>
               ))
@@ -166,15 +167,15 @@ export default function RestaurantPage() {
 
           <div className="relative z-20 container mx-auto h-full flex flex-col justify-center text-white pl-8">
             <p className="text-destructive font-medium mb-2">
-              WELCOME TO {restaurant.name.toUpperCase()}
+              {t("welcome_to")} {restaurant.name.toUpperCase()}
             </p>
-            <h1 className="text-4xl font-bold mb-2 text-brand-primary">TODAY SPECIAL FOOD</h1>
-            <p className="text-warning mb-4">Limited Time Offer</p>
+            <h1 className="text-4xl font-bold mb-2 text-brand-primary">{t("today_special")}</h1>
+            <p className="text-warning mb-4">{t("limited_time")}</p>
             <Button
               onClick={handleViewMenu}
               className="bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white w-fit rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              VIEW MENU
+              {t("view_menu")}
             </Button>
           </div>
         </div>
@@ -213,8 +214,8 @@ export default function RestaurantPage() {
         {/* Table Selection Card */}
         <Card className="mb-8 glass-card border-0 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm">
-            <CardTitle>Dining at {restaurant.name}</CardTitle>
-            <CardDescription>Select a table to view the menu and place your order</CardDescription>
+            <CardTitle>{t("dining_at")} {restaurant.name}</CardTitle>
+            <CardDescription>{t("dining_desc")}</CardDescription>
           </CardHeader>
           <CardContent className="bg-white/30 backdrop-blur-sm">
             <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
@@ -224,7 +225,7 @@ export default function RestaurantPage() {
                 </div>
               ) : tables.length === 0 ? (
                 <div className="col-span-full text-center py-4">
-                  <p className="text-muted-foreground">No tables available</p>
+                  <p className="text-muted-foreground">{t("no_tables")}</p>
                 </div>
               ) : (
                 tables.slice(0, 6).map((table) => (
@@ -233,16 +234,15 @@ export default function RestaurantPage() {
                     variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                     disabled={table.status !== "AVAILABLE"}
                     onClick={() => handleTableSelect(table.id)}
-                    className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
-                      table.status === "AVAILABLE"
+                    className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${table.status === "AVAILABLE"
                         ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
                         : "bg-secondary/50 backdrop-blur-sm"
-                    }`}
+                      }`}
                   >
                     <Table className="h-6 w-6" />
-                    <span>Table {table.number}</span>
+                    <span>{t("table")} {table.number}</span>
                     <span className="text-xs text-muted-foreground">
-                      {table.status === "AVAILABLE" ? "Available" : "Occupied"}
+                      {table.status === "AVAILABLE" ? t("available") : t("occupied")}
                     </span>
                   </Button>
                 ))
@@ -254,7 +254,7 @@ export default function RestaurantPage() {
               onClick={() => setShowTableDialog(true)}
               className="rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              View All Tables
+              {t("view_all_tables")}
             </Button>
           </CardFooter>
         </Card>
@@ -265,10 +265,10 @@ export default function RestaurantPage() {
         <div className="container mx-auto glass-card p-8 rounded-[40px] shadow-lg">
           <div className="text-center mb-8 border-b border-border/20 pb-4">
             <div className="flex justify-center items-center gap-2 mb-2">
-              <span className="text-brand-primary">🍔 ABOUT US 🍕</span>
+              <span className="text-brand-primary">🍔 {t("about_us")} 🍕</span>
             </div>
             <h2 className="text-3xl font-bold mb-6 text-brand-secondary">
-              Welcome to {restaurant.name}
+              {t("welcome_greeting")} {restaurant.name}
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               {restaurant.description ||
@@ -281,7 +281,7 @@ export default function RestaurantPage() {
             <Card className="glass-card border-0 hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <span className="mr-2">🍽️</span> Cuisine
+                  <span className="mr-2">🍽️</span> {t("cuisine")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -291,18 +291,18 @@ export default function RestaurantPage() {
             <Card className="glass-card border-0 hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <span className="mr-2">⏰</span> Hours
+                  <span className="mr-2">⏰</span> {t("hours")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p>Mon-Fri: 11am - 10pm</p>
-                <p>Sat-Sun: 10am - 11pm</p>
+                <p>{t("mon_fri")}: 11am - 10pm</p>
+                <p>{t("sat_sun")}: 10am - 11pm</p>
               </CardContent>
             </Card>
             <Card className="glass-card border-0 hover:shadow-xl transition-all duration-300 hover:translate-y-[-5px]">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <span className="mr-2">📍</span> Location
+                  <span className="mr-2">📍</span> {t("location")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -313,23 +313,23 @@ export default function RestaurantPage() {
 
           {/* Call to Action */}
           <div className="text-center py-8">
-            <h3 className="text-2xl font-bold mb-4 text-brand-primary">Ready to Order?</h3>
+            <h3 className="text-2xl font-bold mb-4 text-brand-primary">{t("ready_to_order")}</h3>
             <p className="text-muted-foreground mb-6">
-              Select a table to view our menu and place your order
+              {t("ready_to_order_desc")}
             </p>
             <Button
               size="lg"
               onClick={() => setShowTableDialog(true)}
               className="rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              Select a Table <ArrowRight className="ml-2 h-4 w-4" />
+              {t("select_a_table_btn")} <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Scrolling Text Banner */}
-      <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
+      <ScrollingBanner text={t("scrolling_banner")} />
 
       {/* AI Chatbot Widget */}
       {restaurant?.chatbotConfig?.isActive && (

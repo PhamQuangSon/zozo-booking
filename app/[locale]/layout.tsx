@@ -9,7 +9,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/toaster";
 import { auth } from "@/config/auth";
 
-import "./globals.css";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, getTranslations } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+import { notFound } from 'next/navigation';
+import { LanguageSwitcher } from "@/components/language-switcher";
+
+import "@/app/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,14 +26,25 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-}: Readonly<{
+  params
+}: {
   children: React.ReactNode;
-}>) {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
+  // Get messages for NextIntlClientProvider
+  const messages = await getMessages();
+
   // Get the session server-side to avoid client-side errors
   const session = (await auth()) ?? null;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={inter.className}>
         <NextAuthProvider session={session}>
           <QueryProvider>
@@ -37,11 +54,14 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              {children}
-              <div className="fixed bottom-4 right-4 z-[100]">
-                <ThemeToggle />
-              </div>
-              <Toaster />
+              <NextIntlClientProvider messages={messages}>
+                {children}
+                <div className="fixed top-4 right-4 z-[100] flex gap-2">
+                  <LanguageSwitcher />
+                  <ThemeToggle />
+                </div>
+                <Toaster />
+              </NextIntlClientProvider>
             </ThemeProvider>
           </QueryProvider>
         </NextAuthProvider>

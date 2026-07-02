@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 import { Badge } from "@/components/ui/badge";
 
@@ -10,11 +11,13 @@ interface RestaurantCardProps {
   image: string;
   cuisine: string;
   rating: number;
+  href?: string;
 }
 
-export function RestaurantCard({ id, name, image, cuisine, rating }: RestaurantCardProps) {
+export function RestaurantCard({ id, name, image, cuisine, rating, href }: RestaurantCardProps) {
+  const t = useTranslations("Restaurant");
   return (
-    <Link href={`/restaurants/${id}`} className="block group">
+    <Link href={href || `/restaurants/${id}`} className="block group h-full">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-white/80 to-white/20 backdrop-blur-sm border border-white/20 shadow-lg transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px]">
         <div className="relative h-48 w-full overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10" />
@@ -45,7 +48,7 @@ export function RestaurantCard({ id, name, image, cuisine, rating }: RestaurantC
           </div>
 
           <div className="mt-4 flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-600">View Menu</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t("view_menu")}</span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <svg
                 width="15"

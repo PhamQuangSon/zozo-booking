@@ -6,8 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
-import Loading from "@/app/loading";
+import Loading from "@/app/[locale]/loading";
 import { CustomerInfoForm } from "@/components/customer-info-form";
 import { MenuCategory } from "@/components/menu-category";
 import { MenuItemDetail } from "@/components/menu-item-detail";
@@ -40,6 +41,9 @@ const queryClient = new QueryClient();
 
 // Wrapper component with QueryClientProvider
 function TableOrderPageContent() {
+  const t = useTranslations("Menu");
+  const tr = useTranslations("Restaurant");
+  const tc = useTranslations("Cart");
   const params = useParams();
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -201,14 +205,14 @@ function TableOrderPageContent() {
       <div className="container mx-auto px-4 py-8 min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Card className="glass-card border-none shadow-lg">
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Table not found or unavailable</p>
+            <p className="text-center text-muted-foreground">{tr("not_found_desc")}</p>
             <div className="flex justify-center mt-4">
               <Button
                 asChild
                 className="glass-button rounded-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Link href="/">
-                  Browse Restaurants
+                  {tr("back_btn")}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
@@ -227,7 +231,7 @@ function TableOrderPageContent() {
           <Button variant="ghost" size="sm" asChild className="mb-4">
             <Link href={`/restaurants/${restaurantId}`}>
               <ChevronLeft className="mr-1 h-4 w-4" />
-              Back to Restaurant
+              {tr("back_btn")}
             </Link>
           </Button>
 
@@ -251,7 +255,7 @@ function TableOrderPageContent() {
               </h1>
               <p className="mt-2 text-muted-foreground max-w-md">{restaurant?.description}</p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/20 text-brand-accent-foreground animate animate-fade-right">
-                <span className="font-medium">Table {table?.number}</span>
+                <span className="font-medium">{tr("table")} {table?.number}</span>
               </div>
 
               {/* Collaborative mode toggle */}
@@ -280,10 +284,10 @@ function TableOrderPageContent() {
           {/* Food Menu Section */}
           <div className="container mx-auto border-none p-4 shadow-lg glass-card md:p-8">
             <div className="flex justify-center items-center gap-2 mb-2">
-              <span className="text-brand-primary">🍔 FOOD MENU 🍕</span>
+              <span className="text-brand-primary">🍔 {t("title").toUpperCase()} 🍕</span>
             </div>
             <h2 className="text-3xl font-bold mb-6 text-center text-brand-secondary animate animate-fade-up">
-              {restaurant?.name} Menu
+              {restaurant?.name} {t("title")}
             </h2>
 
             <MenuCategory
@@ -315,7 +319,7 @@ function TableOrderPageContent() {
       </Dialog>
 
       {/* Scrolling Text Banner */}
-      <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
+      <ScrollingBanner text={tr("scrolling_banner")} />
 
       {/* View Order Sheet */}
       <div className="fixed bottom-6 right-6 z-50 overflow-auto">
@@ -323,14 +327,14 @@ function TableOrderPageContent() {
           <SheetTrigger asChild>
             <Button size="lg" className="rounded-full shadow-lg">
               <ShoppingCart className="h-5 w-5 mr-2" />
-              View Order
+              {tc("your_order")}
             </Button>
           </SheetTrigger>
           <SheetContent className="w-full max-w-[90vw] max-h-[80vh] overflow-auto sm:max-w-md glass-card border-0 p-4 sm:p-6 m-6">
             <SheetHeader>
-              <SheetTitle>Your Order</SheetTitle>
+              <SheetTitle>{tc("your_order")}</SheetTitle>
               <SheetDescription>
-                Table {table?.number} at {restaurant?.name}
+                {tr("table")} {table?.number} @ {restaurant?.name}
               </SheetDescription>
             </SheetHeader>
             <div className="mt-6">

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { MenuItem } from "@/components/menu-item";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -21,6 +22,7 @@ export function MenuCategory({
   categories = [],
   onItemClick,
 }: MenuCategoryProps) {
+  const t = useTranslations("Menu");
   const [selectedCategory, setSelectedCategory] = useState(activeCategory);
 
   // Extract unique categories from items if not provided
@@ -51,7 +53,7 @@ export function MenuCategory({
             className="rounded-full data-[state=active]:bg-white/60 data-[state=active]:shadow-md transition-all"
           >
             <span className="mr-2">🍽️</span>
-            All
+            {t("all_category")}
           </TabsTrigger>
           {uniqueCategories.map((category) => (
             <TabsTrigger

@@ -1,43 +1,46 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
-
-const testimonials = [
-  {
-    id: "1",
-    name: "Sarah Johnson",
-    role: "Food Enthusiast",
-    image: "/menuThumb1_1.png",
-    rating: 5,
-    text: "Zozo Booking has completely transformed my dining experience. The QR code ordering system is so convenient, and I love being able to browse the full menu with photos before deciding.",
-  },
-  {
-    id: "2",
-    name: "Michael Chen",
-    role: "Business Traveler",
-    image: "/menuThumb1_2.png",
-    rating: 4,
-    text: "As someone who travels frequently for work, finding good restaurants can be challenging. Zozo Booking makes it easy to discover local favorites and order without any language barriers.",
-  },
-  {
-    id: "3",
-    name: "Emily Rodriguez",
-    role: "Restaurant Owner",
-    image: "/menuThumb1_3.png",
-    rating: 5,
-    text: "Implementing Zozo Booking in our restaurant has increased our efficiency by 30%. Our customers love the digital menu, and our staff can focus more on providing excellent service.",
-  },
-];
+import { useTranslations } from "next-intl";
 
 export function Testimonials() {
+  const t = useTranslations("Home");
+
+  const testimonials = [
+    {
+      id: "1",
+      name: "Sarah Johnson",
+      role: t("testim_role_1"),
+      image: "/menuThumb1_1.png",
+      rating: 5,
+      text: t("testim_text_1"),
+    },
+    {
+      id: "2",
+      name: "Michael Chen",
+      role: t("testim_role_2"),
+      image: "/menuThumb1_2.png",
+      rating: 4,
+      text: t("testim_text_2"),
+    },
+    {
+      id: "3",
+      name: "Emily Rodriguez",
+      role: t("testim_role_3"),
+      image: "/menuThumb1_3.png",
+      rating: 5,
+      text: t("testim_text_3"),
+    },
+  ];
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-orange-400 mb-2 animate animate-fade-up">
-            What Our Users Say
+            {t("testimonials_title")}
           </h2>
           <p className="text-muted-foreground">
-            Hear from our satisfied customers and restaurant partners
+            {t("testimonials_desc")}
           </p>
         </div>
 

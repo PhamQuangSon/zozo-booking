@@ -3,6 +3,7 @@
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -24,6 +25,7 @@ interface MenuItemDetailProps {
 }
 
 export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
+  const t = useTranslations("Menu");
   const { currency } = useCurrencyStore();
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, any>>({});
@@ -232,9 +234,9 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
       </div>
 
       <div>
-        <h4 className="mb-2 font-medium">Special Instructions</h4>
+        <h4 className="mb-2 font-medium">{t("special_instructions")}</h4>
         <Input
-          placeholder="E.g., No onions, extra spicy, etc."
+          placeholder={t("special_instr_placeholder")}
           value={specialInstructions}
           onChange={(e) => setSpecialInstructions(e.target.value)}
         />
@@ -255,7 +257,7 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
           </Button>
         </div>
         <Button onClick={handleSubmit}>
-          Add to Order - {formatCurrency(calculateTotalPrice(), currency)}
+          {t("add_to_order")}{formatCurrency(calculateTotalPrice(), currency)}
         </Button>
       </div>
     </div>

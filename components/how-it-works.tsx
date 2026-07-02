@@ -1,32 +1,35 @@
 import { Check, Clock, QrCode } from "lucide-react";
-
-const steps = [
-  {
-    icon: <QrCode className="h-10 w-10" />,
-    title: "Scan QR Code",
-    description: "Scan the QR code at your table to access the digital menu.",
-  },
-  {
-    icon: <Clock className="h-10 w-10" />,
-    title: "Place Order",
-    description: "Select your items, customize as needed, and place your order.",
-  },
-  {
-    icon: <Check className="h-10 w-10" />,
-    title: "Enjoy Your Meal",
-    description: "Sit back and relax while your food is prepared and served to your table.",
-  },
-];
+import { useTranslations } from "next-intl";
 
 export function HowItWorks() {
+  const t = useTranslations("Home");
+
+  const steps = [
+    {
+      icon: <QrCode className="h-10 w-10" />,
+      title: t("how_it_works_step1"),
+      description: t("how_it_works_desc1"),
+    },
+    {
+      icon: <Clock className="h-10 w-10" />,
+      title: t("how_it_works_step2"),
+      description: t("how_it_works_desc2"),
+    },
+    {
+      icon: <Check className="h-10 w-10" />,
+      title: t("how_it_works_step3"),
+      description: t("how_it_works_desc3"),
+    },
+  ];
+
   return (
     <section className="py-3">
       <div className="container mx-auto px-4 mb-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-orange-400 mb-2 animate animate-fade-up">
-            How It Works
+            {t("how_it_works_title")}
           </h2>
-          <p className="text-muted-foreground">Simple steps to order food with Zozo Booking</p>
+          <p className="text-muted-foreground">{t("how_it_works_subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

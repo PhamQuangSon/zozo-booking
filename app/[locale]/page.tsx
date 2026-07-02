@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getTranslations } from "next-intl/server";
 
 import type { Restaurant } from "@/actions/restaurant-actions";
 import { getRestaurants } from "@/actions/restaurant-actions";
@@ -9,44 +10,47 @@ import { ScrollingBanner } from "@/components/scrolling-banner";
 import { SiteFooter } from "@/components/site-footer";
 import { Testimonials } from "@/components/testimonials";
 
-// Carousel data
-const carouselItems = [
-  {
-    id: 1,
-    title: "CHICAGO DEEP",
-    subtitle: "PIZZA KING",
-    description: "Authentic deep dish pizza with premium toppings and our signature sauce",
-    image: "/bannerThumb1_1.png",
-    discount: "50% OFF",
-    buttonText: "ORDER NOW",
-    buttonLink: "/restaurants",
-    welcomeText: "WELCOME FRESHEAT",
-  },
-  {
-    id: 2,
-    title: "GOURMET",
-    subtitle: "BURGER HOUSE",
-    description: "Juicy, flame-grilled burgers made with 100% premium beef and fresh ingredients",
-    image: "/bannerThumb1_2.png",
-    discount: "30% OFF",
-    buttonText: "VIEW MENU",
-    buttonLink: "/restaurants",
-    welcomeText: "EXCLUSIVE OFFER",
-  },
-  {
-    id: 3,
-    title: "AUTHENTIC",
-    subtitle: "PASTA PARADISE",
-    description: "Hand-crafted Italian pasta made with traditional recipes and fresh ingredients",
-    image: "/bannerThumb1_3.png",
-    discount: "25% OFF",
-    buttonText: "EXPLORE",
-    buttonLink: "/restaurants",
-    welcomeText: "NEW ARRIVAL",
-  },
-];
+// The carousel items will be generated inside the component so they can be translated.
 
 export default async function Home() {
+  const t = await getTranslations("Home");
+  
+  const carouselItems = [
+    {
+      id: 1,
+      title: t("carousel_title_1"),
+      subtitle: t("carousel_subtitle_1"),
+      description: t("carousel_desc_1"),
+      image: "/bannerThumb1_1.png",
+      discount: "50% OFF",
+      buttonText: t("carousel_btn_1"),
+      buttonLink: "/restaurants",
+      welcomeText: t("carousel_welcome_1"),
+    },
+    {
+      id: 2,
+      title: t("carousel_title_2"),
+      subtitle: t("carousel_subtitle_2"),
+      description: t("carousel_desc_2"),
+      image: "/bannerThumb1_2.png",
+      discount: "30% OFF",
+      buttonText: t("carousel_btn_2"),
+      buttonLink: "/restaurants",
+      welcomeText: t("carousel_welcome_2"),
+    },
+    {
+      id: 3,
+      title: t("carousel_title_3"),
+      subtitle: t("carousel_subtitle_3"),
+      description: t("carousel_desc_3"),
+      image: "/bannerThumb1_3.png",
+      discount: "25% OFF",
+      buttonText: t("carousel_btn_3"),
+      buttonLink: "/restaurants",
+      welcomeText: t("carousel_welcome_3"),
+    },
+  ];
+
   let restaurants: Restaurant[] = [];
   let error = null;
 
@@ -72,7 +76,7 @@ export default async function Home() {
         {carouselItems.length > 0 && <Carousel items={carouselItems} />}
 
         {/* Scrolling Banner */}
-        <ScrollingBanner text="PIZZA   BURGER   SUSHI   PASTA   DESSERT   DRINKS   ZOZO BOOKING" />
+        <ScrollingBanner text={t("scrolling_banner")} />
         <div className="relative w-full overflow-hidden">
           {/* Background Image */}
           <Image
@@ -94,14 +98,14 @@ export default async function Home() {
               <div className="container mx-auto px-4">
                 <div className="text-center mb-10">
                   <h2 className="text-3xl font-bold mb-2 text-orange-400 animate animate-fade-up">
-                    Restaurants
+                    {t('restaurants_title')}
                   </h2>
-                  <p className="text-muted-foreground">Discover our top-rated dining experiences</p>
+                  <p className="text-muted-foreground">{t('restaurants_description')}</p>
                 </div>
 
                 {error && (
                   <div className="mb-4 rounded-md bg-destructive/10 p-4 text-destructive">
-                    <p>Error loading restaurants: {error}</p>
+                    <p>{t('restaurants_error')} {error}</p>
                   </div>
                 )}
 

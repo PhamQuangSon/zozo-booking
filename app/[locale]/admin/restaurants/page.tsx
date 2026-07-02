@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import type { Restaurant } from "@/actions/restaurant-actions";
 import { getRestaurants } from "@/actions/restaurant-actions";
-import Loading from "@/app/loading";
+import Loading from "@/app/[locale]/loading";
 import { RestaurantsClient } from "@/components/admin/restaurants-client";
 import { useToast } from "@/hooks/use-toast";
 
