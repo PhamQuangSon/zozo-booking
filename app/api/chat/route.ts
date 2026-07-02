@@ -4,6 +4,14 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
+// In-memory rate limiting store (cleared on server restart)
+type RateLimitInfo = { count: number; resetTime: number };
+const ipRateLimits = new Map<string, RateLimitInfo>();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_MINUTE = 15;
+
 export async function POST(req: Request) {
   try {
     const { messages, restaurantId } = await req.json();
@@ -13,6 +21,34 @@ export async function POST(req: Request) {
         { error: 'Restaurant ID is required' },
         { status: 400 }
       );
+    }
+
+    // IP-based Rate Limiting (Simple Anti-Spam)
+    const ip = req.headers.get('x-forwarded-for') || 'unknown-ip';
+    const now = Date.now();
+    const rateInfo = ipRateLimits.get(ip);
+
+    if (rateInfo) {
+      if (now > rateInfo.resetTime) {
+        ipRateLimits.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+      } else if (rateInfo.count >= MAX_REQUESTS_PER_MINUTE) {
+        return NextResponse.json(
+          { error: 'Too many requests (Rate Limited). Please slow down.' },
+          { status: 429 }
+        );
+      } else {
+        rateInfo.count++;
+      }
+    } else {
+      ipRateLimits.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    }
+
+    // Optional: Clean up old IPs periodically if Map gets too big (prevent memory leak)
+    if (ipRateLimits.size > 1000) {
+      const keysToDelete = Array.from(ipRateLimits.entries())
+        .filter(([_, info]) => info.resetTime < now)
+        .map(([key]) => key);
+      keysToDelete.forEach(k => ipRateLimits.delete(k));
     }
 
     // Fetch config and menu items concurrently
@@ -43,6 +79,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Session limit check
+    if (messages.length > (config.maxMessages || 20)) {
+      return NextResponse.json(
+        { error: `Maximum limit of ${config.maxMessages} messages reached. Please refresh the page to start a new session.` },
+        { status: 429 }
+      );
+    }
+
     // Format menu context
     let menuContext = 'Here is the current menu:\n\n';
     if (restaurantData?.categories) {
@@ -68,12 +112,12 @@ ${menuContext}
 
     // Select the model based on config
     const isGemini = modelName.includes('gemini');
-    
+
     // Choose model provider with explicit API keys
     const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY });
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    
-    const model = isGemini 
+
+    const model = isGemini
       ? google(modelName)
       : openai(modelName);
 

@@ -220,6 +220,7 @@ model ChatbotConfig {
   modelName       String     @default("gpt-4o-mini")
   isActive        Boolean    @default(true)
   temperature     Float      @default(0.7)
+  maxMessages     Int        @default(20)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ChatbotAdminPage({ params }: { params: Promise<{ restaurantId: string }> }) {
@@ -110,6 +111,22 @@ export default function ChatbotAdminPage({ params }: { params: Promise<{ restaur
             min={0} max={1} step={0.1}
             onValueChange={([val]) => setConfig({ ...config, temperature: val })}
           />
+        </div>
+
+        {/* Max Messages Per Session */}
+        <div className="space-y-2">
+          <Label htmlFor="maxMessages">Max Messages Per Session (Anti-Spam)</Label>
+          <Input 
+            id="maxMessages" 
+            type="number" 
+            min={1} 
+            max={100}
+            value={config.maxMessages}
+            onChange={(e) => setConfig({ ...config, maxMessages: Number.parseInt(e.target.value) || 20 })}
+          />
+          <p className="text-sm text-muted-foreground">
+            Limit the number of messages a user can send in a single chat session to prevent abuse.
+          </p>
         </div>
 
         {/* System Prompt */}

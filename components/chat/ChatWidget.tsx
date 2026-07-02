@@ -111,7 +111,7 @@ export function ChatWidget({ restaurantId }: ChatWidgetProps) {
             )}
             {error && (
               <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded-md">
-                Sorry, there was an error processing your request. Please try again.
+                {error.message || "Sorry, there was an error processing your request. Please try again."}
               </div>
             )}
           </div>

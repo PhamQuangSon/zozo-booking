@@ -10,6 +10,7 @@ export type ChatbotConfigData = {
   modelName: string;
   isActive: boolean;
   temperature: number;
+  maxMessages: number;
 };
 
 const DEFAULT_PROMPT = `You are a helpful AI assistant for a restaurant. 
@@ -31,6 +32,7 @@ export async function getChatbotConfig(restaurantId: number) {
           modelName: "gpt-4o-mini",
           isActive: true,
           temperature: 0.7,
+          maxMessages: 20,
         },
       });
     }
@@ -57,6 +59,7 @@ export async function updateChatbotConfig(
         modelName: data.modelName,
         isActive: data.isActive,
         temperature: data.temperature,
+        maxMessages: data.maxMessages,
       },
       create: {
         restaurantId,
@@ -64,6 +67,7 @@ export async function updateChatbotConfig(
         modelName: data.modelName || "gpt-4o-mini",
         isActive: data.isActive ?? true,
         temperature: data.temperature ?? 0.7,
+        maxMessages: data.maxMessages ?? 20,
       },
     });
 
