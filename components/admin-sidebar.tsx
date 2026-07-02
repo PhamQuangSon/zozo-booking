@@ -13,6 +13,7 @@ import {
   Table,
   User,
   Utensils,
+  Bot,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -167,6 +168,11 @@ export function AdminSidebar() {
           title: "Menu Builder",
           href: `/admin/restaurants/${defaultRestaurant.id}/menu`,
           icon: BookOpen,
+        },
+        {
+          title: "AI Chatbot",
+          href: `/admin/restaurants/${defaultRestaurant.id}/chatbot`,
+          icon: Bot,
         },
       ]
     : [];

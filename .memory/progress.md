@@ -31,3 +31,10 @@
 - [ ] Payment Integration
 - [ ] PWA Support
 - [ ] Internationalization (i18n)
+
+## Completed Features
+- [x] **AI Chatbot Integration**
+    - [x] Create `ChatbotConfig` model in schema
+    - [x] Build `/api/chat` using Vercel AI SDK
+    - [x] Build Admin Chatbot Settings UI
+    - [x] Build and integrate user-facing `ChatWidget`

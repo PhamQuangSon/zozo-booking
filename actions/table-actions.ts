@@ -401,6 +401,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: Number(restaurantId) },
       include: {
+        chatbotConfig: true,
         categories: {
           orderBy: {
             displayOrder: "asc",

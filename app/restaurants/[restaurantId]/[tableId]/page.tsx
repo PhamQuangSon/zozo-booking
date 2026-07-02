@@ -12,6 +12,7 @@ import { CustomerInfoForm } from "@/components/customer-info-form";
 import { MenuCategory } from "@/components/menu-category";
 import { MenuItemDetail } from "@/components/menu-item-detail";
 import { OrderCart } from "@/components/order-cart";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollingBanner } from "@/components/scrolling-banner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -342,6 +343,11 @@ function TableOrderPageContent() {
           </SheetContent>
         </Sheet>
       </div>
+      
+      {/* AI Chatbot Widget */}
+      {restaurant?.chatbotConfig?.isActive && (
+        <ChatWidget restaurantId={Number(restaurantId)} />
+      )}
     </main>
   );
 }

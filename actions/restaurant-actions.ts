@@ -59,6 +59,7 @@ export async function getRestaurantById(id: string) {
       where: { id: Number(id) },
       include: {
         tables: true,
+        chatbotConfig: true,
         categories: {
           orderBy: {
             displayOrder: "asc",

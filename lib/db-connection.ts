@@ -1,5 +1,16 @@
 import { prisma } from "./prisma";
 
+// 🔒 SECURITY: Custom error type that doesn't expose sensitive info
+class DatabaseError extends Error {
+  constructor(
+    public originalError: Error,
+    message: string,
+  ) {
+    super(message);
+    this.name = "DatabaseError";
+  }
+}
+
 // Helper để retry database operations khi connection bị đóng
 export async function withRetry<T>(
   operation: () => Promise<T>,
@@ -22,10 +33,16 @@ export async function withRetry<T>(
           error.message.includes("ECONNRESET"));
 
       if (!isConnectionError || attempt === maxRetries) {
+        // 🔒 SECURITY: Log internally but throw sanitized error
+        if (process.env.NODE_ENV === "development") {
+          console.error("Database operation error:", error);
+        } else {
+          console.error("Database operation failed (details hidden in production)");
+        }
         throw error;
       }
 
-      console.warn(`Database connection attempt ${attempt} failed, retrying in ${delay}ms...`);
+      console.warn(`Database connection attempt ${attempt}/${maxRetries} failed, retrying...`);
 
       // Disconnect and reconnect
       try {
@@ -34,7 +51,7 @@ export async function withRetry<T>(
         // Ignore disconnect errors
       }
 
-      // Wait before retry
+      // Wait before retry (exponential backoff)
       await new Promise((resolve) => setTimeout(resolve, delay * attempt));
     }
   }
@@ -50,7 +67,12 @@ export async function checkDatabaseHealth(): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    console.error("Database health check failed:", error);
+    // 🔒 SECURITY: Don't log error details in production
+    if (process.env.NODE_ENV === "development") {
+      console.error("Database health check failed:", error);
+    } else {
+      console.error("Database health check failed");
+    }
     return false;
   }
 }

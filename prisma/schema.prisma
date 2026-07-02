@@ -42,6 +42,7 @@ model Restaurant {
   menuItems   MenuItem[]
   orders      Order[]
   tables      Table[]
+  chatbotConfig ChatbotConfig?
 
   @@index([name])
 }
@@ -209,4 +210,16 @@ enum OrderItemStatus {
   DELIVERED
   COMPLETED
   CANCELLED
+}
+
+model ChatbotConfig {
+  id              Int        @id @default(autoincrement())
+  restaurantId    Int        @unique
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  systemPrompt    String     @db.Text
+  modelName       String     @default("gpt-4o-mini")
+  isActive        Boolean    @default(true)
+  temperature     Float      @default(0.7)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 }

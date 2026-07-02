@@ -112,3 +112,6 @@ Testing:
 <div align="center">
     <img src="./public/ui-screenshot-13.png" alt="UI Screenshot">
 </div>
+<div align="center">
+    <img src="./public/chatbox.png" alt="UI Screenshot">
+</div>

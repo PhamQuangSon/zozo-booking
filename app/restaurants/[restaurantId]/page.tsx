@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import Loading from "@/app/loading";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 import { ScrollingBanner } from "@/components/scrolling-banner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -329,6 +330,11 @@ export default function RestaurantPage() {
 
       {/* Scrolling Text Banner */}
       <ScrollingBanner text="CHICKEN PIZZA   GRILLED CHICKEN   BURGER   CHICKEN PASTA" />
+
+      {/* AI Chatbot Widget */}
+      {restaurant?.chatbotConfig?.isActive && (
+        <ChatWidget restaurantId={Number(restaurantId)} />
+      )}
     </div>
   );
 }
