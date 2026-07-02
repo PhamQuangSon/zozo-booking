@@ -346,7 +346,11 @@ function TableOrderPageContent() {
       
       {/* AI Chatbot Widget */}
       {restaurant?.chatbotConfig?.isActive && (
-        <ChatWidget restaurantId={Number(restaurantId)} />
+        <ChatWidget 
+          restaurantId={Number(restaurantId)} 
+          tableId={Number(tableId)} 
+          onOrderUpdated={refetch}
+        />
       )}
     </main>
   );

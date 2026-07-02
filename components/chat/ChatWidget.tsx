@@ -2,6 +2,7 @@
 
 import { useChat } from 'ai/react';
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,9 +11,11 @@ import { cn } from '@/lib/utils';
 
 interface ChatWidgetProps {
   restaurantId: number;
+  tableId?: number;
+  onOrderUpdated?: () => void;
 }
 
-export function ChatWidget({ restaurantId }: ChatWidgetProps) {
+export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -20,11 +23,30 @@ export function ChatWidget({ restaurantId }: ChatWidgetProps) {
     api: '/api/chat',
     body: {
       restaurantId,
+      tableId,
     },
     onError: (e) => {
       console.error("Chat error:", e);
     }
   });
+
+  // Watch for successful order_food tool invocations to trigger a refetch
+  useEffect(() => {
+    if (!onOrderUpdated || messages.length === 0) return;
+    
+    // Check if any message contains a completed order_food tool
+    const hasNewOrder = messages.some(m => 
+      m.toolInvocations?.some(t => t.toolName === 'order_food' && t.state === 'result')
+    );
+    
+    // We only want to trigger this when a new order happens, but to avoid infinite loops,
+    // we should ideally track the length or just trigger it when the last message completes.
+    // For simplicity, if the AI just finished talking and there's an order tool in the history
+    // (We can just use refetch() which is safe to call multiple times as React Query dedupes it)
+    if (hasNewOrder && !isLoading) {
+      onOrderUpdated();
+    }
+  }, [messages, isLoading, onOrderUpdated]);
 
   // Scroll to bottom on new message
   useEffect(() => {
@@ -90,9 +112,17 @@ export function ChatWidget({ restaurantId }: ChatWidgetProps) {
                   "px-4 py-2 rounded-2xl max-w-[80%]",
                   m.role === 'user' 
                     ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                    : "bg-muted rounded-tl-sm whitespace-pre-wrap"
+                    : "bg-muted rounded-tl-sm"
                 )}>
-                  {m.content}
+                  <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words", m.role === 'user' ? 'text-primary-foreground' : '')}>
+                    <ReactMarkdown 
+                      components={{
+                        a: ({node, ...props}) => <a {...props} className="font-semibold underline underline-offset-4 hover:opacity-80" target="_blank" rel="noopener noreferrer" />
+                      }}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </div>
             ))}

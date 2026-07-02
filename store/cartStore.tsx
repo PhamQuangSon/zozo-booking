@@ -181,7 +181,7 @@ export const useCartStore = create<CartState>()(
                 userId: order.user?.id || null,
                 userName:
                   order.user?.name ||
-                  order.notes?.split("Customer Info:")[1].trim() ||
+                  order.notes?.split("Customer Info:")[1]?.trim() ||
                   "Anonymous 5",
                 // timestamp: new Date(order.createdAt || Date.now()).getTime(),
                 selectedOptions: item.orderItemChoices?.reduce(
