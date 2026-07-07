@@ -98,7 +98,6 @@
     "@biomejs/biome": "^1.9.4",
     "@next/bundle-analyzer": "^16.0.8",
     "@next/eslint-plugin-next": "^15.3.1",
-    "@playwright/test": "^1.61.1",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.14.1",
@@ -132,7 +131,6 @@
       "@prisma/engines",
       "bcrypt",
       "esbuild",
-      "playwright",
       "prisma"
     ]
   }
