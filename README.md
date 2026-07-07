@@ -121,3 +121,15 @@ Testing:
 <div align="center">
     <img src="./public/chatbox_2.png" alt="UI Screenshot">
 </div>
+<div align="center">
+    <img src="./public/RBAC-admin.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/RBAC-waiter.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/RBAC-Cashier.png" alt="UI Screenshot">
+</div>
+<div align="center">
+    <img src="./public/RBAC-kitchen.png" alt="UI Screenshot">
+</div>

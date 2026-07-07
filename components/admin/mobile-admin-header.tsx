@@ -8,6 +8,8 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export function MobileAdminHeader() {
   const [open, setOpen] = useState(false);
@@ -20,7 +22,13 @@ export function MobileAdminHeader() {
 
   return (
     <div className="md:hidden flex items-center justify-between p-4 border-b bg-background sticky top-0 z-40">
-      <div className="font-semibold text-lg">Zozo Booking Admin</div>
+      <div className="font-semibold text-lg flex-1">Zozo Booking</div>
+      
+      <div className="flex items-center gap-2 mr-2">
+        <LanguageSwitcher />
+        <ThemeToggle />
+      </div>
+
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="md:hidden">

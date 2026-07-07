@@ -2,7 +2,6 @@
 
 import {
   BookOpen,
-  ChevronDown,
   Coffee,
   LayoutDashboard,
   ListOrdered,
@@ -24,7 +23,6 @@ import { CurrencySelector } from "@/components/currency-selector";
 import { RESTAURANT_CHANGE_EVENT, RestaurantSelector } from "@/components/restaurant-selector";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +33,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, safeLocalStorage, safeParseJSON } from "@/lib/utils";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 // Add this near the top of the file, after the imports
 function debugLog(message: string, data?: any) {
@@ -49,7 +49,6 @@ export function AdminSidebar({ className }: { className?: string }) {
     id: string;
     name: string;
   } | null>(null);
-  const [isRestaurantOpen, setIsRestaurantOpen] = useState(true);
   const { data: session, status } = useSession();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
@@ -208,89 +207,91 @@ export function AdminSidebar({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("flex h-screen w-64 flex-col border-r bg-muted/40", className)}>
-      <div className="flex h-14 items-center border-b px-4">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
+    <div className={cn("flex h-screen w-64 flex-col border-r bg-card", className)}>
+      <div className="flex h-14 items-center border-b px-4 shrink-0">
+        <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold text-primary">
           <Store className="h-5 w-5" />
           <span>Zozo Booking Admin</span>
         </Link>
       </div>
+      
+      {/* Move Restaurant Selector to Top Context */}
+      <div className="px-4 py-3 border-b bg-muted/20">
+        <RestaurantSelector />
+      </div>
 
       <ScrollArea className="flex-1">
-        <div className="flex-1 overflow-auto py-4">
-          <nav className="grid gap-1 px-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                  pathname === item.href ? "bg-accent text-accent-foreground" : "transparent",
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.title}
-              </Link>
-            ))}
-          </nav>
+        <div className="flex-1 overflow-auto py-4 space-y-6">
+          <div className="px-2">
+            <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              System
+            </h3>
+            <nav className="grid gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
+                    pathname === item.href 
+                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md" 
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.title}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          {defaultRestaurant && (
-            <div className="mt-6">
-              <Collapsible
-                open={isRestaurantOpen}
-                onOpenChange={setIsRestaurantOpen}
-                className="px-2"
-              >
-                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground">
-                  <div className="flex items-center gap-3">
-                    <Store className="h-4 w-4" />
-                    <span>{defaultRestaurant.name}</span>
-                  </div>
-                  <ChevronDown
-                    className={cn("h-4 w-4 transition-transform", isRestaurantOpen && "rotate-180")}
-                  />
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="mt-1 space-y-1 pl-7">
-                    {restaurantNavItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                          pathname === item.href
-                            ? "bg-accent text-accent-foreground"
-                            : "transparent",
-                        )}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        {item.title}
-                      </Link>
-                    ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+          {defaultRestaurant && restaurantNavItems.length > 0 && (
+            <div className="px-2">
+              <h3 className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                <Store className="w-3 h-3" />
+                Store Management
+              </h3>
+              <nav className="grid gap-1">
+                {restaurantNavItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
+                      pathname === item.href 
+                        ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md" 
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.title}
+                  </Link>
+                ))}
+              </nav>
             </div>
           )}
         </div>
       </ScrollArea>
 
-      <div className="border-t p-4 space-y-4">
-        <div className="flex flex-col gap-3">
-          <RestaurantSelector />
-          <CurrencySelector />
-        </div>
-
+      <div className="border-t bg-muted/20 p-4 space-y-4 shrink-0">
         {status === "loading" ? (
           <div className="flex items-center justify-center py-2">
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           </div>
         ) : status === "authenticated" && session?.user ? (
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <CurrencySelector />
+              <div className="flex items-center gap-1">
+                <LanguageSwitcher />
+                <ThemeToggle />
+              </div>
+            </div>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 w-full justify-start">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="flex items-center gap-3 w-full justify-start h-auto py-2 px-2 hover:bg-accent">
+                  <Avatar className="h-9 w-9 border">
                     {avatarUrl ? (
                       <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
                     ) : (
@@ -299,9 +300,9 @@ export function AdminSidebar({ className }: { className?: string }) {
                       </AvatarFallback>
                     )}
                   </Avatar>
-                  <div className="flex flex-col items-start text-sm">
-                    <span className="font-medium">{session.user.name || "User"}</span>
-                    <span className="text-xs text-muted-foreground">{session.user.email}</span>
+                  <div className="flex flex-col items-start text-sm truncate flex-1">
+                    <span className="font-semibold truncate w-full text-left">{session.user.name || "User"}</span>
+                    <span className="text-xs text-muted-foreground truncate w-full text-left">{session.user.email}</span>
                   </div>
                 </Button>
               </DropdownMenuTrigger>

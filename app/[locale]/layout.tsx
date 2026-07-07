@@ -14,6 +14,7 @@ import { getMessages, getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { FloatingControls } from "@/components/floating-controls";
 
 import "@/app/globals.css";
 
@@ -56,10 +57,7 @@ export default async function RootLayout({
             >
               <NextIntlClientProvider messages={messages}>
                 {children}
-                <div className="fixed top-4 right-4 z-40 flex gap-2">
-                  <LanguageSwitcher />
-                  <ThemeToggle />
-                </div>
+                <FloatingControls />
                 <Toaster />
               </NextIntlClientProvider>
             </ThemeProvider>
