@@ -25,8 +25,8 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
       const result = await updateOrderItemStatus(orderItemId, nextStatus as any);
       
       if (result.success) {
-        setOrders((prev) => 
-          prev.map((order) => {
+        setOrders((prev) => {
+          const newOrders = prev.map((order) => {
             const updatedItems = order.orderItems.map((item) => 
               item.id === orderItemId ? { ...item, status: nextStatus as OrderItemStatus } : item
             );
@@ -37,9 +37,11 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
             return {
               ...order,
               orderItems: filteredItems
-            };
-          }).filter(order => order.orderItems.length > 0) // Remove empty orders
-        );
+            } as OrderWithRelations;
+          }).filter(order => order.orderItems.length > 0); // Remove empty orders
+
+          return newOrders;
+        });
         
         toast({
           title: "Status updated",
