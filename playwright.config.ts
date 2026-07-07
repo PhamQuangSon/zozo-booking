@@ -1,10 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
-import dotenv from 'dotenv';
 
-// Read from default ".env.local" or ".env" file.
-dotenv.config({ path: path.resolve(__dirname, '.env') });
-
+// If you need env vars, load them via CLI or other means, Playwright and NextJS can often read them natively.
 /**
  * See https://playwright.dev/docs/test-configuration.
  */

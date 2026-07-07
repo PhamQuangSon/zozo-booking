@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import type { OrderWithRelations } from "@/types/menu-builder-types";
 import { formatDistanceToNow } from "date-fns";
+import type { OrderItemStatus } from "@prisma/client";
 
 export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelations[] }) {
   const [orders, setOrders] = useState<OrderWithRelations[]>(initialOrders);
@@ -27,7 +28,7 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
         setOrders((prev) => 
           prev.map((order) => {
             const updatedItems = order.orderItems.map((item) => 
-              item.id === orderItemId ? { ...item, status: nextStatus } : item
+              item.id === orderItemId ? { ...item, status: nextStatus as OrderItemStatus } : item
             );
             
             // Remove the item from view if it's READY
@@ -101,7 +102,7 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
                       
                       {item.orderItemChoices && item.orderItemChoices.length > 0 && (
                         <div className="text-sm text-muted-foreground mt-1 ml-10">
-                          {item.orderItemChoices.map(choice => choice.optionChoice.name).join(", ")}
+                          {item.orderItemChoices.map(choice => choice.optionChoice?.name).filter(Boolean).join(", ")}
                         </div>
                       )}
                       
