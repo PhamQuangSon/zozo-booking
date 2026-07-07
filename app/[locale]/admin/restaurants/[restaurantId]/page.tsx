@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DashboardCards } from "@/components/dashboard-cards";
 import { MenuItem } from "@/components/menu-item";
+import { Overview } from "@/components/overview";
+import { getDashboardMetrics } from "@/actions/dashboard-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,6 +25,10 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
 
   const tables = restaurant.tables ? restaurant.tables : [];
 
+  const metricsResult = await getDashboardMetrics(Number(restaurantId));
+  const metrics = metricsResult.success && metricsResult.data ? metricsResult.data : null;
+  const chartData = metrics?.chartData || [];
+
   return (
     <div className="flex min-h-screen">
       <div className="flex-1 p-8">
@@ -33,6 +40,27 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
               Edit Restaurant
             </Link>
           </Button>
+        </div>
+
+        <div className="mb-6">
+          <DashboardCards
+            revenue={metrics?.revenue || 0}
+            orders={metrics?.orders || 0}
+            activeTables={metrics?.activeTables || 0}
+            popularItem={metrics?.popularItem || "None"}
+          />
+        </div>
+
+        <div className="mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Revenue Overview</CardTitle>
+              <CardDescription>Performance over the last 6 months</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <Overview data={chartData} />
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">

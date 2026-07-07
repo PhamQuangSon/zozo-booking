@@ -43,7 +43,7 @@ function debugLog(message: string, data?: any) {
   }
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ className }: { className?: string }) {
   const pathname = usePathname();
   const [defaultRestaurant, setDefaultRestaurant] = useState<{
     id: string;
@@ -112,39 +112,48 @@ export function AdminSidebar() {
     };
   }, []);
 
+  const userRole = session?.user?.role;
+  const isManagement = userRole === "ADMIN" || userRole === "MANAGER";
+  
   // Update the navItems array to include the new pages
   const navItems = [
     {
       title: "Dashboard",
       href: "/admin/dashboard",
       icon: LayoutDashboard,
+      roles: ["ADMIN", "MANAGER", "CASHIER"],
     },
     {
       title: "QR Table",
       href: "/admin/qr",
       icon: QrCode,
+      roles: ["ADMIN", "MANAGER", "WAITER"],
     },
     {
       title: "Restaurants",
       href: "/admin/restaurants",
       icon: Store,
+      roles: ["ADMIN", "MANAGER", "CASHIER", "WAITER", "KITCHEN"],
     },
     {
       title: "Categories",
       href: "/admin/categories",
       icon: ListOrdered,
+      roles: ["ADMIN", "MANAGER"],
     },
     {
       title: "Menu Items",
       href: "/admin/menu-items",
       icon: Coffee,
+      roles: ["ADMIN", "MANAGER"],
     },
     {
       title: "Item Options",
       href: "/admin/item-options",
       icon: Utensils,
+      roles: ["ADMIN", "MANAGER"],
     },
-  ];
+  ].filter((item) => !userRole || item.roles.includes(userRole));
 
   // Update the restaurantNavItems array to include view order and Item Options
   const restaurantNavItems = defaultRestaurant
@@ -153,28 +162,45 @@ export function AdminSidebar() {
           title: "Overview",
           href: `/admin/restaurants/${defaultRestaurant.id}`,
           icon: Store,
+          roles: ["ADMIN", "MANAGER", "CASHIER"],
+        },
+        {
+          title: "POS / Cashier",
+          href: `/admin/restaurants/${defaultRestaurant.id}/pos`,
+          icon: Store, // Or any suitable icon
+          roles: ["ADMIN", "MANAGER", "CASHIER"],
+        },
+        {
+          title: "Kitchen Display (KDS)",
+          href: `/admin/restaurants/${defaultRestaurant.id}/kds`,
+          icon: Coffee,
+          roles: ["ADMIN", "MANAGER", "KITCHEN"],
         },
         {
           title: "Orders",
           href: `/admin/restaurants/${defaultRestaurant.id}/orders`,
           icon: ShoppingBag,
+          roles: ["ADMIN", "MANAGER", "CASHIER", "WAITER"],
         },
         {
           title: "List Tables",
           href: `/admin/restaurants/${defaultRestaurant.id}/tables`,
           icon: Table,
+          roles: ["ADMIN", "MANAGER", "CASHIER", "WAITER"],
         },
         {
           title: "Menu Builder",
           href: `/admin/restaurants/${defaultRestaurant.id}/menu`,
           icon: BookOpen,
+          roles: ["ADMIN", "MANAGER"],
         },
         {
           title: "AI Chatbot",
           href: `/admin/restaurants/${defaultRestaurant.id}/chatbot`,
           icon: Bot,
+          roles: ["ADMIN", "MANAGER"],
         },
-      ]
+      ].filter((item) => !userRole || item.roles.includes(userRole))
     : [];
 
   const handleSignOut = () => {
@@ -182,7 +208,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <div className="flex h-screen w-50 flex-col border-r bg-muted/40">
+    <div className={cn("flex h-screen w-64 flex-col border-r bg-muted/40", className)}>
       <div className="flex h-14 items-center border-b px-4">
         <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold">
           <Store className="h-5 w-5" />

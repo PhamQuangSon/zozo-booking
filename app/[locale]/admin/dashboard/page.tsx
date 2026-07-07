@@ -7,6 +7,7 @@ import { RecentOrders } from "@/components/recent-orders";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getDashboardMetrics } from "@/actions/dashboard-actions";
 
 // Define the type for dashboard data
 type DashboardData = {
@@ -46,13 +47,17 @@ const mockRestaurants = [
 ];
 
 export default async function DashboardPage() {
-  // Use try/catch to handle any errors during data fetching
+  const metricsResult = await getDashboardMetrics();
+  const metrics = metricsResult.success && metricsResult.data ? metricsResult.data : null;
+
   const dashboardData: DashboardData = {
-    revenue: 0,
-    orders: 0,
-    activeTables: 0,
-    popularItem: "None",
+    revenue: metrics?.revenue || 0,
+    orders: metrics?.orders || 0,
+    activeTables: metrics?.activeTables || 0,
+    popularItem: metrics?.popularItem || "None",
   };
+  const chartData = metrics?.chartData || [];
+  
   const recentRestaurants: Restaurant[] = mockRestaurants;
 
   return (
@@ -79,16 +84,16 @@ export default async function DashboardPage() {
                 <CardTitle>Overview</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <Overview />
+                <Overview data={chartData} />
               </CardContent>
             </Card>
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>You have received 12 orders today</CardDescription>
+                <CardDescription>Latest {metrics?.recentOrders?.length || 0} orders</CardDescription>
               </CardHeader>
               <CardContent>
-                <RecentOrders />
+                <RecentOrders orders={metrics?.recentOrders || []} />
               </CardContent>
             </Card>
           </div>

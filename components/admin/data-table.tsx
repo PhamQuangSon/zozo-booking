@@ -48,6 +48,7 @@ interface DataTableProps<T> {
   deleteAction?: (id: number) => Promise<{ success: boolean; error?: string }>;
   editPath?: string; // Path to edit page, e.g., "/admin/categories/edit/"
   onEdit?: (item: T) => void; // Add this line
+  extraActions?: (item: T) => React.ReactNode;
 }
 
 export function DataTable<T extends { id: number | string }>({
@@ -56,6 +57,7 @@ export function DataTable<T extends { id: number | string }>({
   deleteAction,
   editPath,
   onEdit, // Add this line
+  extraActions,
 }: DataTableProps<T>) {
   const router = useRouter();
   const [sortColumn, setSortColumn] = useState<string>(columns[0]?.id || "");
@@ -209,6 +211,8 @@ export function DataTable<T extends { id: number | string }>({
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
+
+                          {extraActions && extraActions(row)}
 
                           <DropdownMenuItem onClick={() => handleEdit(row)}>
                             <Edit className="mr-2 h-4 w-4" />

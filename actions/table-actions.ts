@@ -164,7 +164,7 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
       where: {
         restaurantId: Number(restaurantId),
         tableId: Number(tableId),
-        status: { notIn: ["COMPLETED", "CANCELLED"] },
+        status: { notIn: ["COMPLETED", "PAID", "CANCELLED"] },
       },
       include: {
         orderItems: {
@@ -315,49 +315,103 @@ export async function createTableOrder(data: {
         `Customer Info: ${data.customerName} (${data.customerEmail})\n\n${orderNotes}`.trim();
     }
 
-    // Create the order
-    const order = await prisma.order.create({
-      data: {
-        restaurantId: data.restaurantId,
+    // Check for an active order on this table
+    const activeOrder = await prisma.order.findFirst({
+      where: {
         tableId: data.tableId,
-        userId: userId || null, // Ensure userId is null when not logged in
-        status: "NEW",
-        totalAmount: totalAmount,
-        notes: orderNotes,
-        orderItems: {
-          create: data.items.map((item) => {
-            const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
-            return {
-              menuItemId: item.menuItemId,
-              quantity: item.quantity,
-              unitPrice: menuItem?.price || 0,
-              notes: item.notes,
-              status: "NEW",
-              orderItemChoices: item.choices
-                ? {
-                    create: item.choices.map((choice) => ({
-                      menuItemOptionId: choice.optionId,
-                      optionChoiceId: choice.choiceId,
-                    })),
-                  }
-                : undefined,
-            };
-          }),
-        },
+        restaurantId: data.restaurantId,
+        status: { notIn: ["COMPLETED", "PAID", "CANCELLED"] },
       },
-      include: {
-        orderItems: {
-          include: {
-            orderItemChoices: {
-              include: {
-                optionChoice: true,
-                menuItemOption: true,
+    });
+
+    let order;
+
+    if (activeOrder) {
+      // Append to the active order
+      order = await prisma.order.update({
+        where: { id: activeOrder.id },
+        data: {
+          totalAmount: { increment: totalAmount },
+          notes: activeOrder.notes ? `${activeOrder.notes}\n${orderNotes}`.trim() : orderNotes,
+          orderItems: {
+            create: data.items.map((item) => {
+              const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
+              return {
+                menuItemId: item.menuItemId,
+                quantity: item.quantity,
+                unitPrice: menuItem?.price || 0,
+                notes: item.notes,
+                status: "NEW",
+                orderItemChoices: item.choices
+                  ? {
+                      create: item.choices.map((choice) => ({
+                        menuItemOptionId: choice.optionId,
+                        optionChoiceId: choice.choiceId,
+                      })),
+                    }
+                  : undefined,
+              };
+            }),
+          },
+        },
+        include: {
+          orderItems: {
+            include: {
+              orderItemChoices: {
+                include: {
+                  optionChoice: true,
+                  menuItemOption: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+    } else {
+      // Create a new order
+      order = await prisma.order.create({
+        data: {
+          restaurantId: data.restaurantId,
+          tableId: data.tableId,
+          userId: userId || null, // Ensure userId is null when not logged in
+          status: "NEW",
+          totalAmount: totalAmount,
+          notes: orderNotes,
+          orderItems: {
+            create: data.items.map((item) => {
+              const menuItem = menuItems.find((mi) => mi.id === item.menuItemId);
+              return {
+                menuItemId: item.menuItemId,
+                quantity: item.quantity,
+                unitPrice: menuItem?.price || 0,
+                notes: item.notes,
+                status: "NEW",
+                orderItemChoices: item.choices
+                  ? {
+                      create: item.choices.map((choice) => ({
+                        menuItemOptionId: choice.optionId,
+                        optionChoiceId: choice.choiceId,
+                      })),
+                    }
+                  : undefined,
+              };
+            }),
+          },
+        },
+        include: {
+          orderItems: {
+            include: {
+              orderItemChoices: {
+                include: {
+                  optionChoice: true,
+                  menuItemOption: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
 
     // Update table status to occupied
     await prisma.table.update({
@@ -433,7 +487,7 @@ export async function getTableFullData(restaurantId: string, tableId: string) {
       where: {
         restaurantId: Number(restaurantId),
         tableId: Number(tableId),
-        status: { notIn: ["COMPLETED", "CANCELLED"] },
+        status: { notIn: ["COMPLETED", "PAID", "CANCELLED"] },
       },
       include: {
         orderItems: {

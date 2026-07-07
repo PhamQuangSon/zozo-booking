@@ -53,6 +53,49 @@ export async function getRestaurantOrders(
 }
 
 // Also fix the updateOrderItemStatus function to use the correct OrderItem type
+export async function getKitchenOrders(
+  restaurantId: string,
+) {
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        restaurantId: Number.parseInt(restaurantId),
+        status: { in: ["NEW", "PREPARING"] },
+      },
+      include: {
+        table: true,
+        orderItems: {
+          where: {
+            status: { in: ["NEW", "PREPARING"] },
+          },
+          include: {
+            menuItem: true,
+            orderItemChoices: {
+              include: {
+                optionChoice: true,
+                menuItemOption: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" }, // Oldest first for kitchen
+    });
+
+    const ordersWithUser = await attachUsersToOrders(orders);
+    const serializedData = serializePrismaData(ordersWithUser);
+
+    return {
+      success: true,
+      data: serializedData as any as OrderWithRelations[],
+    };
+  } catch (error) {
+    console.error("Failed to fetch kitchen orders:", error);
+    return { success: false, error: "Failed to load kitchen orders" };
+  }
+}
+
+// Also fix the updateOrderItemStatus function to use the correct OrderItem type
 export async function updateOrderItemStatus(orderItemId: number, newStatus: OrderItemStatus) {
   try {
     const updatedItem = await prisma.$transaction(async (tx) => {
@@ -88,7 +131,7 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
           const activeOrders = await tx.order.count({
             where: {
               tableId: orderItem.order.table.id,
-              status: { notIn: ["COMPLETED", "CANCELLED"] },
+              status: { notIn: ["COMPLETED", "PAID", "CANCELLED"] },
               id: { not: orderItem.order.id },
             },
           });
@@ -159,11 +202,11 @@ export async function updateOrderStatus(orderId: number, newStatus: OrderStatus)
       });
 
       // Release table if status is terminal and no other active orders on this table
-      if (order.table && (newStatus === "COMPLETED" || newStatus === "CANCELLED")) {
+      if (order.table && (newStatus === "COMPLETED" || newStatus === "PAID" || newStatus === "CANCELLED")) {
         const activeOrders = await tx.order.count({
           where: {
             tableId: order.table.id,
-            status: { notIn: ["COMPLETED", "CANCELLED"] },
+            status: { notIn: ["COMPLETED", "PAID", "CANCELLED"] },
             id: { not: orderId },
           },
         });

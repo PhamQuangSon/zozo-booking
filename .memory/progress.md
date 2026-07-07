@@ -26,6 +26,11 @@
     - [x] Resolve `useImportType` and side effect free biome validations
 
 ## New Features (Backlog)
+- [ ] **RBAC & Order Management Improvements**
+    - [x] Update `schema.prisma` with KITCHEN, CASHIER, WAITER roles and PAID status
+    - [x] Modify order creation API to append to active table orders
+    - [x] Build KDS (Kitchen Display System) UI
+    - [x] Build POS (Cashier) UI
 - [ ] Push Notifications
 - [ ] Analytics Dashboard
 - [ ] Payment Integration
@@ -33,6 +38,9 @@
 - [ ] Internationalization (i18n)
 
 ## Completed Features
+- [x] **End-to-End Testing (Playwright)**
+    - [x] Install `@playwright/test` and setup `playwright.config.ts`
+    - [x] Write authentication and RBAC sidebar tests (`e2e/auth.spec.ts`)
 - [x] **AI Chatbot Integration**
     - [x] Create `ChatbotConfig` model in schema
     - [x] Build `/api/chat` using Vercel AI SDK

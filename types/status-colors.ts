@@ -4,6 +4,7 @@ export const orderStatusColors: Record<OrderStatus, string> = {
   NEW: "bg-blue-500 text-white",
   PREPARING: "bg-yellow-500 text-white",
   COMPLETED: "bg-gray-500 text-white",
+  PAID: "bg-green-600 text-white",
   CANCELLED: "bg-red-500 text-white",
 };
 

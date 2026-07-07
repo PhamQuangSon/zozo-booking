@@ -53,6 +53,9 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
     const { email, password } = validatedFields.data;
     console.log("Login attempt:", { email });
 
+    const user = await prisma.user.findUnique({ where: { email } });
+    const redirectTarget = user?.role === "CUSTOMER" ? "/" : "/admin/dashboard";
+
     try {
       const result = await signIn("credentials", {
         email,
@@ -87,7 +90,7 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
         ...prevState,
         success: true,
         message: "Login successful!",
-        redirectUrl: "/admin/dashboard",
+        redirectUrl: redirectTarget,
       } as AuthState;
     } catch (error) {
       console.error("Sign in error:", error);

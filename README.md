@@ -71,7 +71,10 @@ Testing:
 
 1. An admin user (email: [admin@example.com](mailto:admin@example.com), password: admin123)
 2. A regular user (email: [user@example.com](mailto:user@example.com), password: user123)
-3. A sample restaurant
+3. A cashier user (email: cashier@example.com, password: 123456)
+4. A waiter user (email: waiter@example.com, password: 123456)
+5. A kitchen user (email: kitchen@example.com, password: 123456)
+6. A sample restaurant
 
 <div align="center">
     <img src="./public/ui-screenshot-1.png" alt="UI Screenshot">

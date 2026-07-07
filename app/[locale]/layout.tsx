@@ -56,7 +56,7 @@ export default async function RootLayout({
             >
               <NextIntlClientProvider messages={messages}>
                 {children}
-                <div className="fixed top-4 right-4 z-[100] flex gap-2">
+                <div className="fixed top-4 right-4 z-40 flex gap-2">
                   <LanguageSwitcher />
                   <ThemeToggle />
                 </div>

@@ -185,7 +185,10 @@ model Like {
 
 enum UserRole {
   ADMIN
-  STAFF
+  MANAGER
+  WAITER
+  KITCHEN
+  CASHIER
   CUSTOMER
 }
 
@@ -200,6 +203,7 @@ enum OrderStatus {
   NEW
   PREPARING
   COMPLETED
+  PAID
   CANCELLED
 }
 

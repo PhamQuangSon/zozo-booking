@@ -256,8 +256,8 @@ export function MenuItemDetail({ item, onAddToCart }: MenuItemDetailProps) {
             +
           </Button>
         </div>
-        <Button onClick={handleSubmit}>
-          {t("add_to_order")}{formatCurrency(calculateTotalPrice(), currency)}
+        <Button onClick={handleSubmit} className="min-w-[160px] tabular-nums transition-all">
+          {t("add_to_order")} {formatCurrency(calculateTotalPrice(), currency)}
         </Button>
       </div>
     </div>

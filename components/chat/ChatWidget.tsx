@@ -8,6 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 interface ChatWidgetProps {
   restaurantId: number;
@@ -18,6 +25,7 @@ interface ChatWidgetProps {
 export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: '/api/chat',
@@ -34,15 +42,10 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
   useEffect(() => {
     if (!onOrderUpdated || messages.length === 0) return;
     
-    // Check if any message contains a completed order_food tool
     const hasNewOrder = messages.some(m => 
       m.toolInvocations?.some(t => t.toolName === 'order_food' && t.state === 'result')
     );
     
-    // We only want to trigger this when a new order happens, but to avoid infinite loops,
-    // we should ideally track the length or just trigger it when the last message completes.
-    // For simplicity, if the AI just finished talking and there's an order tool in the history
-    // (We can just use refetch() which is safe to call multiple times as React Query dedupes it)
     if (hasNewOrder && !isLoading) {
       onOrderUpdated();
     }
@@ -55,36 +58,8 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
     }
   }, [messages]);
 
-  if (!isOpen) {
-    return (
-      <Button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-xl transition-transform hover:scale-110 z-50 p-0"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
-    );
-  }
-
-  return (
-    <div className="fixed bottom-6 left-6 w-[350px] sm:w-[400px] h-[500px] bg-background border rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50">
-      {/* Header */}
-      <div className="bg-primary p-4 flex items-center justify-between text-primary-foreground">
-        <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5" />
-          <h3 className="font-semibold">AI Assistant</h3>
-        </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="text-primary-foreground hover:bg-primary/90 h-8 w-8 rounded-full"
-          onClick={() => setIsOpen(false)}
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Chat Area */}
+  const ChatContent = (
+    <>
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground space-y-4 pt-10">
@@ -148,14 +123,13 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
         )}
       </ScrollArea>
 
-      {/* Input Area */}
-      <div className="p-4 bg-background border-t">
+      <div className="p-4 bg-background border-t mt-auto">
         <form onSubmit={handleSubmit} className="flex gap-2">
           <Input
             value={input}
             onChange={handleInputChange}
             placeholder="Type your message..."
-            className="flex-1 rounded-full"
+            className="flex-1 rounded-full text-base"
             disabled={isLoading}
           />
           <Button 
@@ -168,6 +142,67 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
           </Button>
         </form>
       </div>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 left-6 h-14 w-14 rounded-full shadow-xl transition-transform hover:scale-110 z-[60] p-0"
+        >
+          <MessageCircle className="h-6 w-6" />
+        </Button>
+      )}
+
+      {/* Desktop Chat Window */}
+      {!isMobile && isOpen && (
+        <div className="fixed bottom-6 left-6 w-[400px] h-[600px] max-h-[80vh] bg-background border rounded-2xl shadow-2xl flex flex-col overflow-hidden z-[110] animate-in slide-in-from-bottom-5">
+          <div className="bg-primary p-4 flex items-center justify-between text-primary-foreground shrink-0">
+            <div className="flex items-center gap-2">
+              <Bot className="h-5 w-5" />
+              <h3 className="font-semibold">AI Assistant</h3>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-primary-foreground hover:bg-primary/90 h-8 w-8 rounded-full"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          {ChatContent}
+        </div>
+      )}
+
+      {/* Mobile Chat Drawer */}
+      {isMobile && (
+        <Drawer open={isOpen} onOpenChange={setIsOpen}>
+          <DrawerContent className="h-[85vh] flex flex-col z-[120]">
+            <DrawerHeader className="text-left border-b pb-4 shrink-0">
+              <div className="flex items-center justify-between">
+                <DrawerTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5 text-primary" />
+                  AI Assistant
+                </DrawerTitle>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-full"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </DrawerHeader>
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              {ChatContent}
+            </div>
+          </DrawerContent>
+        </Drawer>
+      )}
+    </>
   );
 }

@@ -1,8 +1,9 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Link from "next/link";
 
 import { deleteTable } from "@/actions/table-actions";
 import { type ColumnDef, DataTable } from "@/components/admin/data-table";
@@ -10,6 +11,7 @@ import { TableEditModal } from "@/components/admin/table-edit-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import type { Table } from "@prisma/client";
 
@@ -128,6 +130,14 @@ export function TablesClient({ restaurantId, restaurantName, initialTables }: Ta
             columns={columns}
             deleteAction={deleteTable}
             onEdit={handleEditTable}
+            extraActions={(table) => (
+              <DropdownMenuItem asChild>
+                <Link href={`/admin/restaurants/${restaurantId}/tables/${table.id}/order`}>
+                  <ShoppingCart className="mr-2 h-4 w-4 text-brand-primary" />
+                  <span className="font-semibold text-brand-primary">Take Order</span>
+                </Link>
+              </DropdownMenuItem>
+            )}
           />
         </CardContent>
       </Card>
