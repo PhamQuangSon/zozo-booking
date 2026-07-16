@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getDashboardMetrics } from "@/actions/dashboard-actions";
+import { AnalyticsDashboard } from "@/components/analytics-dashboard";
 
 // Define the type for dashboard data
 type DashboardData = {
@@ -126,15 +127,7 @@ export default async function DashboardPage() {
           </Card>
         </TabsContent>
         <TabsContent value="analytics" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics</CardTitle>
-              <CardDescription>Detailed analytics will be displayed here</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px] flex items-center justify-center">
-              <p className="text-muted-foreground">Analytics dashboard coming soon</p>
-            </CardContent>
-          </Card>
+          <AnalyticsDashboard restaurantId={1} />
         </TabsContent>
       </Tabs>
     </div>
