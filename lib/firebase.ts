@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getMessaging, getToken, onMessage, isSupported } from "firebase/messaging";
+
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,6 +14,7 @@ export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getA
 export const initMessaging = async () => {
   try {
     if (typeof window !== 'undefined') {
+      const { isSupported, getMessaging } = await import('firebase/messaging');
       const supported = await isSupported();
       if (!supported) return null;
       return getMessaging(app);
@@ -32,6 +33,7 @@ export const requestNotificationPermission = async () => {
     if (permission === 'granted') {
       const messaging = await initMessaging();
       if (!messaging) return null;
+      const { getToken } = await import('firebase/messaging');
       const token = await getToken(messaging, {
         vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
       });
@@ -46,5 +48,6 @@ export const requestNotificationPermission = async () => {
 export const setupMessageListener = async (callback: (payload: any) => void) => {
   const messaging = await initMessaging();
   if (!messaging) return null;
+  const { onMessage } = await import('firebase/messaging');
   return onMessage(messaging, callback);
 };
