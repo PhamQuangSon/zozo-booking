@@ -10,6 +10,7 @@ import { serializePrismaData } from "@/lib/prisma-helpers";
 import { attachUsersToOrders } from "@/lib/order-helpers";
 import type { OrderWithRelations } from "@/types/menu-builder-types";
 import type { OrderItemStatus, OrderStatus, Prisma } from "@prisma/client";
+import { sendNotificationToRole, sendNotificationToUser } from "@/lib/firebase-admin";
 
 // Then fix the getRestaurantOrders function to properly handle the type conversion
 export async function getRestaurantOrders(
@@ -153,6 +154,17 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
 
       return orderItem;
     });
+
+    
+    if (newStatus === "READY") {
+      try {
+        const tableStr = updatedItem.order.table ? `Table ${updatedItem.order.table.number}` : 'Takeaway';
+        await sendNotificationToRole('WAITER', 'Order Item Ready', `An item for ${tableStr} is ready.`);
+        if (updatedItem.order.userId) {
+          await sendNotificationToUser(updatedItem.order.userId, 'Order Update', 'One of your items is ready!');
+        }
+      } catch (e) { console.error('Notification error', e); }
+    }
 
     return {
       success: true,

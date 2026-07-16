@@ -7,6 +7,7 @@ import { NextAuthProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Toaster } from "@/components/ui/toaster";
+import { PushNotificationManager } from "@/components/push-notification-manager";
 import { auth } from "@/config/auth";
 
 import { NextIntlClientProvider } from 'next-intl';
@@ -57,6 +58,7 @@ export default async function RootLayout({
             >
               <NextIntlClientProvider messages={messages}>
                 {children}
+        <PushNotificationManager />
                 <FloatingControls />
                 <Toaster />
               </NextIntlClientProvider>
