@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { serializePrismaData } from "@/lib/prisma-helpers";
 import { attachUsersToOrders } from "@/lib/order-helpers";
 import type { TableStatus } from "@prisma/client";
+import { sendNotificationToRole } from "@/lib/firebase-admin";
 
 // Get table details
 export async function getTableDetails(tableId: string) {
@@ -426,6 +427,15 @@ export async function createTableOrder(data: {
         })
       : null;
 
+    
+    // Send notifications for new order
+    try {
+      await sendNotificationToRole('ADMIN', 'New Order Created', `New order for Table ${table.number}`);
+      await sendNotificationToRole('WAITER', 'New Order Created', `New order for Table ${table.number}`);
+    } catch (e) {
+      console.error('Notification error', e);
+    }
+    
     return {
       success: true,
       data: serializePrismaData({
