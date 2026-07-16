@@ -31,13 +31,21 @@
     - [x] Modify order creation API to append to active table orders
     - [x] Build KDS (Kitchen Display System) UI
     - [x] Build POS (Cashier) UI
-- [ ] Push Notifications
-- [ ] Analytics Dashboard
+- [x] Push Notifications
+- [x] Analytics Dashboard
 - [ ] Payment Integration
 - [ ] PWA Support
 - [ ] Internationalization (i18n)
 
 ## Completed Features
+- [x] **Analytics Dashboard**
+    - [x] Integrate `recharts` for visual charts
+    - [x] Prisma aggregations for Revenue, Best Sellers, and Peak Hours
+    - [x] UI Dashboard in admin panel
+- [x] **Push Notifications**
+    - [x] Setup Firebase Cloud Messaging (FCM) and Web Push APIs
+    - [x] `PushSubscription` schema models and API endpoint for device registration
+    - [x] Hook triggers on Order Creation and Kitchen Status changes
 - [x] **End-to-End Testing (Playwright)**
     - [x] Install `@playwright/test` and setup `playwright.config.ts`
     - [x] Write authentication and RBAC sidebar tests (`e2e/auth.spec.ts`)
