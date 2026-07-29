@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+// import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 
 // If you need env vars, load them via CLI or other means, Playwright and NextJS can often read them natively.
@@ -24,7 +24,7 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
-    
+
     // Use headed mode locally for debugging unless CI is true
     headless: !!process.env.CI,
   },

@@ -34,8 +34,8 @@ export function AnalyticsDashboard({ restaurantId }: { restaurantId: number }) {
     async function fetchData() {
       setLoading(true);
       const res = await getAnalyticsData(restaurantId, dateRange);
-      if (res.success) {
-        setData(res.data);
+      if (res.success && res.data) {
+        setData(res.data as AnalyticsData);
       }
       setLoading(false);
     }

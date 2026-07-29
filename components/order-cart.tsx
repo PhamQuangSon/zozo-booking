@@ -27,6 +27,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
   const t = useTranslations("Cart");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const { toast } = useToast();
   const { currency } = useCurrencyStore();
   const { data: session } = useSession();
@@ -177,6 +178,44 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePayNow = async () => {
+    setIsPaying(true);
+    try {
+      // Get current locale if available from URL, or default to 'en'
+      const pathname = window.location.pathname;
+      const locale = pathname.split('/')[1] || "en";
+
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          restaurantId,
+          tableId,
+          locale,
+          currency,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to initialize payment");
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (error: any) {
+      console.error("Payment error:", error);
+      toast({
+        title: "Payment Error",
+        description: error.message || "Could not initialize Stripe checkout",
+        variant: "destructive",
+      });
+      setIsPaying(false);
     }
   };
 
@@ -342,13 +381,21 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
             <span>{formatCurrency(total, currency)}</span>
           </div>
         </div>
-        {!isSubmitted && (
+        {!isSubmitted ? (
           <Button
             className="w-full"
             onClick={handleSubmitOrder}
             disabled={isSubmitting || pendingItems.length === 0}
           >
             {isSubmitting ? t("submitting_btn") : t("place_order_btn")}
+          </Button>
+        ) : (
+          <Button
+            className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white"
+            onClick={handlePayNow}
+            disabled={isPaying || submittedItems.length === 0}
+          >
+            {isPaying ? "Processing..." : "Pay Now (Thanh toán)"}
           </Button>
         )}
       </div>

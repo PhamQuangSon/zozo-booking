@@ -34,8 +34,13 @@ export const requestNotificationPermission = async () => {
       const messaging = await initMessaging();
       if (!messaging) return null;
       const { getToken } = await import('firebase/messaging');
+      
+      const swUrl = `/firebase-messaging-sw.js?firebaseConfig=${encodeURIComponent(JSON.stringify(firebaseConfig))}`;
+      const registration = await navigator.serviceWorker.register(swUrl);
+
       const token = await getToken(messaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+        serviceWorkerRegistration: registration
       });
       return token;
     }

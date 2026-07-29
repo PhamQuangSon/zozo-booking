@@ -5,7 +5,7 @@ import { startOfDay, endOfDay, subDays, format } from 'date-fns';
 
 export async function getAnalyticsData(
   restaurantId: number,
-  dateRange?: { from: string | Date; to: string | Date }
+  dateRange?: { from?: string | Date; to?: string | Date }
 ) {
   try {
     const fromDate = dateRange?.from ? new Date(dateRange.from) : subDays(new Date(), 30);
