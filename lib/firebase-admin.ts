@@ -1,24 +1,49 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getMessaging } from 'firebase-admin/messaging';
+import { getMessaging, Messaging } from 'firebase-admin/messaging';
 import prisma from './prisma';
 
-if (!getApps().length) {
+let messaging: Messaging | null = null;
+
+export function getAdminMessaging(): Messaging | null {
+  if (messaging) return messaging;
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
+
+  if (!projectId || !clientEmail || !privateKey) {
+    console.warn('Firebase Admin credentials missing. Push notifications are disabled.');
+    return null;
+  }
+
+  if (!getApps().length) {
+    try {
+      initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+      });
+    } catch (error) {
+      console.error('Firebase admin initialization error', error);
+      return null;
+    }
+  }
+
   try {
-    initializeApp({
-      credential: cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
+    messaging = getMessaging();
+    return messaging;
   } catch (error) {
-    console.error('Firebase admin initialization error', error);
+    console.error('Failed to initialize messaging', error);
+    return null;
   }
 }
 
-export const messaging = getMessaging();
-
 export async function sendNotificationToRole(role: any, title: string, body: string, data?: any) {
+  const adminMessaging = getAdminMessaging();
+  if (!adminMessaging) return;
+
   try {
     const users = await prisma.user.findMany({
       where: { role },
@@ -28,7 +53,7 @@ export async function sendNotificationToRole(role: any, title: string, body: str
     const tokens = users.flatMap(u => (u as any).pushSubscriptions.map((sub: any) => sub.token));
     if (tokens.length === 0) return;
 
-    await messaging.sendEachForMulticast({
+    await adminMessaging.sendEachForMulticast({
       tokens,
       notification: { title, body },
       data
@@ -39,6 +64,9 @@ export async function sendNotificationToRole(role: any, title: string, body: str
 }
 
 export async function sendNotificationToUser(userId: string, title: string, body: string, data?: any) {
+  const adminMessaging = getAdminMessaging();
+  if (!adminMessaging) return;
+
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -48,7 +76,7 @@ export async function sendNotificationToUser(userId: string, title: string, body
     if (!user || !(user as any).pushSubscriptions?.length) return;
 
     const tokens = (user as any).pushSubscriptions.map((sub: any) => sub.token);
-    await messaging.sendEachForMulticast({
+    await adminMessaging.sendEachForMulticast({
       tokens,
       notification: { title, body },
       data
