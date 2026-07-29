@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
-import { createTableOrder } from "@/actions/table-actions";
+import { createTableOrder, getRecentPaidTableOrders } from "@/actions/table-actions";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRealTimeCart } from "@/hooks/use-real-time-cart";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/i18n";
-import { type CartItem, useCartStore } from "@/store/cartStore";
+import { type CartItem, useCartStore, convertServerOrdersToCartItems } from "@/store/cartStore";
 import { useCurrencyStore } from "@/store/currency-store";
+import { useQuery } from "@tanstack/react-query";
 
 interface OrderCartProps {
   restaurantId: string;
@@ -42,6 +43,19 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
   // Get pending and submitted items
   const pendingItems = restaurantId && tableId ? getPendingItems(restaurantId, tableId) : [];
   const submittedItems = restaurantId && tableId ? getSubmittedItems(restaurantId, tableId) : [];
+
+  // Fetch paid items history
+  const { data: paidOrdersResponse } = useQuery({
+    queryKey: ["paidOrders", restaurantId, tableId],
+    queryFn: () => getRecentPaidTableOrders(restaurantId, tableId),
+    enabled: !!restaurantId && !!tableId,
+  });
+  
+  const rawPaidOrders = paidOrdersResponse?.success && Array.isArray(paidOrdersResponse.data) 
+    ? paidOrdersResponse.data 
+    : [];
+  
+  const historyItems = convertServerOrdersToCartItems(restaurantId, tableId, rawPaidOrders);
 
   // Group items by user if in collaborative mode
   const groupedPendingItems = collaborativeMode
@@ -418,7 +432,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
       </div>
 
       <Tabs defaultValue="current" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-3 mb-4">
           <TabsTrigger value="current" className="relative">
             {t("current_order")}
             {pendingItems.length > 0 && (
@@ -432,6 +446,14 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
             {submittedItems.length > 0 && (
               <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center">
                 {submittedItems.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="history" className="relative">
+            {t("history")}
+            {historyItems.length > 0 && (
+              <Badge className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center bg-gray-500">
+                {historyItems.length}
               </Badge>
             )}
           </TabsTrigger>
@@ -451,6 +473,27 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
           )}
           {renderCartItems(submittedItems, collaborativeMode)}
           {renderOrderSummary(submittedSubtotal, submittedTax, submittedTotal, true)}
+        </TabsContent>
+
+        <TabsContent value="history" className="flex-1 overflow-auto">
+          {historyItems.length > 0 ? (
+            <div className="bg-muted p-2 rounded-md mb-4 flex items-center text-sm">
+              <Clock className="h-4 w-4 mr-2" />
+              <span>{t("history_desc")}</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="mb-2 text-lg font-medium">{t("history")}</p>
+              <p className="text-sm text-muted-foreground">{t("history_desc")}</p>
+            </div>
+          )}
+          {historyItems.length > 0 && renderCartItems(historyItems, collaborativeMode)}
+          {historyItems.length > 0 && (
+             <div className="mt-4 pt-4 border-t flex justify-between font-medium">
+                <span>{t("paid")}</span>
+                <span>{formatCurrency(calculateSubtotal(historyItems) * 1.08, currency)}</span>
+             </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

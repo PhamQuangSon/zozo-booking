@@ -91,7 +91,8 @@ export async function POST(req: Request) {
       });
     }
 
-    const appUrl = getStripeAppUrl();
+    const origin = req.headers.get("origin") || req.headers.get("referer") || getStripeAppUrl();
+    const appUrl = origin.replace(/\/$/, ""); // Remove trailing slash if any
 
     // Create Checkout Session
     const session = await stripe.checkout.sessions.create({
@@ -110,7 +111,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("[CHECKOUT_ERROR]", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+    
+    // Check if it's an API key error to provide a generic message to users
+    const isApiKeyError = error instanceof Error && error.message.toLowerCase().includes("api key");
+    const errorMessage = isApiKeyError 
+      ? "Payment system is currently unavailable. Please contact support." 
+      : (error instanceof Error ? error.message : "Internal Server Error");
+      
     return new NextResponse(errorMessage, { status: 500 });
   }
 }

@@ -119,6 +119,9 @@
     "refresh": "Refresh",
     "current_order": "Current Order",
     "submitted": "Submitted",
+    "history": "History",
+    "history_desc": "Your previously paid items",
+    "paid": "PAID",
     "sent_to_kitchen": "These items have been sent to the kitchen"
   }
 }

@@ -194,6 +194,44 @@ export async function getTableOrders(restaurantId: string, tableId: string) {
   }
 }
 
+export async function getRecentPaidTableOrders(restaurantId: string, tableId: string) {
+  try {
+    // Get orders from the last 4 hours
+    const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+    
+    const orders = await prisma.order.findMany({
+      where: {
+        restaurantId: Number(restaurantId),
+        tableId: Number(tableId),
+        status: { in: ["PAID", "COMPLETED"] },
+        createdAt: { gte: fourHoursAgo }
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        orderItems: {
+          include: {
+            menuItem: true,
+            orderItemChoices: {
+              include: {
+                optionChoice: true,
+                menuItemOption: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const ordersWithUser = await attachUsersToOrders(orders);
+    const serializedData = serializePrismaData(ordersWithUser);
+
+    return { success: true, data: serializedData };
+  } catch (error) {
+    console.error("Failed to fetch paid orders:", error);
+    return { success: false, error: "Failed to load paid orders" };
+  }
+}
+
 // Delete a table
 export async function deleteTable(id: number) {
   try {

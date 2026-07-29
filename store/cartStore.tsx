@@ -64,6 +64,65 @@ const getItemKey = (item: CartItem): string => {
   return `${item.id}-${item.restaurantId}-${item.tableId}-${item.userId || "anonymous"}-${JSON.stringify(item.selectedOptions || {})}-${item.submitted ? "submitted" : "pending"}-${item.orderId || "none"}-${item.orderItemId || "none"}`;
 };
 
+export const convertServerOrdersToCartItems = (restaurantId: string, tableId: string, orders: ServerOrder[]): CartItem[] => {
+  const serverItems: CartItem[] = [];
+  const processedKeys = new Set<string>();
+
+  orders.forEach((order) => {
+    if (!order.orderItems || !Array.isArray(order.orderItems)) return;
+
+    order.orderItems.forEach((item) => {
+      if (!item.menuItem) return;
+
+      const cartItem: CartItem = {
+        id: String(item.menuItem.id),
+        name: item.menuItem.name,
+        price: Number(item.unitPrice),
+        quantity: item.quantity,
+        imageUrl: item.menuItem.imageUrl || undefined,
+        restaurantId,
+        tableId,
+        submitted: true,
+        orderId: order.id,
+        orderItemId: item.id,
+        specialInstructions: item.notes || undefined,
+        userId: order.user?.id || null,
+        userName:
+          order.user?.name ||
+          order.notes?.split("Customer Info:")[1]?.trim() ||
+          "Anonymous 5",
+        // timestamp: new Date(order.createdAt || Date.now()).getTime(),
+        selectedOptions: item.orderItemChoices?.reduce(
+          (acc: Record<string, { id: string; name: string; priceAdjustment: number }>, choice) => {
+            if (!choice.menuItemOption || !choice.optionChoice) return acc;
+
+            return {
+              ...acc,
+              [choice.menuItemOption.id]: {
+                id: String(choice.optionChoice.id),
+                name: choice.optionChoice.name,
+                priceAdjustment: Number(choice.optionChoice.priceAdjustment),
+              },
+            };
+          },
+          {},
+        ),
+      };
+
+      // Generate a unique key for this item
+      const itemKey = getItemKey(cartItem);
+
+      // Only add if we haven't processed this exact item before
+      if (!processedKeys.has(itemKey)) {
+        serverItems.push(cartItem);
+        processedKeys.add(itemKey);
+      }
+    });
+  });
+
+  return serverItems;
+};
+
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
@@ -157,60 +216,7 @@ export const useCartStore = create<CartState>()(
           );
 
           // Convert server orders to cart items
-          const serverItems: CartItem[] = [];
-          const processedKeys = new Set<string>();
-
-          orders.forEach((order) => {
-            if (!order.orderItems || !Array.isArray(order.orderItems)) return;
-
-            order.orderItems.forEach((item) => {
-              if (!item.menuItem) return;
-
-              const cartItem: CartItem = {
-                id: String(item.menuItem.id),
-                name: item.menuItem.name,
-                price: Number(item.unitPrice),
-                quantity: item.quantity,
-                imageUrl: item.menuItem.imageUrl || undefined,
-                restaurantId,
-                tableId,
-                submitted: true,
-                orderId: order.id,
-                orderItemId: item.id,
-                specialInstructions: item.notes || undefined,
-                userId: order.user?.id || null,
-                userName:
-                  order.user?.name ||
-                  order.notes?.split("Customer Info:")[1]?.trim() ||
-                  "Anonymous 5",
-                // timestamp: new Date(order.createdAt || Date.now()).getTime(),
-                selectedOptions: item.orderItemChoices?.reduce(
-                  (acc: Record<string, { id: string; name: string; priceAdjustment: number }>, choice) => {
-                    if (!choice.menuItemOption || !choice.optionChoice) return acc;
-
-                    return {
-                      ...acc,
-                      [choice.menuItemOption.id]: {
-                        id: String(choice.optionChoice.id),
-                        name: choice.optionChoice.name,
-                        priceAdjustment: Number(choice.optionChoice.priceAdjustment),
-                      },
-                    };
-                  },
-                  {},
-                ),
-              };
-
-              // Generate a unique key for this item
-              const itemKey = getItemKey(cartItem);
-
-              // Only add if we haven't processed this exact item before
-              if (!processedKeys.has(itemKey)) {
-                serverItems.push(cartItem);
-                processedKeys.add(itemKey);
-              }
-            });
-          });
+          const serverItems = convertServerOrdersToCartItems(restaurantId, tableId, orders);
 
           // Merge everything together
           return {

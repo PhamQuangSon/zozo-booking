@@ -119,6 +119,9 @@
     "refresh": "Làm Mới",
     "current_order": "Đơn Hiện Tại",
     "submitted": "Đã Gửi",
+    "history": "Lịch Sử",
+    "history_desc": "Các món đã thanh toán (4 giờ qua)",
+    "paid": "ĐÃ THANH TOÁN",
     "sent_to_kitchen": "Những món này đã được gửi đến nhà bếp"
   }
 }
