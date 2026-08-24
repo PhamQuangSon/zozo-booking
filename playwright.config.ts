@@ -1,4 +1,4 @@
-// import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 import path from 'path';
 
 // If you need env vars, load them via CLI or other means, Playwright and NextJS can often read them natively.
