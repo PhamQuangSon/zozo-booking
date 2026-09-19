@@ -1,5 +1,5 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getMessaging, Messaging } from 'firebase-admin/messaging';
+import { getMessaging, type Messaging } from 'firebase-admin/messaging';
 import prisma from './prisma';
 
 let messaging: Messaging | null = null;

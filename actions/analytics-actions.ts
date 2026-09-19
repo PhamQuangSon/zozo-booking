@@ -89,7 +89,7 @@ export async function getAnalyticsData(
         hour: `${hour}:00`,
         orders: count,
       }))
-      .sort((a, b) => parseInt(a.hour) - parseInt(b.hour)); // Sort by hour
+      .sort((a, b) => Number.parseInt(a.hour) - Number.parseInt(b.hour)); // Sort by hour
 
     return {
       success: true,
