@@ -60,7 +60,11 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
     setShowItemDetail(true);
   };
 
-  const handleAddToCart = (options: Record<string, any>, quantity: number, specialInstructions: string) => {
+  const handleAddToCart = (
+    options: Record<string, any>,
+    quantity: number,
+    specialInstructions: string,
+  ) => {
     if (!selectedMenuItem) return;
 
     const choices = Object.entries(options).map(([optionId, choice]) => ({
@@ -97,13 +101,15 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
 
   const updateQuantity = (cartItemId: string, delta: number) => {
     setCart((prev) =>
-      prev.map((item) => {
-        if (item.id === cartItemId) {
-          const newQty = Math.max(0, item.quantity + delta);
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      }).filter((item) => item.quantity > 0)
+      prev
+        .map((item) => {
+          if (item.id === cartItemId) {
+            const newQty = Math.max(0, item.quantity + delta);
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        })
+        .filter((item) => item.quantity > 0),
     );
   };
 
@@ -116,7 +122,7 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
 
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
-    
+
     setIsSubmitting(true);
     try {
       const orderData = {
@@ -170,7 +176,7 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
           )}
         </CardTitle>
       </CardHeader>
-      
+
       <ScrollArea className="flex-1 p-4 h-full">
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full min-h-[200px] text-muted-foreground pt-12">
@@ -186,42 +192,42 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
                   <span className="font-semibold">{item.name}</span>
                   <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
-                
+
                 {item.choicesText && (
-                  <div className="text-sm text-muted-foreground -mt-1">
-                    {item.choicesText}
-                  </div>
+                  <div className="text-sm text-muted-foreground -mt-1">{item.choicesText}</div>
                 )}
                 {item.notes && (
                   <div className="text-sm text-amber-600 bg-amber-50 p-1.5 rounded -mt-1 italic">
                     {item.notes}
                   </div>
                 )}
-                
+
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-1 bg-background rounded-md border">
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
+                    <Button
+                      size="icon"
+                      variant="ghost"
                       className="h-8 w-8 rounded-r-none"
                       onClick={() => updateQuantity(item.id, -1)}
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
-                    <span className="w-8 text-center font-medium tabular-nums">{item.quantity}</span>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
+                    <span className="w-8 text-center font-medium tabular-nums">
+                      {item.quantity}
+                    </span>
+                    <Button
+                      size="icon"
+                      variant="ghost"
                       className="h-8 w-8 rounded-l-none"
                       onClick={() => updateQuantity(item.id, 1)}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
-                  
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
+
+                  <Button
+                    size="icon"
+                    variant="ghost"
                     className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => removeFromCart(item.id)}
                   >
@@ -237,11 +243,13 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
       <div className="p-4 border-t bg-muted/5 mt-auto shrink-0 pb-20 lg:pb-4">
         <div className="flex justify-between items-center mb-4 text-lg">
           <span className="font-medium">Total</span>
-          <span className="font-bold text-2xl text-primary tabular-nums">${cartTotal.toFixed(2)}</span>
+          <span className="font-bold text-2xl text-primary tabular-nums">
+            ${cartTotal.toFixed(2)}
+          </span>
         </div>
-        
-        <Button 
-          className="w-full h-14 text-lg font-bold shadow-lg" 
+
+        <Button
+          className="w-full h-14 text-lg font-bold shadow-lg"
           size="lg"
           disabled={cart.length === 0 || isSubmitting}
           onClick={handlePlaceOrder}
@@ -255,10 +263,8 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 h-[calc(100vh-8rem)] lg:h-[calc(100vh-6rem)] overflow-hidden">
-      
       {/* Left Pane: Menu Selection */}
       <div className="lg:col-span-2 flex flex-col lg:border-r h-full overflow-hidden">
-        
         {/* Top Bar: Search and Categories */}
         <div className="p-4 border-b bg-muted/10">
           <div className="relative mb-4">
@@ -270,7 +276,7 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           <ScrollArea className="w-full whitespace-nowrap pb-2">
             <div className="flex gap-2">
               <Button
@@ -298,8 +304,8 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
         <ScrollArea className="flex-1 p-4 bg-muted/5">
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredItems.map((item) => (
-              <Card 
-                key={item.id} 
+              <Card
+                key={item.id}
                 className="cursor-pointer hover:border-primary/50 transition-colors shadow-sm overflow-hidden flex flex-col h-32"
                 onClick={() => handleItemClick(item)}
               >
@@ -324,7 +330,7 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
       <div className="hidden lg:flex flex-col h-full bg-background border-l">
         <CartContent />
       </div>
-      
+
       {/* Floating Action Button & Sheet for Order Cart (Mobile) */}
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
         <Sheet>
@@ -344,7 +350,7 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
           </SheetContent>
         </Sheet>
       </div>
-      
+
       {/* Menu Item Detail Dialog */}
       <Dialog open={showItemDetail} onOpenChange={setShowItemDetail}>
         <DialogContent className="w-full max-w-[90vw] max-h-[80vh] overflow-auto sm:max-w-md glass-card border-0 p-4 sm:p-6">
@@ -352,14 +358,10 @@ export function WaiterPOS({ restaurantId, tableId, categories, allMenuItems }: W
             <DialogTitle>{selectedMenuItem?.name}</DialogTitle>
           </DialogHeader>
           {selectedMenuItem && (
-            <MenuItemDetail
-              item={selectedMenuItem}
-              onAddToCart={handleAddToCart}
-            />
+            <MenuItemDetail item={selectedMenuItem} onAddToCart={handleAddToCart} />
           )}
         </DialogContent>
       </Dialog>
-      
     </div>
   );
 }

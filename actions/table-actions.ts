@@ -198,15 +198,15 @@ export async function getRecentPaidTableOrders(restaurantId: string, tableId: st
   try {
     // Get orders from the last 4 hours
     const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
-    
+
     const orders = await prisma.order.findMany({
       where: {
         restaurantId: Number(restaurantId),
         tableId: Number(tableId),
         status: { in: ["PAID", "COMPLETED"] },
-        createdAt: { gte: fourHoursAgo }
+        createdAt: { gte: fourHoursAgo },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       include: {
         orderItems: {
           include: {
@@ -246,9 +246,25 @@ export async function deleteTable(id: number) {
   }
 }
 
-type RawOptionChoice = { id: number; name: string; priceAdjustment: number | string; [key: string]: unknown };
-type RawMenuItemOption = { id: number; name: string; optionChoices: RawOptionChoice[]; [key: string]: unknown };
-type RawMenuItem = { id: number; name: string; price: number | string; menuItemOptions: RawMenuItemOption[]; [key: string]: unknown };
+type RawOptionChoice = {
+  id: number;
+  name: string;
+  priceAdjustment: number | string;
+  [key: string]: unknown;
+};
+type RawMenuItemOption = {
+  id: number;
+  name: string;
+  optionChoices: RawOptionChoice[];
+  [key: string]: unknown;
+};
+type RawMenuItem = {
+  id: number;
+  name: string;
+  price: number | string;
+  menuItemOptions: RawMenuItemOption[];
+  [key: string]: unknown;
+};
 type RawCategory = { id: number; name: string; menu_items: RawMenuItem[]; [key: string]: unknown };
 
 // Format menu items with proper currency
@@ -465,15 +481,22 @@ export async function createTableOrder(data: {
         })
       : null;
 
-    
     // Send notifications for new order
     try {
-      await sendNotificationToRole('ADMIN', 'New Order Created', `New order for Table ${table.number}`);
-      await sendNotificationToRole('WAITER', 'New Order Created', `New order for Table ${table.number}`);
+      await sendNotificationToRole(
+        "ADMIN",
+        "New Order Created",
+        `New order for Table ${table.number}`,
+      );
+      await sendNotificationToRole(
+        "WAITER",
+        "New Order Created",
+        `New order for Table ${table.number}`,
+      );
     } catch (e) {
-      console.error('Notification error', e);
+      console.error("Notification error", e);
     }
-    
+
     return {
       success: true,
       data: serializePrismaData({

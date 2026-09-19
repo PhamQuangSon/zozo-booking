@@ -13,9 +13,9 @@ function SuccessContent() {
   const searchParams = useSearchParams();
   const restaurantId = searchParams.get("restaurantId");
   const tableId = searchParams.get("tableId");
-  
-  const returnUrl = (restaurantId && tableId) ? `/restaurants/${restaurantId}/${tableId}` : "/";
-  const returnText = (restaurantId && tableId) ? "Return to Table" : "Return to Home";
+
+  const returnUrl = restaurantId && tableId ? `/restaurants/${restaurantId}/${tableId}` : "/";
+  const returnText = restaurantId && tableId ? "Return to Table" : "Return to Home";
 
   return (
     <Card className="max-w-md w-full text-center border-none shadow-lg glass-card">
@@ -25,7 +25,8 @@ function SuccessContent() {
         </div>
         <h1 className="text-3xl font-bold mb-4">Payment Successful!</h1>
         <p className="text-muted-foreground mb-8">
-          Thank you for your payment. Your order has been marked as paid and the kitchen is working on it.
+          Thank you for your payment. Your order has been marked as paid and the kitchen is working
+          on it.
         </p>
         <Button asChild className="w-full h-12 rounded-full text-lg">
           <Link href={returnUrl}>{returnText}</Link>

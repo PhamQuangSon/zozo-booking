@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export function FloatingControls() {
   const pathname = usePathname();
-  
+
   // Hide on admin routes, because admin has its own controls
   if (pathname?.includes("/admin")) {
     return null;

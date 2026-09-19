@@ -64,7 +64,11 @@ const getItemKey = (item: CartItem): string => {
   return `${item.id}-${item.restaurantId}-${item.tableId}-${item.userId || "anonymous"}-${JSON.stringify(item.selectedOptions || {})}-${item.submitted ? "submitted" : "pending"}-${item.orderId || "none"}-${item.orderItemId || "none"}`;
 };
 
-export const convertServerOrdersToCartItems = (restaurantId: string, tableId: string, orders: ServerOrder[]): CartItem[] => {
+export const convertServerOrdersToCartItems = (
+  restaurantId: string,
+  tableId: string,
+  orders: ServerOrder[],
+): CartItem[] => {
   const serverItems: CartItem[] = [];
   const processedKeys = new Set<string>();
 
@@ -88,9 +92,7 @@ export const convertServerOrdersToCartItems = (restaurantId: string, tableId: st
         specialInstructions: item.notes || undefined,
         userId: order.user?.id || null,
         userName:
-          order.user?.name ||
-          order.notes?.split("Customer Info:")[1]?.trim() ||
-          "Anonymous 5",
+          order.user?.name || order.notes?.split("Customer Info:")[1]?.trim() || "Anonymous 5",
         // timestamp: new Date(order.createdAt || Date.now()).getTime(),
         selectedOptions: item.orderItemChoices?.reduce(
           (acc: Record<string, { id: string; name: string; priceAdjustment: number }>, choice) => {

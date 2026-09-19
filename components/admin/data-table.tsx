@@ -212,7 +212,7 @@ export function DataTable<T extends { id: number | string }>({
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
 
-                          {extraActions && extraActions(row)}
+                          {extraActions?.(row)}
 
                           <DropdownMenuItem onClick={() => handleEdit(row)}>
                             <Edit className="mr-2 h-4 w-4" />

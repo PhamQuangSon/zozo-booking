@@ -18,24 +18,22 @@ export function CashierPOS({ initialOrders }: { initialOrders: OrderWithRelation
 
   // Filter out PAID and CANCELLED orders
   const activeOrders = useMemo(() => {
-    return orders.filter(
-      (order) => order.status !== "PAID" && order.status !== "CANCELLED"
-    );
+    return orders.filter((order) => order.status !== "PAID" && order.status !== "CANCELLED");
   }, [orders]);
 
   const handleUpdateStatus = async (orderId: number, nextStatus: string) => {
     setIsUpdating(orderId);
-    
+
     try {
       const result = await updateOrderStatus(orderId, nextStatus as any);
-      
+
       if (result.success) {
-        setOrders((prev) => 
-          prev.map((order) => 
-            order.id === orderId ? { ...order, status: nextStatus as any } : order
-          )
+        setOrders((prev) =>
+          prev.map((order) =>
+            order.id === orderId ? { ...order, status: nextStatus as any } : order,
+          ),
         );
-        
+
         toast({
           title: "Order Updated",
           description: `Order marked as ${nextStatus.toLowerCase()}`,
@@ -71,15 +69,15 @@ export function CashierPOS({ initialOrders }: { initialOrders: OrderWithRelation
           <Card key={order.id} className="flex flex-col border-2 shadow-md">
             <CardHeader className="bg-muted pb-4 border-b">
               <div className="flex justify-between items-center">
-                <CardTitle className="text-xl">
-                  Table {order.table?.number || "Takeout"}
-                </CardTitle>
+                <CardTitle className="text-xl">Table {order.table?.number || "Takeout"}</CardTitle>
                 <Badge variant={order.status === "COMPLETED" ? "default" : "secondary"}>
                   {order.status}
                 </Badge>
               </div>
               <div className="text-sm mt-1 flex justify-between text-muted-foreground">
-                <span>Order #{order.id} • {order.user?.name || "Guest"}</span>
+                <span>
+                  Order #{order.id} • {order.user?.name || "Guest"}
+                </span>
                 <span className="flex items-center bg-background px-2 py-0.5 rounded shadow-sm">
                   <Clock className="mr-1 h-3 w-3" />
                   {formatDistanceToNow(new Date(order.createdAt))}
@@ -92,7 +90,9 @@ export function CashierPOS({ initialOrders }: { initialOrders: OrderWithRelation
                   {order.orderItems.map((item) => (
                     <div key={item.id} className="flex justify-between items-center text-sm">
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground bg-secondary px-1.5 py-0.5 rounded text-xs">{item.quantity}x</span>
+                        <span className="text-muted-foreground bg-secondary px-1.5 py-0.5 rounded text-xs">
+                          {item.quantity}x
+                        </span>
                         <span className="font-medium">{item.menuItem.name}</span>
                       </div>
                       <div className="tabular-nums">
@@ -101,7 +101,7 @@ export function CashierPOS({ initialOrders }: { initialOrders: OrderWithRelation
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="pt-4 border-t border-dashed flex justify-between items-center">
                   <span className="font-bold text-lg">Total</span>
                   <span className="font-bold text-2xl text-primary tabular-nums">
@@ -112,8 +112,8 @@ export function CashierPOS({ initialOrders }: { initialOrders: OrderWithRelation
             </CardContent>
             <CardFooter className="bg-muted/30 border-t p-4 flex gap-2">
               {order.status !== "COMPLETED" && (
-                <Button 
-                  className="flex-1 bg-amber-600 hover:bg-amber-700 h-12" 
+                <Button
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 h-12"
                   onClick={() => handleUpdateStatus(order.id, "COMPLETED")}
                   disabled={isUpdating === order.id}
                 >
@@ -121,8 +121,8 @@ export function CashierPOS({ initialOrders }: { initialOrders: OrderWithRelation
                   Finish Dining
                 </Button>
               )}
-              
-              <Button 
+
+              <Button
                 className="flex-1 bg-green-600 hover:bg-green-700 h-12"
                 onClick={() => handleUpdateStatus(order.id, "PAID")}
                 disabled={isUpdating === order.id}

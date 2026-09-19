@@ -10,7 +10,9 @@ import { useQueryClient } from "@tanstack/react-query";
 export function useRealTimeCart(restaurantId: string, tableId: string) {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [otherUserCarts, setOtherUserCarts] = useState<Record<string, { cart: any[], userName: string }>>({});
+  const [otherUserCarts, setOtherUserCarts] = useState<
+    Record<string, { cart: any[]; userName: string }>
+  >({});
   const [lastOrderUpdate, setLastOrderUpdate] = useState<unknown>(null);
 
   const { cart, markItemsAsSubmitted } = useCartStore();

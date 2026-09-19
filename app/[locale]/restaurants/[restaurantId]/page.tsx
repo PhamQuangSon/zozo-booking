@@ -61,9 +61,9 @@ export default function RestaurantPage() {
   const specialItem =
     allMenuItems.length > 0
       ? {
-        ...allMenuItems[Math.floor(Math.random() * allMenuItems.length)],
-        discountPercentage: 45,
-      }
+          ...allMenuItems[Math.floor(Math.random() * allMenuItems.length)],
+          discountPercentage: 45,
+        }
       : null;
 
   const handleTableSelect = (tableId: number) => {
@@ -84,9 +84,7 @@ export default function RestaurantPage() {
         <Card className="glass-card overflow-hidden">
           <CardHeader>
             <CardTitle>{t("not_found_title")}</CardTitle>
-            <CardDescription>
-              {t("not_found_desc")}
-            </CardDescription>
+            <CardDescription>{t("not_found_desc")}</CardDescription>
           </CardHeader>
           <CardContent>
             <Button asChild className="rounded-full glass-button">
@@ -105,9 +103,7 @@ export default function RestaurantPage() {
         <DialogContent className="sm:max-w-md glass-card border-0">
           <DialogHeader>
             <DialogTitle>{t("select_table_title")}</DialogTitle>
-            <DialogDescription>
-              {t("select_table_desc")}
-            </DialogDescription>
+            <DialogDescription>{t("select_table_desc")}</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
             {restaurantLoading ? (
@@ -125,13 +121,16 @@ export default function RestaurantPage() {
                   variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                   disabled={table.status !== "AVAILABLE"}
                   onClick={() => handleTableSelect(table.id)}
-                  className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${table.status === "AVAILABLE"
+                  className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
+                    table.status === "AVAILABLE"
                       ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
                       : "bg-secondary/50 backdrop-blur-sm"
-                    }`}
+                  }`}
                 >
                   <Table className="h-6 w-6" />
-                  <span>{t("table")} {table.number}</span>
+                  <span>
+                    {t("table")} {table.number}
+                  </span>
                   <span className="text-xs text-muted-foreground">
                     {table.status === "AVAILABLE" ? t("available") : t("occupied")}
                   </span>
@@ -214,7 +213,9 @@ export default function RestaurantPage() {
         {/* Table Selection Card */}
         <Card className="mb-8 glass-card border-0 overflow-hidden">
           <CardHeader className="bg-gradient-to-r from-background/80 to-background/40 backdrop-blur-sm">
-            <CardTitle>{t("dining_at")} {restaurant.name}</CardTitle>
+            <CardTitle>
+              {t("dining_at")} {restaurant.name}
+            </CardTitle>
             <CardDescription>{t("dining_desc")}</CardDescription>
           </CardHeader>
           <CardContent className="bg-white/30 backdrop-blur-sm">
@@ -234,13 +235,16 @@ export default function RestaurantPage() {
                     variant={table.status === "AVAILABLE" ? "outline" : "secondary"}
                     disabled={table.status !== "AVAILABLE"}
                     onClick={() => handleTableSelect(table.id)}
-                    className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${table.status === "AVAILABLE"
+                    className={`h-auto py-4 flex flex-col items-center gap-2 rounded-2xl transition-all duration-300 ${
+                      table.status === "AVAILABLE"
                         ? "glass-button hover:shadow-lg hover:translate-y-[-2px]"
                         : "bg-secondary/50 backdrop-blur-sm"
-                      }`}
+                    }`}
                   >
                     <Table className="h-6 w-6" />
-                    <span>{t("table")} {table.number}</span>
+                    <span>
+                      {t("table")} {table.number}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {table.status === "AVAILABLE" ? t("available") : t("occupied")}
                     </span>
@@ -314,9 +318,7 @@ export default function RestaurantPage() {
           {/* Call to Action */}
           <div className="text-center py-8">
             <h3 className="text-2xl font-bold mb-4 text-brand-primary">{t("ready_to_order")}</h3>
-            <p className="text-muted-foreground mb-6">
-              {t("ready_to_order_desc")}
-            </p>
+            <p className="text-muted-foreground mb-6">{t("ready_to_order_desc")}</p>
             <Button
               size="lg"
               onClick={() => setShowTableDialog(true)}
@@ -332,9 +334,7 @@ export default function RestaurantPage() {
       <ScrollingBanner text={t("scrolling_banner")} />
 
       {/* AI Chatbot Widget */}
-      {restaurant?.chatbotConfig?.isActive && (
-        <ChatWidget restaurantId={Number(restaurantId)} />
-      )}
+      {restaurant?.chatbotConfig?.isActive && <ChatWidget restaurantId={Number(restaurantId)} />}
     </div>
   );
 }

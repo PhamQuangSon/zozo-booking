@@ -1,11 +1,11 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/prisma';
-import { startOfDay, endOfDay, subDays, format } from 'date-fns';
+import { prisma } from "@/lib/prisma";
+import { startOfDay, endOfDay, subDays, format } from "date-fns";
 
 export async function getAnalyticsData(
   restaurantId: number,
-  dateRange?: { from?: string | Date; to?: string | Date }
+  dateRange?: { from?: string | Date; to?: string | Date },
 ) {
   try {
     const fromDate = dateRange?.from ? new Date(dateRange.from) : subDays(new Date(), 30);
@@ -18,7 +18,7 @@ export async function getAnalyticsData(
     const orders = await prisma.order.findMany({
       where: {
         restaurantId,
-        status: { in: ['COMPLETED', 'PAID'] },
+        status: { in: ["COMPLETED", "PAID"] },
         createdAt: {
           gte: startDate,
           lte: endDate,
@@ -37,7 +37,7 @@ export async function getAnalyticsData(
     // Group revenue by date for chart
     const revenueByDateMap = new Map<string, number>();
     orders.forEach((order) => {
-      const dateStr = format(order.createdAt, 'MMM dd');
+      const dateStr = format(order.createdAt, "MMM dd");
       const currentAmount = revenueByDateMap.get(dateStr) || 0;
       revenueByDateMap.set(dateStr, currentAmount + Number(order.totalAmount));
     });
@@ -52,7 +52,7 @@ export async function getAnalyticsData(
       where: {
         order: {
           restaurantId,
-          status: { in: ['COMPLETED', 'PAID'] },
+          status: { in: ["COMPLETED", "PAID"] },
           createdAt: {
             gte: startDate,
             lte: endDate,
@@ -107,7 +107,7 @@ export async function getAnalyticsData(
       },
     };
   } catch (error) {
-    console.error('Failed to fetch analytics data:', error);
-    return { success: false, error: 'Failed to load analytics data' };
+    console.error("Failed to fetch analytics data:", error);
+    return { success: false, error: "Failed to load analytics data" };
   }
 }

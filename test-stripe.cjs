@@ -1,4 +1,4 @@
-const Stripe = require('stripe');
+const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16",
 });
@@ -17,7 +17,7 @@ async function test() {
             unit_amount: 15000,
           },
           quantity: 1,
-        }
+        },
       ],
       mode: "payment",
       success_url: "http://localhost:3000/en/payment/success?session_id={CHECKOUT_SESSION_ID}",

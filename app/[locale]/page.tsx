@@ -14,7 +14,7 @@ import { Testimonials } from "@/components/testimonials";
 
 export default async function Home() {
   const t = await getTranslations("Home");
-  
+
   const carouselItems = [
     {
       id: 1,
@@ -98,14 +98,16 @@ export default async function Home() {
               <div className="container mx-auto px-4">
                 <div className="text-center mb-10">
                   <h2 className="text-3xl font-bold mb-2 text-orange-400 animate animate-fade-up">
-                    {t('restaurants_title')}
+                    {t("restaurants_title")}
                   </h2>
-                  <p className="text-muted-foreground">{t('restaurants_description')}</p>
+                  <p className="text-muted-foreground">{t("restaurants_description")}</p>
                 </div>
 
                 {error && (
                   <div className="mb-4 rounded-md bg-destructive/10 p-4 text-destructive">
-                    <p>{t('restaurants_error')} {error}</p>
+                    <p>
+                      {t("restaurants_error")} {error}
+                    </p>
                   </div>
                 )}
 

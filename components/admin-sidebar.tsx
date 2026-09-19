@@ -113,7 +113,7 @@ export function AdminSidebar({ className }: { className?: string }) {
 
   const userRole = session?.user?.role;
   const isManagement = userRole === "ADMIN" || userRole === "MANAGER";
-  
+
   // Update the navItems array to include the new pages
   const navItems = [
     {
@@ -209,12 +209,15 @@ export function AdminSidebar({ className }: { className?: string }) {
   return (
     <div className={cn("flex h-screen w-64 flex-col border-r bg-card", className)}>
       <div className="flex h-14 items-center border-b px-4 shrink-0">
-        <Link href="/admin/dashboard" className="flex items-center gap-2 font-semibold text-primary">
+        <Link
+          href="/admin/dashboard"
+          className="flex items-center gap-2 font-semibold text-primary"
+        >
           <Store className="h-5 w-5" />
           <span>Zozo Booking Admin</span>
         </Link>
       </div>
-      
+
       {/* Move Restaurant Selector to Top Context */}
       <div className="px-4 py-3 border-b bg-muted/20">
         <RestaurantSelector />
@@ -233,9 +236,9 @@ export function AdminSidebar({ className }: { className?: string }) {
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
-                    pathname === item.href 
-                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md" 
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent"
+                    pathname === item.href
+                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent",
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -258,9 +261,9 @@ export function AdminSidebar({ className }: { className?: string }) {
                     href={item.href}
                     className={cn(
                       "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
-                      pathname === item.href 
-                        ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md" 
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent"
+                      pathname === item.href
+                        ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent",
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -287,10 +290,13 @@ export function AdminSidebar({ className }: { className?: string }) {
                 <ThemeToggle />
               </div>
             </div>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-3 w-full justify-start h-auto py-2 px-2 hover:bg-accent">
+                <Button
+                  variant="ghost"
+                  className="flex items-center gap-3 w-full justify-start h-auto py-2 px-2 hover:bg-accent"
+                >
                   <Avatar className="h-9 w-9 border">
                     {avatarUrl ? (
                       <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
@@ -301,8 +307,12 @@ export function AdminSidebar({ className }: { className?: string }) {
                     )}
                   </Avatar>
                   <div className="flex flex-col items-start text-sm truncate flex-1">
-                    <span className="font-semibold truncate w-full text-left">{session.user.name || "User"}</span>
-                    <span className="text-xs text-muted-foreground truncate w-full text-left">{session.user.email}</span>
+                    <span className="font-semibold truncate w-full text-left">
+                      {session.user.name || "User"}
+                    </span>
+                    <span className="text-xs text-muted-foreground truncate w-full text-left">
+                      {session.user.email}
+                    </span>
                   </div>
                 </Button>
               </DropdownMenuTrigger>

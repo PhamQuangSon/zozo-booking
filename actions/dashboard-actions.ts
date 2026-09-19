@@ -95,7 +95,7 @@ export async function getDashboardMetrics(restaurantId?: number) {
           name: format(monthDate, "MMM"),
           total: Number(monthRevenue._sum.totalAmount || 0),
         };
-      })
+      }),
     );
 
     // 6. Get Recent Orders (Top 5)
@@ -111,7 +111,7 @@ export async function getDashboardMetrics(restaurantId?: number) {
     const recentOrdersWithUser = await attachUsersToOrders(recentOrders);
 
     // Safe serialization for decimal values
-    const safeRecentOrders = recentOrdersWithUser.map(order => ({
+    const safeRecentOrders = recentOrdersWithUser.map((order) => ({
       ...order,
       totalAmount: Number(order.totalAmount),
     }));

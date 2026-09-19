@@ -4,23 +4,27 @@ import { formatDistanceToNow } from "date-fns";
 
 export function RecentOrders({ orders }: { orders?: any[] }) {
   if (!orders || orders.length === 0) {
-    return <div className="text-sm text-muted-foreground text-center py-4">No recent orders found.</div>;
+    return (
+      <div className="text-sm text-muted-foreground text-center py-4">No recent orders found.</div>
+    );
   }
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-150 fill-mode-both">
       {orders.map((order) => {
-        const customerName = order.user?.name || `Table ${order.table?.number || '?'}`;
+        const customerName = order.user?.name || `Table ${order.table?.number || "?"}`;
         const initials = customerName.substring(0, 2).toUpperCase();
         const timeAgo = formatDistanceToNow(new Date(order.createdAt), { addSuffix: true });
-        
+
         return (
-          <div 
-            key={order.id} 
+          <div
+            key={order.id}
             className="flex items-center group rounded-xl border border-transparent p-3 transition-all hover:bg-muted/50 hover:border-border"
           >
             <Avatar className="h-10 w-10 border-2 border-background shadow-sm group-hover:scale-105 transition-transform duration-300">
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">{initials}</AvatarFallback>
+              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                {initials}
+              </AvatarFallback>
             </Avatar>
             <div className="ml-4 space-y-1">
               <p className="text-sm font-semibold leading-none text-foreground">{customerName}</p>
@@ -39,7 +43,9 @@ export function RecentOrders({ orders }: { orders?: any[] }) {
               >
                 {order.status}
               </Badge>
-              <p className="text-sm font-medium text-foreground">${Number(order.totalAmount).toFixed(2)}</p>
+              <p className="text-sm font-medium text-foreground">
+                ${Number(order.totalAmount).toFixed(2)}
+              </p>
             </div>
           </div>
         );

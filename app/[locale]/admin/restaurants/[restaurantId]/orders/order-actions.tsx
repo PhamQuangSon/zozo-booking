@@ -110,8 +110,11 @@ export function OrderActions({ order }: OrderActionsProps) {
             <AlertDialogDescription>
               Are you sure you want to update this order status to{" "}
               <span className="font-semibold text-foreground">
-                {selectedStatus ? selectedStatus.charAt(0) + selectedStatus.slice(1).toLowerCase() : ""}
-              </span>? This action cannot be undone.
+                {selectedStatus
+                  ? selectedStatus.charAt(0) + selectedStatus.slice(1).toLowerCase()
+                  : ""}
+              </span>
+              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

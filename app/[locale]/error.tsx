@@ -21,28 +21,24 @@ export default function ErrorBoundary({
       <div className="rounded-full bg-destructive/10 p-6 mb-6">
         <AlertCircle className="w-12 h-12 text-destructive" />
       </div>
-      
-      <h2 className="text-3xl font-bold tracking-tight mb-3">
-        Oops! Something went wrong
-      </h2>
-      
+
+      <h2 className="text-3xl font-bold tracking-tight mb-3">Oops! Something went wrong</h2>
+
       <p className="text-muted-foreground max-w-md mx-auto mb-8">
         We encountered an unexpected error while rendering this page. Our team has been notified.
       </p>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-        <Button 
-          onClick={() => reset()} 
-          size="lg"
-          className="gap-2"
-        >
+        <Button onClick={() => reset()} size="lg" className="gap-2">
           <RotateCcw className="w-4 h-4" />
           Try again
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="lg"
-          onClick={() => { window.location.href = "/"; }}
+          onClick={() => {
+            window.location.href = "/";
+          }}
         >
           Return to Home
         </Button>

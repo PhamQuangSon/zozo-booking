@@ -9,7 +9,7 @@ export default async function POSPage({
   params: Promise<{ restaurantId: string }>;
 }) {
   const { restaurantId } = await params;
-  
+
   const result = await getRestaurantOrders(restaurantId);
 
   if (!result.success || !result.data) {

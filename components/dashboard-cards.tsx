@@ -31,7 +31,9 @@ export function DashboardCards({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold tracking-tight text-foreground">{formatCurrency(revenue, currency)}</div>
+          <div className="text-3xl font-bold tracking-tight text-foreground">
+            {formatCurrency(revenue, currency)}
+          </div>
           <p className="text-xs text-muted-foreground mt-1 flex items-center">
             <TrendingUp className="mr-1 h-3 w-3 text-emerald-500" />
             <span className="text-emerald-500 font-medium">+20.1%</span>
@@ -85,10 +87,10 @@ export function DashboardCards({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-xl font-bold tracking-tight text-foreground truncate mt-2">{popularItem}</div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Most ordered today
-          </p>
+          <div className="text-xl font-bold tracking-tight text-foreground truncate mt-2">
+            {popularItem}
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">Most ordered today</p>
         </CardContent>
       </Card>
     </div>

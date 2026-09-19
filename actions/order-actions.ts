@@ -54,9 +54,7 @@ export async function getRestaurantOrders(
 }
 
 // Also fix the updateOrderItemStatus function to use the correct OrderItem type
-export async function getKitchenOrders(
-  restaurantId: string,
-) {
+export async function getKitchenOrders(restaurantId: string) {
   try {
     const orders = await prisma.order.findMany({
       where: {
@@ -155,15 +153,26 @@ export async function updateOrderItemStatus(orderItemId: number, newStatus: Orde
       return orderItem;
     });
 
-    
     if (newStatus === "READY") {
       try {
-        const tableStr = updatedItem.order.table ? `Table ${updatedItem.order.table.number}` : 'Takeaway';
-        await sendNotificationToRole('WAITER', 'Order Item Ready', `An item for ${tableStr} is ready.`);
+        const tableStr = updatedItem.order.table
+          ? `Table ${updatedItem.order.table.number}`
+          : "Takeaway";
+        await sendNotificationToRole(
+          "WAITER",
+          "Order Item Ready",
+          `An item for ${tableStr} is ready.`,
+        );
         if (updatedItem.order.userId) {
-          await sendNotificationToUser(updatedItem.order.userId, 'Order Update', 'One of your items is ready!');
+          await sendNotificationToUser(
+            updatedItem.order.userId,
+            "Order Update",
+            "One of your items is ready!",
+          );
         }
-      } catch (e) { console.error('Notification error', e); }
+      } catch (e) {
+        console.error("Notification error", e);
+      }
     }
 
     return {
@@ -214,7 +223,10 @@ export async function updateOrderStatus(orderId: number, newStatus: OrderStatus)
       });
 
       // Release table if status is terminal and no other active orders on this table
-      if (order.table && (newStatus === "COMPLETED" || newStatus === "PAID" || newStatus === "CANCELLED")) {
+      if (
+        order.table &&
+        (newStatus === "COMPLETED" || newStatus === "PAID" || newStatus === "CANCELLED")
+      ) {
         const activeOrders = await tx.order.count({
           where: {
             tableId: order.table.id,
@@ -246,7 +258,6 @@ export async function updateOrderStatus(orderId: number, newStatus: OrderStatus)
     };
   }
 }
-
 
 // Option Choice CRUD
 export async function createOptionChoice(data: {

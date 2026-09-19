@@ -17,7 +17,11 @@ export default function PaymentCancelPage() {
           <p className="text-muted-foreground mb-8">
             Your payment was cancelled or interrupted. No charges were made.
           </p>
-          <Button asChild variant="outline" className="w-full h-12 rounded-full text-lg border-primary text-primary hover:bg-primary hover:text-white">
+          <Button
+            asChild
+            variant="outline"
+            className="w-full h-12 rounded-full text-lg border-primary text-primary hover:bg-primary hover:text-white"
+          >
             <Link href="/">Return to Home</Link>
           </Button>
         </CardContent>

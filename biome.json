@@ -46,13 +46,6 @@
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      ".vercel",
-      ".next",
-      "build",
-      "dist",
-      "coverage"
-    ]
+    "ignore": ["node_modules", ".vercel", ".next", "build", "dist", "coverage"]
   }
 }

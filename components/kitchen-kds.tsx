@@ -20,29 +20,33 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
   const handleUpdateStatus = async (orderItemId: number, currentStatus: string) => {
     setIsUpdating(orderItemId);
     const nextStatus = currentStatus === "NEW" ? "PREPARING" : "READY";
-    
+
     try {
       const result = await updateOrderItemStatus(orderItemId, nextStatus as any);
-      
+
       if (result.success) {
         setOrders((prev) => {
-          const newOrders = prev.map((order) => {
-            const updatedItems = order.orderItems.map((item) => 
-              item.id === orderItemId ? { ...item, status: nextStatus as OrderItemStatus } : item
-            );
-            
-            // Remove the item from view if it's READY
-            const filteredItems = updatedItems.filter(item => item.status === "NEW" || item.status === "PREPARING");
-            
-            return {
-              ...order,
-              orderItems: filteredItems
-            } as OrderWithRelations;
-          }).filter(order => order.orderItems.length > 0); // Remove empty orders
+          const newOrders = prev
+            .map((order) => {
+              const updatedItems = order.orderItems.map((item) =>
+                item.id === orderItemId ? { ...item, status: nextStatus as OrderItemStatus } : item,
+              );
+
+              // Remove the item from view if it's READY
+              const filteredItems = updatedItems.filter(
+                (item) => item.status === "NEW" || item.status === "PREPARING",
+              );
+
+              return {
+                ...order,
+                orderItems: filteredItems,
+              } as OrderWithRelations;
+            })
+            .filter((order) => order.orderItems.length > 0); // Remove empty orders
 
           return newOrders;
         });
-        
+
         toast({
           title: "Status updated",
           description: `Item marked as ${nextStatus.toLowerCase()}`,
@@ -77,9 +81,7 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
         <Card key={order.id} className="flex flex-col border-2 overflow-hidden shadow-sm">
           <CardHeader className="bg-muted pb-4 border-b">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl">
-                Table {order.table?.number || "Takeout"}
-              </CardTitle>
+              <CardTitle className="text-xl">Table {order.table?.number || "Takeout"}</CardTitle>
               <div className="text-sm font-medium flex items-center text-muted-foreground bg-background px-2 py-1 rounded-md shadow-sm">
                 <Clock className="mr-1 h-4 w-4" />
                 {formatDistanceToNow(new Date(order.createdAt), { addSuffix: true })}
@@ -101,13 +103,16 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
                         </span>
                         {item.menuItem.name}
                       </div>
-                      
+
                       {item.orderItemChoices && item.orderItemChoices.length > 0 && (
                         <div className="text-sm text-muted-foreground mt-1 ml-10">
-                          {item.orderItemChoices.map(choice => choice.optionChoice?.name).filter(Boolean).join(", ")}
+                          {item.orderItemChoices
+                            .map((choice) => choice.optionChoice?.name)
+                            .filter(Boolean)
+                            .join(", ")}
                         </div>
                       )}
-                      
+
                       {item.notes && (
                         <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded mt-2 ml-10 font-medium border border-amber-200">
                           Note: {item.notes}
@@ -115,19 +120,19 @@ export function KitchenKDS({ initialOrders }: { initialOrders: OrderWithRelation
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2 mt-2">
                     {item.status === "NEW" ? (
-                      <Button 
-                        className="w-full text-lg h-14 bg-blue-600 hover:bg-blue-700 shadow-md" 
+                      <Button
+                        className="w-full text-lg h-14 bg-blue-600 hover:bg-blue-700 shadow-md"
                         onClick={() => handleUpdateStatus(item.id, "NEW")}
                         disabled={isUpdating === item.id}
                       >
                         Start Preparing
                       </Button>
                     ) : (
-                      <Button 
-                        className="w-full text-lg h-14 bg-green-600 hover:bg-green-700 shadow-md" 
+                      <Button
+                        className="w-full text-lg h-14 bg-green-600 hover:bg-green-700 shadow-md"
                         onClick={() => handleUpdateStatus(item.id, "PREPARING")}
                         disabled={isUpdating === item.id}
                       >

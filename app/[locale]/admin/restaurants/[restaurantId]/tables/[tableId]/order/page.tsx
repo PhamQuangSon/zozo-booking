@@ -56,7 +56,7 @@ export default async function WaiterPOSPage({
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <WaiterPOS 
+        <WaiterPOS
           restaurantId={Number(restaurantId)}
           tableId={Number(tableId)}
           categories={restaurant.categories || []}

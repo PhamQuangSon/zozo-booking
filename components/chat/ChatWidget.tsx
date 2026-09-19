@@ -1,20 +1,15 @@
 "use client";
 
-import { useChat } from 'ai/react';
-import { useState, useRef, useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
-import { MessageCircle, X, Send, Bot, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { useChat } from "ai/react";
+import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import { MessageCircle, X, Send, Bot, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 interface ChatWidgetProps {
   restaurantId: number;
@@ -26,26 +21,26 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
   const [isOpen, setIsOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
-  
+
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-    api: '/api/chat',
+    api: "/api/chat",
     body: {
       restaurantId,
       tableId,
     },
     onError: (e) => {
       console.error("Chat error:", e);
-    }
+    },
   });
 
   // Watch for successful order_food tool invocations to trigger a refetch
   useEffect(() => {
     if (!onOrderUpdated || messages.length === 0) return;
-    
-    const hasNewOrder = messages.some(m => 
-      m.toolInvocations?.some(t => t.toolName === 'order_food' && t.state === 'result')
+
+    const hasNewOrder = messages.some((m) =>
+      m.toolInvocations?.some((t) => t.toolName === "order_food" && t.state === "result"),
     );
-    
+
     if (hasNewOrder && !isLoading) {
       onOrderUpdated();
     }
@@ -68,31 +63,49 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
           </div>
         ) : (
           <div className="space-y-4 pb-4">
-            {messages.map(m => (
-              <div 
-                key={m.id} 
+            {messages.map((m) => (
+              <div
+                key={m.id}
                 className={cn(
                   "flex gap-3 text-sm",
-                  m.role === 'user' ? "flex-row-reverse" : "flex-row"
+                  m.role === "user" ? "flex-row-reverse" : "flex-row",
                 )}
               >
-                <div className={cn(
-                  "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                  m.role === 'user' ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-                )}>
-                  {m.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                <div
+                  className={cn(
+                    "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground",
+                  )}
+                >
+                  {m.role === "user" ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
                 </div>
-                
-                <div className={cn(
-                  "px-4 py-2 rounded-2xl max-w-[80%]",
-                  m.role === 'user' 
-                    ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                    : "bg-muted rounded-tl-sm"
-                )}>
-                  <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words", m.role === 'user' ? 'text-primary-foreground' : '')}>
-                    <ReactMarkdown 
+
+                <div
+                  className={cn(
+                    "px-4 py-2 rounded-2xl max-w-[80%]",
+                    m.role === "user"
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
+                      : "bg-muted rounded-tl-sm",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "prose prose-sm dark:prose-invert max-w-none break-words",
+                      m.role === "user" ? "text-primary-foreground" : "",
+                    )}
+                  >
+                    <ReactMarkdown
                       components={{
-                        a: ({node, ...props}) => <a {...props} className="font-semibold underline underline-offset-4 hover:opacity-80" target="_blank" rel="noopener noreferrer" />
+                        a: ({ node, ...props }) => (
+                          <a
+                            {...props}
+                            className="font-semibold underline underline-offset-4 hover:opacity-80"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          />
+                        ),
                       }}
                     >
                       {m.content}
@@ -101,22 +114,29 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
                 </div>
               </div>
             ))}
-            
+
             {isLoading && (
               <div className="flex gap-3 text-sm flex-row">
-                 <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
                   <Bot className="h-5 w-5" />
                 </div>
                 <div className="px-4 py-2 rounded-2xl bg-muted rounded-tl-sm flex gap-1 items-center">
                   <div className="h-1.5 w-1.5 rounded-full bg-foreground/50 animate-bounce" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-foreground/50 animate-bounce" style={{ animationDelay: '0.2s' }} />
-                  <div className="h-1.5 w-1.5 rounded-full bg-foreground/50 animate-bounce" style={{ animationDelay: '0.4s' }} />
+                  <div
+                    className="h-1.5 w-1.5 rounded-full bg-foreground/50 animate-bounce"
+                    style={{ animationDelay: "0.2s" }}
+                  />
+                  <div
+                    className="h-1.5 w-1.5 rounded-full bg-foreground/50 animate-bounce"
+                    style={{ animationDelay: "0.4s" }}
+                  />
                 </div>
               </div>
             )}
             {error && (
               <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded-md">
-                {error.message || "Sorry, there was an error processing your request. Please try again."}
+                {error.message ||
+                  "Sorry, there was an error processing your request. Please try again."}
               </div>
             )}
           </div>
@@ -132,9 +152,9 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
             className="flex-1 rounded-full text-base"
             disabled={isLoading}
           />
-          <Button 
-            type="submit" 
-            size="icon" 
+          <Button
+            type="submit"
+            size="icon"
             disabled={isLoading || !input.trim()}
             className="rounded-full shrink-0"
           >
@@ -164,9 +184,9 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
               <Bot className="h-5 w-5" />
               <h3 className="font-semibold">AI Assistant</h3>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="text-primary-foreground hover:bg-primary/90 h-8 w-8 rounded-full"
               onClick={() => setIsOpen(false)}
             >
@@ -187,9 +207,9 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
                   <Bot className="h-5 w-5 text-primary" />
                   AI Assistant
                 </DrawerTitle>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-8 w-8 rounded-full"
                   onClick={() => setIsOpen(false)}
                 >
@@ -197,9 +217,7 @@ export function ChatWidget({ restaurantId, tableId, onOrderUpdated }: ChatWidget
                 </Button>
               </div>
             </DrawerHeader>
-            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-              {ChatContent}
-            </div>
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">{ChatContent}</div>
           </DrawerContent>
         </Drawer>
       )}

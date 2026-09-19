@@ -14,7 +14,7 @@ describe("utils.ts - Unit Tests", () => {
   describe("formatDate", () => {
     it("should format date to time string", () => {
       const testDate = "2024-01-01T15:30:00.000Z";
-      // Chú ý: Kết quả có thể phụ thuộc vào timezone của máy chạy test, 
+      // Chú ý: Kết quả có thể phụ thuộc vào timezone của máy chạy test,
       // ở đây ta chỉ kiểm tra xem nó có trả về chuỗi hợp lệ không.
       const formatted = formatDate(testDate);
       expect(typeof formatted).toBe("string");
@@ -29,7 +29,7 @@ describe("utils.ts - Unit Tests", () => {
     });
 
     it("should return fallback for invalid JSON", () => {
-      const result = safeParseJSON('invalid-json', { name: "Default" });
+      const result = safeParseJSON("invalid-json", { name: "Default" });
       expect(result).toEqual({ name: "Default" });
     });
 

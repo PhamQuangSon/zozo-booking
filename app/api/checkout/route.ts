@@ -42,11 +42,11 @@ export async function POST(req: Request) {
     // Calculate line items for Stripe Checkout
     for (const order of orders) {
       orderIds.push(order.id);
-      
+
       for (const item of order.orderItems) {
         // Calculate the actual unit price including options
         let unitPrice = Number(item.unitPrice);
-        
+
         if (item.orderItemChoices && item.orderItemChoices.length > 0) {
           for (const choice of item.orderItemChoices) {
             unitPrice += Number(choice.optionChoice.priceAdjustment);
@@ -75,7 +75,10 @@ export async function POST(req: Request) {
 
     // Tax calculation (8% as an example, matching frontend logic)
     // You could also use Stripe Tax if configured
-    const subtotal = line_items.reduce((acc, item) => acc + (item.price_data.unit_amount * item.quantity), 0);
+    const subtotal = line_items.reduce(
+      (acc, item) => acc + item.price_data.unit_amount * item.quantity,
+      0,
+    );
     const tax = Math.round(subtotal * 0.08);
 
     if (tax > 0) {
@@ -111,13 +114,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("[CHECKOUT_ERROR]", error);
-    
+
     // Check if it's an API key error to provide a generic message to users
     const isApiKeyError = error instanceof Error && error.message.toLowerCase().includes("api key");
-    const errorMessage = isApiKeyError 
-      ? "Payment system is currently unavailable. Please contact support." 
-      : (error instanceof Error ? error.message : "Internal Server Error");
-      
+    const errorMessage = isApiKeyError
+      ? "Payment system is currently unavailable. Please contact support."
+      : error instanceof Error
+        ? error.message
+        : "Internal Server Error";
+
     return new NextResponse(errorMessage, { status: 500 });
   }
 }

@@ -48,7 +48,9 @@ export function RestaurantCard({ id, name, image, cuisine, rating, href }: Resta
           </div>
 
           <div className="mt-4 flex justify-between items-center">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{t("view_menu")}</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+              {t("view_menu")}
+            </span>
             <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
               <svg
                 width="15"

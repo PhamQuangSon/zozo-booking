@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 
 export async function attachUsersToOrders<T extends { userId: string | null }>(
-  orders: T[]
+  orders: T[],
 ): Promise<(T & { user: { id: string; name: string | null; email: string | null } | null })[]> {
   // Extract unique user IDs
   const orderUserIds = orders

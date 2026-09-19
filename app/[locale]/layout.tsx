@@ -10,10 +10,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { PushNotificationManager } from "@/components/push-notification-manager";
 import { auth } from "@/config/auth";
 
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getTranslations } from 'next-intl/server';
-import { routing } from '@/i18n/routing';
-import { notFound } from 'next/navigation';
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getTranslations } from "next-intl/server";
+import { routing } from "@/i18n/routing";
+import { notFound } from "next/navigation";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { FloatingControls } from "@/components/floating-controls";
 
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-  params
+  params,
 }: {
   children: React.ReactNode;
   params: Promise<{ locale: string }>;

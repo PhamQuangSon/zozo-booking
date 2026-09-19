@@ -58,7 +58,7 @@ export default async function DashboardPage() {
     popularItem: metrics?.popularItem || "None",
   };
   const chartData = metrics?.chartData || [];
-  
+
   const recentRestaurants: Restaurant[] = mockRestaurants;
 
   return (
@@ -91,7 +91,9 @@ export default async function DashboardPage() {
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Recent Orders</CardTitle>
-                <CardDescription>Latest {metrics?.recentOrders?.length || 0} orders</CardDescription>
+                <CardDescription>
+                  Latest {metrics?.recentOrders?.length || 0} orders
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RecentOrders orders={metrics?.recentOrders || []} />

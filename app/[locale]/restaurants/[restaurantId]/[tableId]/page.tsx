@@ -255,7 +255,9 @@ function TableOrderPageContent() {
               </h1>
               <p className="mt-2 text-muted-foreground max-w-md">{restaurant?.description}</p>
               <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full bg-brand-accent/20 text-brand-accent-foreground animate animate-fade-right">
-                <span className="font-medium">{tr("table")} {table?.number}</span>
+                <span className="font-medium">
+                  {tr("table")} {table?.number}
+                </span>
               </div>
 
               {/* Collaborative mode toggle */}
@@ -347,12 +349,12 @@ function TableOrderPageContent() {
           </SheetContent>
         </Sheet>
       </div>
-      
+
       {/* AI Chatbot Widget */}
       {restaurant?.chatbotConfig?.isActive && (
-        <ChatWidget 
-          restaurantId={Number(restaurantId)} 
-          tableId={Number(tableId)} 
+        <ChatWidget
+          restaurantId={Number(restaurantId)}
+          tableId={Number(tableId)}
           onOrderUpdated={refetch}
         />
       )}

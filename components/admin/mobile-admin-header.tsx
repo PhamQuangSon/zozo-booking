@@ -23,7 +23,7 @@ export function MobileAdminHeader() {
   return (
     <div className="md:hidden flex items-center justify-between p-4 border-b bg-background sticky top-0 z-40">
       <div className="font-semibold text-lg flex-1">Zozo Booking</div>
-      
+
       <div className="flex items-center gap-2 mr-2">
         <LanguageSwitcher />
         <ThemeToggle />

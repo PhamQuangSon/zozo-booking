@@ -1,11 +1,11 @@
-import { streamText, tool } from 'ai';
-import { z } from 'zod';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import prisma from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { streamText, tool } from "ai";
+import { z } from "zod";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // In-memory rate limiting store (cleared on server restart)
 type RateLimitInfo = { count: number; resetTime: number };
@@ -18,14 +18,11 @@ export async function POST(req: Request) {
     const { messages, restaurantId, tableId } = await req.json();
 
     if (!restaurantId) {
-      return NextResponse.json(
-        { error: 'Restaurant ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Restaurant ID is required" }, { status: 400 });
     }
 
     // IP-based Rate Limiting (Simple Anti-Spam)
-    const ip = req.headers.get('x-forwarded-for') || 'unknown-ip';
+    const ip = req.headers.get("x-forwarded-for") || "unknown-ip";
     const now = Date.now();
     const rateInfo = ipRateLimits.get(ip);
 
@@ -34,8 +31,8 @@ export async function POST(req: Request) {
         ipRateLimits.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
       } else if (rateInfo.count >= MAX_REQUESTS_PER_MINUTE) {
         return NextResponse.json(
-          { error: 'Too many requests (Rate Limited). Please slow down.' },
-          { status: 429 }
+          { error: "Too many requests (Rate Limited). Please slow down." },
+          { status: 429 },
         );
       } else {
         rateInfo.count++;
@@ -49,7 +46,7 @@ export async function POST(req: Request) {
       const keysToDelete = Array.from(ipRateLimits.entries())
         .filter(([_, info]) => info.resetTime < now)
         .map(([key]) => key);
-      keysToDelete.forEach(k => ipRateLimits.delete(k));
+      keysToDelete.forEach((k) => ipRateLimits.delete(k));
     }
 
     // Fetch config and menu items concurrently
@@ -61,65 +58,67 @@ export async function POST(req: Request) {
         where: { id: Number(restaurantId) },
         include: {
           categories: {
-            orderBy: { displayOrder: 'asc' },
+            orderBy: { displayOrder: "asc" },
             include: {
               items: {
                 where: { isAvailable: true },
-                orderBy: { displayOrder: 'asc' },
-              }
-            }
-          }
-        }
-      })
+                orderBy: { displayOrder: "asc" },
+              },
+            },
+          },
+        },
+      }),
     ]);
 
     if (!config || !config.isActive) {
       return NextResponse.json(
-        { error: 'Chatbot is currently disabled for this restaurant.' },
-        { status: 403 }
+        { error: "Chatbot is currently disabled for this restaurant." },
+        { status: 403 },
       );
     }
 
     // Session limit check
     if (messages.length > (config.maxMessages || 20)) {
       return NextResponse.json(
-        { error: `Maximum limit of ${config.maxMessages} messages reached. Please refresh the page to start a new session.` },
-        { status: 429 }
+        {
+          error: `Maximum limit of ${config.maxMessages} messages reached. Please refresh the page to start a new session.`,
+        },
+        { status: 429 },
       );
     }
 
     // Format menu context
-    let menuContext = 'Here is the current menu:\n\n';
+    let menuContext = "Here is the current menu:\n\n";
     if (restaurantData?.categories) {
       for (const category of restaurantData.categories) {
         menuContext += `**${category.name}**\n`;
         for (const item of category.items) {
-          menuContext += `- [ID: ${item.id}] ${item.name}: $${item.price.toString()} ${item.description ? `(${item.description})` : ''}\n`;
+          menuContext += `- [ID: ${item.id}] ${item.name}: $${item.price.toString()} ${item.description ? `(${item.description})` : ""}\n`;
         }
-        menuContext += '\n';
+        menuContext += "\n";
       }
     }
 
     // Fetch Active Orders Context if sitting at a table
-    let orderContext = '';
+    let orderContext = "";
     if (tableId) {
       const activeOrders = await prisma.order.findMany({
         where: {
           tableId: Number(tableId),
-          status: { notIn: ['COMPLETED', 'CANCELLED'] }
+          status: { notIn: ["COMPLETED", "CANCELLED"] },
         },
         include: {
           orderItems: {
-            include: { menuItem: true }
-          }
-        }
+            include: { menuItem: true },
+          },
+        },
       });
-      
+
       if (activeOrders.length > 0) {
         orderContext = `\n[CURRENT TABLE ORDERS]\nThe user is currently sitting at Table ${tableId}. Here are their active orders:\n`;
-        activeOrders.forEach(order => {
+        activeOrders.forEach((order) => {
           orderContext += `- Order #${order.id} (Total: $${order.totalAmount}, Status: ${order.status})\n`;
-          order.orderItems.forEach(item => {
+          order.orderItems.forEach((item) => {
             orderContext += `  * ${item.quantity}x ${item.menuItem.name} (Status: ${item.status})\n`;
           });
         });
@@ -147,19 +146,19 @@ ${menuContext}
 
     // Handle deprecated models transparently
     let modelName = config.modelName;
-    if (modelName === 'gemini-1.5-flash') modelName = 'gemini-2.5-flash';
-    if (modelName === 'gemini-1.5-pro') modelName = 'gemini-2.5-pro';
+    if (modelName === "gemini-1.5-flash") modelName = "gemini-2.5-flash";
+    if (modelName === "gemini-1.5-pro") modelName = "gemini-2.5-pro";
 
     // Select the model based on config
-    const isGemini = modelName.includes('gemini');
+    const isGemini = modelName.includes("gemini");
 
     // Choose model provider with explicit API keys
-    const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY });
+    const google = createGoogleGenerativeAI({
+      apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+    });
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const model = isGemini
-      ? google(modelName)
-      : openai(modelName);
+    const model = isGemini ? google(modelName) : openai(modelName);
 
     const result = await streamText({
       model,
@@ -169,75 +168,82 @@ ${menuContext}
       maxSteps: 5,
       tools: {
         book_table: tool({
-          description: 'Finds an available empty table for the user and marks it as booked/occupied.',
+          description:
+            "Finds an available empty table for the user and marks it as booked/occupied.",
           parameters: z.object({
-            guests: z.number().describe('The number of guests/people to seat.'),
+            guests: z.number().describe("The number of guests/people to seat."),
           }),
           execute: async ({ guests }) => {
             // Find available table
             const table = await prisma.table.findFirst({
               where: {
                 restaurantId: Number(restaurantId),
-                status: 'AVAILABLE',
+                status: "AVAILABLE",
                 capacity: { gte: guests },
               },
-              orderBy: { capacity: 'asc' }, // Get the smallest table that fits
+              orderBy: { capacity: "asc" }, // Get the smallest table that fits
             });
 
             if (!table) {
-              return { success: false, message: 'No available tables found for that capacity.' };
+              return { success: false, message: "No available tables found for that capacity." };
             }
 
             // Book it
             await prisma.table.update({
               where: { id: table.id },
-              data: { status: 'OCCUPIED' },
+              data: { status: "OCCUPIED" },
             });
 
-            return { 
-              success: true, 
-              tableId: table.id, 
-              tableNumber: table.number, 
+            return {
+              success: true,
+              tableId: table.id,
+              tableNumber: table.number,
               capacity: table.capacity,
-              message: `Successfully booked table ${table.number} (capacity: ${table.capacity})` 
+              message: `Successfully booked table ${table.number} (capacity: ${table.capacity})`,
             };
           },
         }),
         order_food: tool({
-          description: 'Places a food order for a specific table.',
+          description: "Places a food order for a specific table.",
           parameters: z.object({
-            tableId: z.number().describe('The ID of the table (NOT the table number).'),
-            items: z.array(z.object({
-              menuItemId: z.number().describe('The exact ID of the menu item from the menu context.'),
-              quantity: z.number().describe('The quantity of this item.'),
-            })).describe('List of items to order.'),
+            tableId: z.number().describe("The ID of the table (NOT the table number)."),
+            items: z
+              .array(
+                z.object({
+                  menuItemId: z
+                    .number()
+                    .describe("The exact ID of the menu item from the menu context."),
+                  quantity: z.number().describe("The quantity of this item."),
+                }),
+              )
+              .describe("List of items to order."),
           }),
           execute: async ({ tableId, items }) => {
             try {
               // Get menu items to calculate price
-              const menuItemIds = items.map(i => i.menuItemId);
+              const menuItemIds = items.map((i) => i.menuItemId);
               const menuItems = await prisma.menuItem.findMany({
-                where: { id: { in: menuItemIds } }
+                where: { id: { in: menuItemIds } },
               });
 
               let totalAmount = 0;
               const validItems = [];
 
               for (const item of items) {
-                const dbItem = menuItems.find(mi => mi.id === item.menuItemId);
+                const dbItem = menuItems.find((mi) => mi.id === item.menuItemId);
                 if (dbItem) {
                   totalAmount += Number(dbItem.price) * item.quantity;
                   validItems.push({
                     menuItemId: item.menuItemId,
                     quantity: item.quantity,
                     unitPrice: dbItem.price,
-                    status: "NEW"
+                    status: "NEW",
                   });
                 }
               }
 
               if (validItems.length === 0) {
-                return { success: false, message: 'No valid menu items found to order.' };
+                return { success: false, message: "No valid menu items found to order." };
               }
 
               // Create order directly using Prisma
@@ -245,40 +251,37 @@ ${menuContext}
                 data: {
                   restaurantId: Number(restaurantId),
                   tableId: tableId,
-                  status: 'NEW',
+                  status: "NEW",
                   totalAmount: totalAmount,
-                  notes: 'Ordered via AI Chatbot',
+                  notes: "Ordered via AI Chatbot",
                   orderItems: {
-                    create: validItems.map(vi => ({
+                    create: validItems.map((vi) => ({
                       menuItemId: vi.menuItemId,
                       quantity: vi.quantity,
                       unitPrice: vi.unitPrice,
-                      status: "NEW"
-                    }))
-                  }
-                }
+                      status: "NEW",
+                    })),
+                  },
+                },
               });
 
-              return { 
-                success: true, 
-                orderId: order.id, 
+              return {
+                success: true,
+                orderId: order.id,
                 totalAmount: totalAmount,
-                message: 'Order has been placed successfully and sent to the kitchen.' 
+                message: "Order has been placed successfully and sent to the kitchen.",
               };
             } catch (error: any) {
               return { success: false, message: `Failed to place order: ${error.message}` };
             }
           },
         }),
-      }
+      },
     });
 
     return result.toDataStreamResponse();
   } catch (error) {
-    console.error('Chat API Error:', error);
-    return NextResponse.json(
-      { error: 'An error occurred during your request.' },
-      { status: 500 }
-    );
+    console.error("Chat API Error:", error);
+    return NextResponse.json({ error: "An error occurred during your request." }, { status: 500 });
   }
 }

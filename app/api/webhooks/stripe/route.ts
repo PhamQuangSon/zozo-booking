@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET || ""
+      process.env.STRIPE_WEBHOOK_SECRET || "",
     );
   } catch (error: any) {
     console.error(`[WEBHOOK_ERROR] ${error.message}`);
@@ -27,11 +27,11 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     // Retrieve metadata
     const orderIdsRaw = session.metadata?.orderIds;
-    
+
     if (orderIdsRaw) {
       try {
         const orderIds = JSON.parse(orderIdsRaw) as number[];
-        
+
         // Update all orders to PAID
         await prisma.$transaction(async (tx) => {
           for (const orderId of orderIds) {
@@ -39,14 +39,14 @@ export async function POST(req: Request) {
               where: { id: orderId },
               data: { status: "PAID" },
             });
-            
+
             // Optionally update items too if we track item status similarly
             await tx.orderItem.updateMany({
               where: { orderId },
               data: { status: "COMPLETED" },
             });
           }
-          
+
           // Optionally release the table if all active orders are PAID
           const tableId = session.metadata?.tableId;
           if (tableId) {
@@ -65,10 +65,10 @@ export async function POST(req: Request) {
             }
           }
         });
-        
+
         console.log(`[WEBHOOK_SUCCESS] Orders ${orderIdsRaw} marked as PAID`);
       } catch (err) {
-        console.error(`[WEBHOOK_DB_ERROR] Failed to update orders:`, err);
+        console.error("[WEBHOOK_DB_ERROR] Failed to update orders:", err);
         return new NextResponse("Database Error", { status: 500 });
       }
     }

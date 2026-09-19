@@ -47,10 +47,7 @@ export async function getChatbotConfig(restaurantId: number) {
   }
 }
 
-export async function updateChatbotConfig(
-  restaurantId: number,
-  data: Partial<ChatbotConfigData>
-) {
+export async function updateChatbotConfig(restaurantId: number, data: Partial<ChatbotConfigData>) {
   try {
     const config = await prisma.chatbotConfig.upsert({
       where: { restaurantId },
@@ -72,7 +69,7 @@ export async function updateChatbotConfig(
     });
 
     revalidatePath(`/admin/restaurants/${restaurantId}/chatbot`);
-    
+
     return { success: true, data: serializePrismaData(config) };
   } catch (error) {
     console.error(`Failed to update chatbot config for restaurant ${restaurantId}:`, error);

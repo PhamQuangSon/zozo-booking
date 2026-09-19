@@ -50,11 +50,12 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
     queryFn: () => getRecentPaidTableOrders(restaurantId, tableId),
     enabled: !!restaurantId && !!tableId,
   });
-  
-  const rawPaidOrders = paidOrdersResponse?.success && Array.isArray(paidOrdersResponse.data) 
-    ? paidOrdersResponse.data 
-    : [];
-  
+
+  const rawPaidOrders =
+    paidOrdersResponse?.success && Array.isArray(paidOrdersResponse.data)
+      ? paidOrdersResponse.data
+      : [];
+
   const historyItems = convertServerOrdersToCartItems(restaurantId, tableId, rawPaidOrders);
 
   // Group items by user if in collaborative mode
@@ -200,7 +201,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
     try {
       // Get current locale if available from URL, or default to 'en'
       const pathname = window.location.pathname;
-      const locale = pathname.split('/')[1] || "en";
+      const locale = pathname.split("/")[1] || "en";
 
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -239,9 +240,7 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
         <div className="flex flex-col items-center justify-center py-8 text-center">
           <p className="mb-2 text-lg font-medium">{t("no_items")}</p>
           <p className="text-sm text-muted-foreground">
-            {items === pendingItems
-              ? t("no_items_desc")
-              : t("no_submitted_items_desc")}
+            {items === pendingItems ? t("no_items_desc") : t("no_submitted_items_desc")}
           </p>
         </div>
       );
@@ -317,7 +316,8 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
               {/* Display special instructions */}
               {item.specialInstructions && (
                 <div className="ml-6 text-sm text-muted-foreground">
-                  {t("special_instructions")}: <span className="italic">{item.specialInstructions}</span>
+                  {t("special_instructions")}:{" "}
+                  <span className="italic">{item.specialInstructions}</span>
                 </div>
               )}
             </div>
@@ -489,10 +489,10 @@ export function OrderCart({ restaurantId, tableId, collaborativeMode = false }: 
           )}
           {historyItems.length > 0 && renderCartItems(historyItems, collaborativeMode)}
           {historyItems.length > 0 && (
-             <div className="mt-4 pt-4 border-t flex justify-between font-medium">
-                <span>{t("paid")}</span>
-                <span>{formatCurrency(calculateSubtotal(historyItems) * 1.08, currency)}</span>
-             </div>
+            <div className="mt-4 pt-4 border-t flex justify-between font-medium">
+              <span>{t("paid")}</span>
+              <span>{formatCurrency(calculateSubtotal(historyItems) * 1.08, currency)}</span>
+            </div>
           )}
         </TabsContent>
       </Tabs>

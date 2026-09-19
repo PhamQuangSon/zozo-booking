@@ -1,21 +1,33 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { getChatbotConfig, updateChatbotConfig, type ChatbotConfigData } from "@/actions/chatbot-actions";
+import {
+  getChatbotConfig,
+  updateChatbotConfig,
+  type ChatbotConfigData,
+} from "@/actions/chatbot-actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
-export default function ChatbotAdminPage({ params }: { params: Promise<{ restaurantId: string }> }) {
+export default function ChatbotAdminPage({
+  params,
+}: { params: Promise<{ restaurantId: string }> }) {
   const resolvedParams = use(params);
   const restaurantId = Number(resolvedParams.restaurantId);
   const { toast } = useToast();
-  
+
   const [config, setConfig] = useState<ChatbotConfigData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -38,11 +50,15 @@ export default function ChatbotAdminPage({ params }: { params: Promise<{ restaur
     setIsSaving(true);
     const res = await updateChatbotConfig(restaurantId, config);
     setIsSaving(false);
-    
+
     if (res.success) {
       toast({ title: "Success", description: "Chatbot configuration saved successfully." });
     } else {
-      toast({ title: "Error", description: res.error || "Failed to save configuration.", variant: "destructive" });
+      toast({
+        title: "Error",
+        description: res.error || "Failed to save configuration.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -67,23 +83,25 @@ export default function ChatbotAdminPage({ params }: { params: Promise<{ restaur
         {/* Active Toggle */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <Label htmlFor="isActive" className="text-base">Enable Chatbot</Label>
+            <Label htmlFor="isActive" className="text-base">
+              Enable Chatbot
+            </Label>
             <p className="text-sm text-muted-foreground">
               Turn the AI assistant on or off for your customers.
             </p>
           </div>
-          <Switch 
+          <Switch
             id="isActive"
-            checked={config.isActive} 
-            onCheckedChange={(checked) => setConfig({ ...config, isActive: checked })} 
+            checked={config.isActive}
+            onCheckedChange={(checked) => setConfig({ ...config, isActive: checked })}
           />
         </div>
 
         {/* Model Selection */}
         <div className="space-y-2">
           <Label htmlFor="model">AI Model</Label>
-          <Select 
-            value={config.modelName} 
+          <Select
+            value={config.modelName}
             onValueChange={(val) => setConfig({ ...config, modelName: val })}
           >
             <SelectTrigger id="model">
@@ -103,12 +121,18 @@ export default function ChatbotAdminPage({ params }: { params: Promise<{ restaur
           <div className="flex justify-between">
             <Label>Creativity (Temperature: {config.temperature})</Label>
             <span className="text-sm text-muted-foreground">
-              {config.temperature < 0.5 ? 'Strict & Factual' : config.temperature > 0.8 ? 'Creative & Flexible' : 'Balanced'}
+              {config.temperature < 0.5
+                ? "Strict & Factual"
+                : config.temperature > 0.8
+                  ? "Creative & Flexible"
+                  : "Balanced"}
             </span>
           </div>
-          <Slider 
-            value={[config.temperature]} 
-            min={0} max={1} step={0.1}
+          <Slider
+            value={[config.temperature]}
+            min={0}
+            max={1}
+            step={0.1}
             onValueChange={([val]) => setConfig({ ...config, temperature: val })}
           />
         </div>
@@ -116,13 +140,15 @@ export default function ChatbotAdminPage({ params }: { params: Promise<{ restaur
         {/* Max Messages Per Session */}
         <div className="space-y-2">
           <Label htmlFor="maxMessages">Max Messages Per Session (Anti-Spam)</Label>
-          <Input 
-            id="maxMessages" 
-            type="number" 
-            min={1} 
+          <Input
+            id="maxMessages"
+            type="number"
+            min={1}
             max={100}
             value={config.maxMessages}
-            onChange={(e) => setConfig({ ...config, maxMessages: Number.parseInt(e.target.value) || 20 })}
+            onChange={(e) =>
+              setConfig({ ...config, maxMessages: Number.parseInt(e.target.value) || 20 })
+            }
           />
           <p className="text-sm text-muted-foreground">
             Limit the number of messages a user can send in a single chat session to prevent abuse.
@@ -132,15 +158,16 @@ export default function ChatbotAdminPage({ params }: { params: Promise<{ restaur
         {/* System Prompt */}
         <div className="space-y-2">
           <Label htmlFor="prompt">System Prompt</Label>
-          <Textarea 
-            id="prompt" 
+          <Textarea
+            id="prompt"
             className="min-h-[200px] font-mono text-sm"
             value={config.systemPrompt}
             onChange={(e) => setConfig({ ...config, systemPrompt: e.target.value })}
             placeholder="You are a helpful assistant..."
           />
           <p className="text-sm text-muted-foreground">
-            This prompt defines how the AI behaves. The current menu items will be automatically appended to the prompt.
+            This prompt defines how the AI behaves. The current menu items will be automatically
+            appended to the prompt.
           </p>
         </div>
 

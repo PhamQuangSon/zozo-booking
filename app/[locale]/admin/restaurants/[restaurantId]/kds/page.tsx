@@ -9,7 +9,7 @@ export default async function KDSPage({
   params: Promise<{ restaurantId: string }>;
 }) {
   const { restaurantId } = await params;
-  
+
   const result = await getKitchenOrders(restaurantId);
 
   if (!result.success || !result.data) {
@@ -17,9 +17,7 @@ export default async function KDSPage({
       <div className="p-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {result.error || "Failed to load kitchen orders"}
-          </AlertDescription>
+          <AlertDescription>{result.error || "Failed to load kitchen orders"}</AlertDescription>
         </Alert>
       </div>
     );
