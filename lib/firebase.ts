@@ -19,7 +19,7 @@ export const initMessaging = async () => {
       return getMessaging(app);
     }
   } catch (err) {
-    console.error(err);
+    console.error("Firebase messaging init error:", err);
   }
   return null;
 };
@@ -27,22 +27,26 @@ export const initMessaging = async () => {
 export const requestNotificationPermission = async () => {
   try {
     if (!("Notification" in window)) return null;
+    if (Notification.permission === "denied") return null;
+
+    const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
+    if (!vapidKey) {
+      console.error("NEXT_PUBLIC_FIREBASE_VAPID_KEY is not set");
+      return null;
+    }
 
     const permission = await Notification.requestPermission();
-    if (permission === "granted") {
-      const messaging = await initMessaging();
-      if (!messaging) return null;
-      const { getToken } = await import("firebase/messaging");
+    if (permission !== "granted") return null;
 
-      const swUrl = `/firebase-messaging-sw.js?firebaseConfig=${encodeURIComponent(JSON.stringify(firebaseConfig))}`;
-      const registration = await navigator.serviceWorker.register(swUrl);
+    const messaging = await initMessaging();
+    if (!messaging) return null;
 
-      const token = await getToken(messaging, {
-        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-        serviceWorkerRegistration: registration,
-      });
-      return token;
-    }
+    const { getToken } = await import("firebase/messaging");
+    const swUrl = `/firebase-messaging-sw.js?firebaseConfig=${encodeURIComponent(JSON.stringify(firebaseConfig))}`;
+    const registration = await navigator.serviceWorker.register(swUrl);
+
+    const token = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration });
+    return token ?? null;
   } catch (error) {
     console.error("Notification permission error:", error);
   }

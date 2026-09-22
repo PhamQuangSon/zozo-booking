@@ -1,45 +1,51 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { requestNotificationPermission, setupMessageListener } from "@/lib/firebase";
 import { toast } from "sonner";
 
 export function usePushNotifications() {
   const [token, setToken] = useState<string | null>(null);
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
-    async function init() {
-      const t = await requestNotificationPermission();
-      if (t) {
-        setToken(t);
-        try {
-          await fetch("/api/notifications/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token: t, device: "web" }),
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      }
+  const requestPermission = async () => {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "denied") return;
+    if (Notification.permission === "granted" && token) return;
+
+    const t = await requestNotificationPermission();
+    if (!t) return;
+
+    setToken(t);
+
+    try {
+      await fetch("/api/notifications/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: t, device: "web" }),
+      });
+    } catch (e) {
+      console.error("Failed to register push token:", e);
     }
-    init();
 
-    let unsubscribe: any = null;
-    setupMessageListener((payload) => {
-      console.log("Push received:", payload);
+    const unsub = await setupMessageListener((payload) => {
       if (payload.notification) {
         toast(payload.notification.title, {
           description: payload.notification.body,
         });
       }
-    }).then((unsub) => {
-      unsubscribe = unsub;
     });
+    if (unsub) unsubscribeRef.current = unsub;
+  };
 
+  useEffect(() => {
+    // Only auto-init if user already granted permission in a previous visit
+    if (typeof window !== "undefined" && Notification.permission === "granted") {
+      requestPermission();
+    }
     return () => {
-      if (unsubscribe) unsubscribe();
+      unsubscribeRef.current?.();
     };
   }, []);
 
-  return { token };
+  return { token, requestPermission };
 }
