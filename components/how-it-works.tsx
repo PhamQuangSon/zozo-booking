@@ -26,7 +26,7 @@ export function HowItWorks() {
     <section className="py-3" aria-labelledby="how-it-works-heading">
       <div className="container mx-auto px-4 mb-12">
         <div className="text-center mb-12">
-          <h2 id="how-it-works-heading" className="text-3xl font-bold text-orange-400 mb-2 animate animate-fade-up">
+          <h2 id="how-it-works-heading" className="text-3xl font-bold text-orange-600 mb-2 animate animate-fade-up">
             {t("how_it_works_title")}
           </h2>
           <p className="text-muted-foreground">{t("how_it_works_subtitle")}</p>
@@ -38,18 +38,18 @@ export function HowItWorks() {
               key={index}
               className="flex flex-col items-center text-center relative overflow-hidden rounded-3xl transition-all duration-300 hover:shadow-xl hover:translate-y-[-5px]"
             >
-              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-orange/10 text-orange-400 mb-4">
+              <div className="flex items-center justify-center h-20 w-20 rounded-full bg-orange/10 text-orange-600 mb-4">
                 {step.icon}
               </div>
               <div className="relative mb-4">
-                <div className="text-2xl font-bold bg-orange text-orange-400 h-8 w-8 rounded-full flex items-center justify-center">
+                <div className="text-2xl font-bold bg-orange text-orange-600 h-8 w-8 rounded-full flex items-center justify-center">
                   {index + 1}
                 </div>
                 {index < steps.length - 1 && (
-                  <div className="absolute top-4 left-full w-full h-0.5 bg-orange/10 text-orange-400 hidden lg:block" />
+                  <div className="absolute top-4 left-full w-full h-0.5 bg-orange/10 text-orange-600 hidden lg:block" />
                 )}
               </div>
-              <h3 className="text-xl font-semibold text-orange-400 mb-2 animate animate-fade-up">
+              <h3 className="text-xl font-semibold text-orange-600 mb-2 animate animate-fade-up">
                 {step.title}
               </h3>
               <p className="text-muted-foreground">{step.description}</p>

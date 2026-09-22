@@ -38,7 +38,7 @@ export function RestaurantCard({ id, name, image, cuisine, rating, href }: Resta
 
         <div className="p-5">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-orange-400 transition-colors">
+            <h3 className="text-xl font-semibold text-gray-800 group-hover:text-orange-600 transition-colors">
               {name}
             </h3>
             <div className="flex items-center text-sm bg-white/80 backdrop-blur-sm px-2 py-1 rounded-full">

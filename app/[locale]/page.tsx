@@ -99,7 +99,7 @@ export default async function Home() {
             <section className="py-3">
               <div className="container mx-auto px-4">
                 <div className="text-center mb-10">
-                  <h2 className="text-3xl font-bold mb-2 text-orange-400 animate animate-fade-up">
+                  <h2 className="text-3xl font-bold mb-2 text-orange-600 animate animate-fade-up">
                     {t("restaurants_title")}
                   </h2>
                   <p className="text-muted-foreground">{t("restaurants_description")}</p>
