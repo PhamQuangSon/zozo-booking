@@ -78,16 +78,18 @@ export default async function Home() {
         {/* Scrolling Banner */}
         <ScrollingBanner text={t("scrolling_banner")} />
         <div className="relative w-full overflow-hidden">
-          {/* Background Image */}
+          {/* Decorative background — hidden from assistive tech */}
           <Image
             src="/banner-bg.jpg"
-            alt="Banner"
+            alt=""
             fill
             priority
             fetchPriority="high"
             className="object-cover -z-10"
             sizes="100vw"
           />
+          {/* Dark mode overlay so light background image doesn't bleed through */}
+          <div className="absolute inset-0 hidden dark:block bg-black/70 -z-[5]" />
 
           <div className="container mx-auto py-16">
             {/* How It Works */}

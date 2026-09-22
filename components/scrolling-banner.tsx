@@ -17,18 +17,25 @@ export function ScrollingBanner({
 }: ScrollingBannerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   useEffect(() => {
     if (containerRef.current) {
       setContainerWidth(containerRef.current.offsetWidth);
     }
-
     const handleResize = () => {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.offsetWidth);
       }
     };
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -38,12 +45,15 @@ export function ScrollingBanner({
   return (
     <div
       ref={containerRef}
+      aria-hidden="true"
       className={`hidden md:block bg-gray-100 py-4 overflow-hidden whitespace-nowrap ${className}`}
     >
       <div
         className="inline-block"
         style={{
-          animation: `marquee ${animationDuration}s linear infinite`,
+          animation: prefersReducedMotion
+            ? "none"
+            : `marquee ${animationDuration}s linear infinite`,
         }}
       >
         {Array(repeat)

@@ -23,10 +23,10 @@ export function HowItWorks() {
   ];
 
   return (
-    <section className="py-3">
+    <section className="py-3" aria-labelledby="how-it-works-heading">
       <div className="container mx-auto px-4 mb-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-orange-400 mb-2 animate animate-fade-up">
+          <h2 id="how-it-works-heading" className="text-3xl font-bold text-orange-400 mb-2 animate animate-fade-up">
             {t("how_it_works_title")}
           </h2>
           <p className="text-muted-foreground">{t("how_it_works_subtitle")}</p>
