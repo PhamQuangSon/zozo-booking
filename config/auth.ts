@@ -1,6 +1,6 @@
-import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
 
 import prisma from "@/lib/prisma";
 
@@ -29,9 +29,15 @@ export const {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        debugLog("🟢 authorize() called with credentials", credentials ? "provided" : "missing");
+        debugLog(
+          "🟢 authorize() called with credentials",
+          credentials ? "provided" : "missing"
+        );
         try {
-          const typedCredentials = credentials as Record<"email" | "password", string>;
+          const typedCredentials = credentials as Record<
+            "email" | "password",
+            string
+          >;
           if (!typedCredentials?.email || !typedCredentials?.password) {
             debugLog("🟢 Missing credentials");
             return null;
@@ -48,10 +54,15 @@ export const {
             return null;
           }
 
+          if (!foundUser.emailVerified) {
+            debugLog("🟢 Email not verified");
+            return null;
+          }
+
           // Hash the provided password
           const isCorrectPassword = await bcrypt.compare(
             typedCredentials.password,
-            foundUser.password,
+            foundUser.password
           );
           if (!isCorrectPassword) {
             debugLog("🟢 Password mismatch");

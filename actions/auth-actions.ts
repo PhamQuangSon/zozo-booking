@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { v4 as uuidv4 } from "uuid";
 
-import { signIn } from "@/config/auth";
+import { auth, signIn } from "@/config/auth";
 import prisma from "@/lib/prisma";
 import { loginSchema, registerSchema } from "@/schemas/auth-schema";
 
@@ -51,10 +51,6 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
     }
 
     const { email, password } = validatedFields.data;
-    console.log("Login attempt:", { email });
-
-    const user = await prisma.user.findUnique({ where: { email } });
-    const redirectTarget = user?.role === "CUSTOMER" ? "/" : "/admin/dashboard";
 
     try {
       const result = await signIn("credentials", {
@@ -62,8 +58,6 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
         password,
         redirect: false,
       });
-
-      console.log("Sign in result:", result);
 
       if (!result) {
         return {
@@ -85,6 +79,9 @@ export async function login(prevState: AuthState, formData: FormData): Promise<A
           },
         } as AuthState;
       }
+
+      const session = await auth();
+      const redirectTarget = session?.user?.role === "CUSTOMER" ? "/" : "/admin/dashboard";
 
       return {
         ...prevState,

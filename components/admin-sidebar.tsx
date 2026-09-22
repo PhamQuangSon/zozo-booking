@@ -1,7 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
   BookOpen,
+  Bot,
   Coffee,
   LayoutDashboard,
   ListOrdered,
@@ -12,15 +17,15 @@ import {
   Table,
   User,
   Utensils,
-  Bot,
 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import { CurrencySelector } from "@/components/currency-selector";
-import { RESTAURANT_CHANGE_EVENT, RestaurantSelector } from "@/components/restaurant-selector";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import {
+  RESTAURANT_CHANGE_EVENT,
+  RestaurantSelector,
+} from "@/components/restaurant-selector";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,8 +38,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn, safeLocalStorage, safeParseJSON } from "@/lib/utils";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LanguageSwitcher } from "@/components/language-switcher";
 
 // Add this near the top of the file, after the imports
 function debugLog(message: string, data?: any) {
@@ -43,7 +46,13 @@ function debugLog(message: string, data?: any) {
   }
 }
 
-export function AdminSidebar({ className }: { className?: string }) {
+export function AdminSidebar({
+  className,
+  userRole: userRoleProp,
+}: {
+  className?: string;
+  userRole?: string;
+}) {
   const pathname = usePathname();
   const [defaultRestaurant, setDefaultRestaurant] = useState<{
     id: string;
@@ -73,7 +82,7 @@ export function AdminSidebar({ className }: { className?: string }) {
     } else if (session?.user?.name) {
       // Use UI Avatars as fallback
       setAvatarUrl(
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`,
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(session.user.name)}&background=random`
       );
     }
   }, [session, status]);
@@ -107,11 +116,14 @@ export function AdminSidebar({ className }: { className?: string }) {
 
     // Clean up event listener
     return () => {
-      window.removeEventListener(RESTAURANT_CHANGE_EVENT, handleRestaurantChange);
+      window.removeEventListener(
+        RESTAURANT_CHANGE_EVENT,
+        handleRestaurantChange
+      );
     };
   }, []);
 
-  const userRole = session?.user?.role;
+  const userRole = userRoleProp ?? session?.user?.role;
   const isManagement = userRole === "ADMIN" || userRole === "MANAGER";
 
   // Update the navItems array to include the new pages
@@ -207,7 +219,9 @@ export function AdminSidebar({ className }: { className?: string }) {
   };
 
   return (
-    <div className={cn("flex h-screen w-64 flex-col border-r bg-card", className)}>
+    <div
+      className={cn("flex h-screen w-64 flex-col border-r bg-card", className)}
+    >
       <div className="flex h-14 items-center border-b px-4 shrink-0">
         <Link
           href="/admin/dashboard"
@@ -238,7 +252,7 @@ export function AdminSidebar({ className }: { className?: string }) {
                     "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
                     pathname === item.href
                       ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent",
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent"
                   )}
                 >
                   <item.icon className="h-4 w-4" />
@@ -263,7 +277,7 @@ export function AdminSidebar({ className }: { className?: string }) {
                       "flex items-center gap-3 px-3 py-2 text-sm font-medium transition-colors",
                       pathname === item.href
                         ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-l-4 border-orange-500 rounded-r-md"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent",
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground rounded-md border-l-4 border-transparent"
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -299,10 +313,15 @@ export function AdminSidebar({ className }: { className?: string }) {
                 >
                   <Avatar className="h-9 w-9 border">
                     {avatarUrl ? (
-                      <AvatarImage src={avatarUrl} alt={session?.user?.name || "User"} />
+                      <AvatarImage
+                        src={avatarUrl}
+                        alt={session?.user?.name || "User"}
+                      />
                     ) : (
                       <AvatarFallback>
-                        {session?.user?.name?.charAt(0) || session?.user?.email?.charAt(0) || "U"}
+                        {session?.user?.name?.charAt(0) ||
+                          session?.user?.email?.charAt(0) ||
+                          "U"}
                       </AvatarFallback>
                     )}
                   </Avatar>
