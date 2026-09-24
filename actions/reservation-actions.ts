@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { auth } from "@/config/auth";
 import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 import { type CreateReservationInput, createReservationSchema } from "@/lib/reservation";
-import { reserveTable } from "@/lib/reservation-service";
+import { logReservationError, reserveTable } from "@/lib/reservation-service";
 
 const RESTAURANT_TIMEZONE = process.env.RESTAURANT_TIMEZONE || "Asia/Ho_Chi_Minh";
 
@@ -64,7 +64,7 @@ export async function createReservation(
       },
     };
   } catch (error) {
-    console.error("Failed to create reservation:", error);
+    logReservationError("Failed to create reservation", error);
     return { success: false, error: "Failed to create reservation" };
   }
 }

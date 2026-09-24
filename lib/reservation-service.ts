@@ -138,3 +138,23 @@ export async function reserveTable(params: ReserveTableParams): Promise<ReserveT
     }
   }
 }
+
+/**
+ * Logs a reservation failure with an actionable hint. A missing table (P2021)
+ * means the database has not been migrated, which otherwise only surfaces as a
+ * generic "Failed to create reservation" for the customer.
+ */
+export function logReservationError(context: string, error: unknown) {
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2021"
+  ) {
+    const hint =
+      "Run `pnpm db:migrate` (prisma migrate deploy) against this database.";
+    console.error(
+      `${context}: database schema is out of date (${error.message.trim()}). ${hint}`,
+    );
+    return;
+  }
+  console.error(`${context}:`, error);
+}

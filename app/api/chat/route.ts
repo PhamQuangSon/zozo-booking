@@ -5,7 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import prisma from "@/lib/prisma";
 import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 import { MAX_GUESTS_PER_RESERVATION } from "@/lib/reservation";
-import { reserveTable } from "@/lib/reservation-service";
+import { logReservationError, reserveTable } from "@/lib/reservation-service";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -227,7 +227,7 @@ ${menuContext}
                 message: `Successfully reserved table ${reservation.tableNumber} for ${guests} guests on ${reservedAtDisplay}.`,
               };
             } catch (error) {
-              console.error("Chatbot book_table failed:", error);
+              logReservationError("Chatbot book_table failed", error);
               return { success: false, message: "Failed to create the reservation." };
             }
           },

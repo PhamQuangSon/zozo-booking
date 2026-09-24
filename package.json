@@ -17,6 +17,7 @@
     "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
     "test": "npm run lint && npm run typecheck",
+    "db:migrate": "prisma migrate deploy",
     "prisma:seed": "node --loader ts-node/esm prisma/seed.ts",
     "format": "biome format . --write",
     "test:unit": "vitest run",
