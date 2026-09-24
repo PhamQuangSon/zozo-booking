@@ -1,4 +1,4 @@
-import { getRestaurants } from "@/actions/restaurant-actions";
+import prisma from "@/lib/prisma";
 
 import { BookingForm } from "./booking-form";
 
@@ -7,8 +7,13 @@ export default async function BookingPage({
 }: {
   searchParams: Promise<{ restaurantId?: string }>;
 }) {
-  const [{ restaurantId }, result] = await Promise.all([searchParams, getRestaurants()]);
-  const restaurants = result.success ? result.data.map((r) => ({ id: r.id, name: r.name })) : [];
+  const [{ restaurantId }, rawRestaurants] = await Promise.all([
+    searchParams,
+    prisma.restaurant.findMany({
+      where: { tables: { some: {} } },
+      select: { id: true, name: true },
+    }),
+  ]);
 
-  return <BookingForm restaurants={restaurants} defaultRestaurantId={restaurantId} />;
+  return <BookingForm restaurants={rawRestaurants} defaultRestaurantId={restaurantId} />;
 }

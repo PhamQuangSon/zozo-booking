@@ -79,6 +79,13 @@ export async function reserveTable(params: ReserveTableParams): Promise<ReserveT
             }),
           ]);
 
+          if (tables.length === 0) {
+            return {
+              success: false as const,
+              error: "This restaurant does not have any tables configured for reservations.",
+            };
+          }
+
           const table = pickAvailableTable({
             tables,
             reservations,
