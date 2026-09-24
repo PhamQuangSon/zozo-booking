@@ -213,13 +213,18 @@ ${menuContext}
               }
 
               const { reservation } = result;
+              const reservedAtDisplay = new Intl.DateTimeFormat("en", {
+                timeZone: RESTAURANT_TIMEZONE,
+                dateStyle: "full",
+                timeStyle: "short",
+              }).format(reservation.reservedAt);
               return {
                 success: true,
                 reservationId: reservation.id,
                 tableId: reservation.tableId,
                 tableNumber: reservation.tableNumber,
-                reservedAt: reservation.reservedAt.toISOString(),
-                message: `Successfully reserved table ${reservation.tableNumber} for ${guests} guests.`,
+                reservedAt: reservedAtDisplay,
+                message: `Successfully reserved table ${reservation.tableNumber} for ${guests} guests on ${reservedAtDisplay}.`,
               };
             } catch (error) {
               console.error("Chatbot book_table failed:", error);

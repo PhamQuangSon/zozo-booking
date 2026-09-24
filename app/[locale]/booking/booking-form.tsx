@@ -89,7 +89,7 @@ export function BookingForm({ restaurants, defaultRestaurantId }: BookingFormPro
 
       toast({
         title: "Reservation confirmed",
-        description: `Table ${result.data.tableNumber} is reserved for ${result.data.guests} guests on ${format(new Date(result.data.reservedAt), "PPP p")}.`,
+        description: `Table ${result.data.tableNumber} is reserved for ${result.data.guests} guests on ${result.data.reservedAt}.`,
       });
       setDate(undefined);
       setTime("");

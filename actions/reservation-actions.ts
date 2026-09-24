@@ -7,6 +7,8 @@ import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
 import { type CreateReservationInput, createReservationSchema } from "@/lib/reservation";
 import { reserveTable } from "@/lib/reservation-service";
 
+const RESTAURANT_TIMEZONE = process.env.RESTAURANT_TIMEZONE || "Asia/Ho_Chi_Minh";
+
 export type CreateReservationResult =
   | {
       success: true;
@@ -47,11 +49,16 @@ export async function createReservation(
     }
 
     const { reservation } = result;
+    const reservedAtDisplay = new Intl.DateTimeFormat("en", {
+      timeZone: RESTAURANT_TIMEZONE,
+      dateStyle: "long",
+      timeStyle: "short",
+    }).format(reservation.reservedAt);
     return {
       success: true,
       data: {
         id: reservation.id,
-        reservedAt: reservation.reservedAt.toISOString(),
+        reservedAt: reservedAtDisplay,
         guests: reservation.guests,
         tableNumber: reservation.tableNumber,
       },
