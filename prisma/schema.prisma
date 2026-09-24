@@ -8,55 +8,58 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(cuid())
+  id                String             @id @default(cuid())
   name              String?
-  email             String    @unique
+  email             String             @unique
   emailVerified     DateTime?
   password          String
-  role              UserRole  @default(CUSTOMER)
+  role              UserRole           @default(CUSTOMER)
   bio               String?
   image             String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  verificationToken String?   @unique
-  resetToken        String?   @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  verificationToken String?            @unique
+  resetToken        String?            @unique
   resetTokenExpiry  DateTime?
   ordersId          String?
   likes             Like[]
   pushSubscriptions PushSubscription[]
+  reservations      Reservation[]
 
   @@index([email])
 }
 
 model Restaurant {
-  id          Int        @id @default(autoincrement())
-  name        String
-  description String?
-  address     String?
-  phone       String?
-  email       String?
-  imageUrl    String?
-  cuisine     String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  categories  Category[]
-  menuItems   MenuItem[]
-  orders      Order[]
-  tables      Table[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String?
+  address       String?
+  phone         String?
+  email         String?
+  imageUrl      String?
+  cuisine       String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  categories    Category[]
+  menuItems     MenuItem[]
+  orders        Order[]
+  tables        Table[]
   chatbotConfig ChatbotConfig?
+  reservations  Reservation[]
 
   @@index([name])
 }
 
 model Table {
-  id           Int         @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   number       Int
   capacity     Int
-  status       TableStatus @default(AVAILABLE)
+  status       TableStatus   @default(AVAILABLE)
   restaurantId Int
   imageUrl     String?
   orders       Order[]
-  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+  restaurant   Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@index([restaurantId, number])
 }
@@ -208,6 +211,15 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  SEATED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
 enum OrderItemStatus {
   NEW
   PREPARING
@@ -218,16 +230,16 @@ enum OrderItemStatus {
 }
 
 model ChatbotConfig {
-  id              Int        @id @default(autoincrement())
-  restaurantId    Int        @unique
-  restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  systemPrompt    String     @db.Text
-  modelName       String     @default("gpt-4o-mini")
-  isActive        Boolean    @default(true)
-  temperature     Float      @default(0.7)
-  maxMessages     Int        @default(20)
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id           Int        @id @default(autoincrement())
+  restaurantId Int        @unique
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  systemPrompt String     @db.Text
+  modelName    String     @default("gpt-4o-mini")
+  isActive     Boolean    @default(true)
+  temperature  Float      @default(0.7)
+  maxMessages  Int        @default(20)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model PushSubscription {
@@ -239,5 +251,30 @@ model PushSubscription {
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
+}
+
+model Reservation {
+  id              Int               @id @default(autoincrement())
+  restaurantId    Int
+  tableId         Int?
+  userId          String?
+  customerName    String
+  customerEmail   String?
+  customerPhone   String
+  guests          Int
+  reservedAt      DateTime
+  durationMinutes Int               @default(90)
+  status          ReservationStatus @default(CONFIRMED)
+  source          String            @default("web")
+  notes           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  restaurant      Restaurant        @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  table           Table?            @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  user            User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([restaurantId, reservedAt])
+  @@index([tableId, reservedAt])
   @@index([userId])
 }

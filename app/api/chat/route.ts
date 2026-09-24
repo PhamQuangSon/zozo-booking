@@ -3,59 +3,60 @@ import { z } from "zod";
 import { createOpenAI } from "@ai-sdk/openai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import prisma from "@/lib/prisma";
+import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
+import { MAX_GUESTS_PER_RESERVATION } from "@/lib/reservation";
+import { reserveTable } from "@/lib/reservation-service";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-// In-memory rate limiting store (cleared on server restart)
-type RateLimitInfo = { count: number; resetTime: number };
-const ipRateLimits = new Map<string, RateLimitInfo>();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS_PER_MINUTE = 15;
+// Timezone the assistant uses to interpret "tonight", "7pm tomorrow", etc.
+const RESTAURANT_TIMEZONE = process.env.RESTAURANT_TIMEZONE || "Asia/Ho_Chi_Minh";
+const MAX_QUANTITY_PER_ITEM = 50;
+
+const checkRateLimit = createRateLimiter({ windowMs: 60 * 1000, max: 15 });
 
 export async function POST(req: Request) {
   try {
-    const { messages, restaurantId, tableId } = await req.json();
+    const { messages, restaurantId: rawRestaurantId, tableId: rawTableId } = await req.json();
 
-    if (!restaurantId) {
+    const restaurantId = Number(rawRestaurantId);
+    if (!Number.isInteger(restaurantId) || restaurantId <= 0) {
       return NextResponse.json({ error: "Restaurant ID is required" }, { status: 400 });
+    }
+    if (!Array.isArray(messages)) {
+      return NextResponse.json({ error: "Messages are required" }, { status: 400 });
     }
 
     // IP-based Rate Limiting (Simple Anti-Spam)
-    const ip = req.headers.get("x-forwarded-for") || "unknown-ip";
-    const now = Date.now();
-    const rateInfo = ipRateLimits.get(ip);
-
-    if (rateInfo) {
-      if (now > rateInfo.resetTime) {
-        ipRateLimits.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
-      } else if (rateInfo.count >= MAX_REQUESTS_PER_MINUTE) {
-        return NextResponse.json(
-          { error: "Too many requests (Rate Limited). Please slow down." },
-          { status: 429 },
-        );
-      } else {
-        rateInfo.count++;
-      }
-    } else {
-      ipRateLimits.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW_MS });
+    if (!checkRateLimit(getClientIp(req.headers)).allowed) {
+      return NextResponse.json(
+        { error: "Too many requests (Rate Limited). Please slow down." },
+        { status: 429 },
+      );
     }
 
-    // Optional: Clean up old IPs periodically if Map gets too big (prevent memory leak)
-    if (ipRateLimits.size > 1000) {
-      const keysToDelete = Array.from(ipRateLimits.entries())
-        .filter(([_, info]) => info.resetTime < now)
-        .map(([key]) => key);
-      keysToDelete.forEach((k) => ipRateLimits.delete(k));
+    // The table the customer is sitting at (from the table page). Only trust it if it
+    // belongs to this restaurant, since the value comes straight from the client.
+    let tableId: number | null = null;
+    if (rawTableId !== undefined && rawTableId !== null && rawTableId !== "") {
+      const table = await prisma.table.findFirst({
+        where: { id: Number(rawTableId), restaurantId },
+        select: { id: true },
+      });
+      if (!table) {
+        return NextResponse.json({ error: "Table not found for this restaurant" }, { status: 400 });
+      }
+      tableId = table.id;
     }
 
     // Fetch config and menu items concurrently
     const [config, restaurantData] = await Promise.all([
       prisma.chatbotConfig.findUnique({
-        where: { restaurantId: Number(restaurantId) },
+        where: { restaurantId },
       }),
       prisma.restaurant.findUnique({
-        where: { id: Number(restaurantId) },
+        where: { id: restaurantId },
         include: {
           categories: {
             orderBy: { displayOrder: "asc" },
@@ -104,7 +105,7 @@ export async function POST(req: Request) {
     if (tableId) {
       const activeOrders = await prisma.order.findMany({
         where: {
-          tableId: Number(tableId),
+          tableId,
           status: { notIn: ["COMPLETED", "CANCELLED"] },
         },
         include: {
@@ -128,12 +129,20 @@ export async function POST(req: Request) {
       }
     }
 
+    const nowInRestaurant = new Intl.DateTimeFormat("en-GB", {
+      timeZone: RESTAURANT_TIMEZONE,
+      dateStyle: "full",
+      timeStyle: "short",
+    }).format(new Date());
+
     const systemPrompt = `
 ${config.systemPrompt}
 
 [IMPORTANT INSTRUCTIONS FOR AI ASSISTANT]
 You have the ability to book tables and place food orders using your tools!
-- If the user wants to book a table, ask for the number of guests (if not provided) and use the 'book_table' tool. Once booked, tell them their table number and ALWAYS provide a clickable link to their table in this format: [Go to Table](/restaurants/${restaurantId}/{tableId}).
+- The current date and time at the restaurant is ${nowInRestaurant} (timezone ${RESTAURANT_TIMEZONE}).
+- If the user wants to book a table, collect the number of guests, the date and time, their name and their phone number (ask for anything missing), then use the 'book_table' tool. Convert the requested time into ISO 8601 with the restaurant's UTC offset. Once booked, tell them their table number and reservation time.
+  * Only if the reservation is for right now, also provide a clickable link to their table in this format: [Go to Table](/restaurants/${restaurantId}/{tableId}).
 - If the user wants to order food OR check their order status, you MUST check if you are currently at a table (see [CURRENT TABLE ORDERS] below). 
   * If you ARE at a table, use the 'order_food' tool with the exact [ID: ...] of the menu items they want.
   * If you ARE NOT at a table (the context says NO active orders or the context is missing), politely inform them: "Bạn cần phải truy cập vào trang Bàn của mình (hoặc yêu cầu tôi đặt một bàn mới) trước khi có thể gọi món hoặc kiểm tra trạng thái món ăn nhé!"
@@ -169,61 +178,90 @@ ${menuContext}
       tools: {
         book_table: tool({
           description:
-            "Finds an available empty table for the user and marks it as booked/occupied.",
+            "Reserves a table for a party at a given date and time. The restaurant automatically assigns the smallest free table that fits.",
           parameters: z.object({
-            guests: z.number().describe("The number of guests/people to seat."),
+            guests: z
+              .number()
+              .int()
+              .min(1)
+              .max(MAX_GUESTS_PER_RESERVATION)
+              .describe("The number of guests/people to seat."),
+            reservedAt: z
+              .string()
+              .datetime({ offset: true })
+              .describe(
+                "Reservation start time in ISO 8601 with UTC offset, e.g. 2026-09-24T19:00:00+07:00.",
+              ),
+            customerName: z.string().min(1).max(100).describe("Name for the reservation."),
+            customerPhone: z.string().min(8).max(20).describe("Contact phone number."),
+            notes: z.string().max(500).optional().describe("Special requests, if any."),
           }),
-          execute: async ({ guests }) => {
-            // Find available table
-            const table = await prisma.table.findFirst({
-              where: {
-                restaurantId: Number(restaurantId),
-                status: "AVAILABLE",
-                capacity: { gte: guests },
-              },
-              orderBy: { capacity: "asc" }, // Get the smallest table that fits
-            });
+          execute: async ({ guests, reservedAt, customerName, customerPhone, notes }) => {
+            try {
+              const result = await reserveTable({
+                restaurantId,
+                reservedAt: new Date(reservedAt),
+                guests,
+                customerName,
+                customerPhone,
+                notes,
+                source: "chatbot",
+              });
 
-            if (!table) {
-              return { success: false, message: "No available tables found for that capacity." };
+              if (!result.success) {
+                return { success: false, message: result.error };
+              }
+
+              const { reservation } = result;
+              return {
+                success: true,
+                reservationId: reservation.id,
+                tableId: reservation.tableId,
+                tableNumber: reservation.tableNumber,
+                reservedAt: reservation.reservedAt.toISOString(),
+                message: `Successfully reserved table ${reservation.tableNumber} for ${guests} guests.`,
+              };
+            } catch (error) {
+              console.error("Chatbot book_table failed:", error);
+              return { success: false, message: "Failed to create the reservation." };
             }
-
-            // Book it
-            await prisma.table.update({
-              where: { id: table.id },
-              data: { status: "OCCUPIED" },
-            });
-
-            return {
-              success: true,
-              tableId: table.id,
-              tableNumber: table.number,
-              capacity: table.capacity,
-              message: `Successfully booked table ${table.number} (capacity: ${table.capacity})`,
-            };
           },
         }),
         order_food: tool({
-          description: "Places a food order for a specific table.",
+          description: "Places a food order for the table the customer is currently sitting at.",
           parameters: z.object({
-            tableId: z.number().describe("The ID of the table (NOT the table number)."),
             items: z
               .array(
                 z.object({
                   menuItemId: z
                     .number()
+                    .int()
                     .describe("The exact ID of the menu item from the menu context."),
-                  quantity: z.number().describe("The quantity of this item."),
+                  quantity: z
+                    .number()
+                    .int()
+                    .min(1)
+                    .max(MAX_QUANTITY_PER_ITEM)
+                    .describe("The quantity of this item."),
                 }),
               )
+              .min(1)
               .describe("List of items to order."),
           }),
-          execute: async ({ tableId, items }) => {
+          execute: async ({ items }) => {
+            // Never trust a table chosen by the model: only the verified table from the page context.
+            if (!tableId) {
+              return {
+                success: false,
+                message: "The customer must open their table page before ordering.",
+              };
+            }
+
             try {
-              // Get menu items to calculate price
+              // Only items from this restaurant's current menu can be ordered.
               const menuItemIds = items.map((i) => i.menuItemId);
               const menuItems = await prisma.menuItem.findMany({
-                where: { id: { in: menuItemIds } },
+                where: { id: { in: menuItemIds }, restaurantId, isAvailable: true },
               });
 
               let totalAmount = 0;
@@ -237,7 +275,6 @@ ${menuContext}
                     menuItemId: item.menuItemId,
                     quantity: item.quantity,
                     unitPrice: dbItem.price,
-                    status: "NEW",
                   });
                 }
               }
@@ -246,11 +283,10 @@ ${menuContext}
                 return { success: false, message: "No valid menu items found to order." };
               }
 
-              // Create order directly using Prisma
               const order = await prisma.order.create({
                 data: {
-                  restaurantId: Number(restaurantId),
-                  tableId: tableId,
+                  restaurantId,
+                  tableId,
                   status: "NEW",
                   totalAmount: totalAmount,
                   notes: "Ordered via AI Chatbot",
@@ -269,10 +305,12 @@ ${menuContext}
                 success: true,
                 orderId: order.id,
                 totalAmount: totalAmount,
+                skippedItems: items.length - validItems.length,
                 message: "Order has been placed successfully and sent to the kitchen.",
               };
-            } catch (error: any) {
-              return { success: false, message: `Failed to place order: ${error.message}` };
+            } catch (error) {
+              console.error("Chatbot order_food failed:", error);
+              return { success: false, message: "Failed to place order." };
             }
           },
         }),
